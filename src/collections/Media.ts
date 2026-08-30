@@ -2,15 +2,154 @@ import type { CollectionConfig } from 'payload'
 
 export const Media: CollectionConfig = {
   slug: 'media',
-  access: {
-    read: () => true,
+
+  admin: {
+    useAsTitle: 'filename',
+
+    defaultColumns: [
+      'filename',
+      'mimeType',
+      'alt',
+      'title',
+      'updatedAt',
+    ],
   },
+
+  upload: {
+    disableLocalStorage: true,
+
+    mimeTypes: [
+      'image/*',
+      'application/pdf',
+      'audio/*',
+    ],
+
+    adminThumbnail: ({ doc }) => {
+      const publicURL = process.env.R2_PUBLIC_URL
+
+      if (!publicURL) {
+        return ''
+      }
+
+      const media = doc as {
+        filename?: string
+        sizes?: {
+          thumbnail?: {
+            filename?: string
+          }
+        }
+      }
+
+      const thumbnailFilename =
+        media.sizes?.thumbnail?.filename || media.filename
+
+      if (!thumbnailFilename) {
+        return ''
+      }
+
+      return `${publicURL.replace(/\/$/, '')}/${thumbnailFilename}`
+    },
+
+    imageSizes: [
+      {
+        name: 'thumbnail',
+        width: 400,
+        height: 300,
+        position: 'centre',
+      },
+    ],
+
+    formatOptions: {
+      format: 'webp',
+    },
+  },
+
+
   fields: [
+    // ==========================================================
+    // WORDPRESS MIGRATION REFERENCE
+    // ==========================================================
+
+    {
+      name: 'wordpressId',
+      type: 'number',
+      unique: true,
+
+      admin: {
+        description:
+          'Original WordPress media ID used for migration mapping.',
+      },
+    },
+
+    {
+      name: 'originalUrl',
+      type: 'text',
+
+      admin: {
+        description:
+          'Original WordPress media URL used during migration.',
+      },
+    },
+
+    // ==========================================================
+    // ACCESSIBILITY
+    // ==========================================================
+
     {
       name: 'alt',
       type: 'text',
       required: true,
+      label: 'Alt Text',
+
+      admin: {
+        description:
+          'Alternative text for accessibility and image SEO. For audio files, use a short descriptive text.',
+      },
+    },
+
+    // ==========================================================
+    // MEDIA TITLE
+    // ==========================================================
+
+    {
+      name: 'title',
+      type: 'text',
+      label: 'Media Title',
+
+      admin: {
+        description:
+          'Title used for identifying and managing the media.',
+      },
+    },
+
+    // ==========================================================
+    // CAPTION
+    // ==========================================================
+
+    {
+      name: 'caption',
+      type: 'textarea',
+      label: 'Caption',
+
+      admin: {
+        description:
+          'Optional caption displayed with the media.',
+      },
+    },
+
+    // ==========================================================
+    // DESCRIPTION
+    // ==========================================================
+
+    {
+      name: 'description',
+      type: 'textarea',
+      label: 'Description',
+
+      admin: {
+        description:
+          'Optional description containing additional information about the media.',
+      },
     },
   ],
-  upload: true,
 }

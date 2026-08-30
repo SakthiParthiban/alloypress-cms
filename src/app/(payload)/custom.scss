@@ -1,0 +1,1170 @@
+/* =========================================================
+   ALLOYPRESS
+   PREMIUM ENTERPRISE ADMIN THEME
+========================================================= */
+
+
+/* =========================================================
+   BRAND TOKENS
+========================================================= */
+
+:root {
+  --alloy-green: #159447;
+  --alloy-green-dark: #10743a;
+  --alloy-green-bright: #22a957;
+  --alloy-green-light: #e8f7ee;
+
+  --alloy-white: #ffffff;
+
+  --alloy-navy: #061a29;
+  --alloy-navy-2: #081f32;
+  --alloy-navy-3: #0b2940;
+  --alloy-navy-4: #123b56;
+
+  --alloy-text-dark: #102018;
+  --alloy-text-muted: #65766d;
+
+  --alloy-border-light: #dce8e1;
+  --alloy-border-dark: #194661;
+
+  --alloy-radius: 9px;
+  --alloy-radius-lg: 13px;
+  --alloy-radius-xl: 16px;
+
+  --alloy-transition: 180ms ease;
+}
+
+
+/* =========================================================
+   PAYLOAD ROOT
+========================================================= */
+
+.template-default {
+  width: 100% !important;
+  min-width: 0 !important;
+  min-height: 100vh !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  box-sizing: border-box !important;
+}
+
+.template-default .main {
+  width: 100% !important;
+  min-width: 0 !important;
+  max-width: none !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  box-sizing: border-box !important;
+}
+
+.template-default__content {
+  width: 100% !important;
+  min-width: 0 !important;
+  max-width: none !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  box-sizing: border-box !important;
+}
+
+
+/* =========================================================
+   LIGHT THEME
+   PREMIUM WHITE + GREEN
+========================================================= */
+
+html[data-theme='light'] {
+  --theme-bg: #f7faf8;
+  --theme-text: #102018;
+
+  --theme-elevation-0: #ffffff;
+  --theme-elevation-50: #ffffff;
+  --theme-elevation-100: #fcfefd;
+  --theme-elevation-150: #f7faf8;
+  --theme-elevation-200: #eef4f0;
+  --theme-elevation-300: #dfe9e3;
+  --theme-elevation-400: #ccdcd2;
+
+  --theme-success-500: #159447;
+  --theme-success-600: #10743a;
+}
+
+
+/* =========================================================
+   DARK THEME
+   PREMIUM NAVY + GREEN + WHITE
+========================================================= */
+
+html[data-theme='dark'] {
+  --theme-bg: #061a29;
+  --theme-text: #f4faf7;
+
+  --theme-elevation-0: #061a29;
+  --theme-elevation-50: #081f32;
+  --theme-elevation-100: #0a2438;
+  --theme-elevation-150: #0c2b43;
+  --theme-elevation-200: #103650;
+  --theme-elevation-300: #174560;
+  --theme-elevation-400: #205773;
+
+  --theme-success-500: #22a957;
+  --theme-success-600: #159447;
+}
+
+
+/* =========================================================
+   BODY
+========================================================= */
+
+html[data-theme='light'] body {
+  background: #f7faf8 !important;
+  color: #102018 !important;
+}
+
+html[data-theme='dark'] body {
+  background: #061a29 !important;
+  color: #f4faf7 !important;
+}
+
+
+/* =========================================================
+   MAIN CONTENT AREA
+========================================================= */
+
+html[data-theme='light'] .template-default__content {
+  background: #f7faf8 !important;
+}
+
+html[data-theme='dark'] .template-default__content {
+  background: #061a29 !important;
+}
+
+
+/* =========================================================
+   SIDEBAR
+========================================================= */
+
+html[data-theme='light'] .nav {
+  background:
+    linear-gradient(
+      180deg,
+      #ffffff 0%,
+      #f8fcfa 100%
+    ) !important;
+
+  border-right: 1px solid #e0ebe4 !important;
+}
+
+html[data-theme='dark'] .nav {
+  background:
+    linear-gradient(
+      180deg,
+      #071c2d 0%,
+      #061a29 100%
+    ) !important;
+
+  border-right: 1px solid #12364e !important;
+}
+
+
+/* =========================================================
+   SIDEBAR TOP / COLLAPSE BUTTON
+========================================================= */
+
+html[data-theme='light'] .nav button {
+  color: #315045 !important;
+}
+
+html[data-theme='dark'] .nav button {
+  color: #d7ebe1 !important;
+}
+
+html[data-theme='light'] .nav button:hover {
+  background: #e9f7ee !important;
+}
+
+html[data-theme='dark'] .nav button:hover {
+  background: #10354d !important;
+}
+
+
+/* =========================================================
+   SIDEBAR GROUP LABEL
+========================================================= */
+
+html[data-theme='light'] .nav-group__label {
+  color: #718078 !important;
+  font-size: 11px !important;
+  font-weight: 700 !important;
+  letter-spacing: 0.09em !important;
+  text-transform: uppercase !important;
+}
+
+html[data-theme='dark'] .nav-group__label {
+  color: #7f9aaa !important;
+  font-size: 11px !important;
+  font-weight: 700 !important;
+  letter-spacing: 0.09em !important;
+  text-transform: uppercase !important;
+}
+
+
+/* =========================================================
+   SIDEBAR LINKS
+========================================================= */
+
+html[data-theme='light'] .nav__link {
+  color: #294437 !important;
+  border-radius: 9px !important;
+  font-weight: 500 !important;
+
+  transition:
+    background var(--alloy-transition),
+    color var(--alloy-transition),
+    transform var(--alloy-transition);
+}
+
+html[data-theme='dark'] .nav__link {
+  color: #c7dcd2 !important;
+  border-radius: 9px !important;
+  font-weight: 500 !important;
+
+  transition:
+    background var(--alloy-transition),
+    color var(--alloy-transition),
+    transform var(--alloy-transition);
+}
+
+
+/* =========================================================
+   SIDEBAR HOVER
+========================================================= */
+
+html[data-theme='light'] .nav__link:hover {
+  background: #eaf7ef !important;
+  color: #10743a !important;
+  transform: translateX(2px);
+}
+
+html[data-theme='dark'] .nav__link:hover {
+  background: #0d3048 !important;
+  color: #4ade80 !important;
+  transform: translateX(2px);
+}
+
+
+/* =========================================================
+   SIDEBAR ACTIVE
+========================================================= */
+
+html[data-theme='light'] .nav__link.active {
+  background:
+    linear-gradient(
+      90deg,
+      #dff5e7,
+      #edf9f1
+    ) !important;
+
+  color: #10743a !important;
+  font-weight: 700 !important;
+
+  box-shadow:
+    inset 3px 0 0 #159447,
+    0 2px 8px rgba(21, 148, 71, 0.06);
+}
+
+html[data-theme='dark'] .nav__link.active {
+  background:
+    linear-gradient(
+      90deg,
+      #103c4f,
+      #0d3048
+    ) !important;
+
+  color: #4ade80 !important;
+  font-weight: 700 !important;
+
+  box-shadow:
+    inset 3px 0 0 #22a957,
+    0 2px 10px rgba(21, 148, 71, 0.08);
+}
+
+
+/* =========================================================
+   HEADER
+========================================================= */
+
+html[data-theme='light'] .template-default .header,
+html[data-theme='light'] .template-default__header {
+  background: rgba(255, 255, 255, 0.96) !important;
+  border-bottom: 1px solid #e1ebe5 !important;
+  box-shadow: 0 2px 12px rgba(16, 32, 24, 0.035);
+}
+
+html[data-theme='dark'] .template-default .header,
+html[data-theme='dark'] .template-default__header {
+  background: #071c2d !important;
+  border-bottom: 1px solid #12364e !important;
+  box-shadow: 0 2px 14px rgba(0, 0, 0, 0.15);
+}
+
+
+/* =========================================================
+   HEADINGS
+========================================================= */
+
+html[data-theme='light'] h1,
+html[data-theme='light'] h2,
+html[data-theme='light'] h3,
+html[data-theme='light'] h4 {
+  color: #102018 !important;
+  font-weight: 650 !important;
+  letter-spacing: -0.025em;
+}
+
+html[data-theme='dark'] h1,
+html[data-theme='dark'] h2,
+html[data-theme='dark'] h3,
+html[data-theme='dark'] h4 {
+  color: #f4faf7 !important;
+  font-weight: 650 !important;
+  letter-spacing: -0.025em;
+}
+
+
+/* =========================================================
+   NORMAL TEXT
+========================================================= */
+
+html[data-theme='light'] p,
+html[data-theme='light'] span {
+  color: inherit;
+}
+
+html[data-theme='dark'] p,
+html[data-theme='dark'] span {
+  color: inherit;
+}
+
+
+/* =========================================================
+   LABELS
+========================================================= */
+
+html[data-theme='light'] label {
+  color: #294437 !important;
+  font-weight: 600 !important;
+}
+
+html[data-theme='dark'] label {
+  color: #d8ebe1 !important;
+  font-weight: 600 !important;
+}
+
+
+/* =========================================================
+   INPUTS
+========================================================= */
+
+html[data-theme='light'] input,
+html[data-theme='light'] textarea,
+html[data-theme='light'] select {
+  background: #ffffff !important;
+  color: #102018 !important;
+
+  border: 1px solid #cfdcd4 !important;
+  border-radius: var(--alloy-radius) !important;
+
+  transition:
+    border-color var(--alloy-transition),
+    box-shadow var(--alloy-transition),
+    background var(--alloy-transition);
+}
+
+html[data-theme='dark'] input,
+html[data-theme='dark'] textarea,
+html[data-theme='dark'] select {
+  background: #0a2438 !important;
+  color: #f4faf7 !important;
+
+  border: 1px solid #1b4965 !important;
+  border-radius: var(--alloy-radius) !important;
+
+  transition:
+    border-color var(--alloy-transition),
+    box-shadow var(--alloy-transition),
+    background var(--alloy-transition);
+}
+
+
+/* =========================================================
+   INPUT HOVER
+========================================================= */
+
+html[data-theme='light'] input:hover,
+html[data-theme='light'] textarea:hover,
+html[data-theme='light'] select:hover {
+  border-color: #a9c8b5 !important;
+}
+
+html[data-theme='dark'] input:hover,
+html[data-theme='dark'] textarea:hover,
+html[data-theme='dark'] select:hover {
+  border-color: #28617d !important;
+}
+
+
+/* =========================================================
+   INPUT FOCUS
+========================================================= */
+
+html[data-theme='light'] input:focus,
+html[data-theme='light'] textarea:focus,
+html[data-theme='light'] select:focus {
+  border-color: #159447 !important;
+  box-shadow:
+    0 0 0 3px rgba(21, 148, 71, 0.11) !important;
+
+  outline: none !important;
+}
+
+html[data-theme='dark'] input:focus,
+html[data-theme='dark'] textarea:focus,
+html[data-theme='dark'] select:focus {
+  border-color: #22a957 !important;
+  box-shadow:
+    0 0 0 3px rgba(34, 169, 87, 0.15) !important;
+
+  outline: none !important;
+}
+
+
+/* =========================================================
+   PLACEHOLDER
+========================================================= */
+
+html[data-theme='light'] input::placeholder,
+html[data-theme='light'] textarea::placeholder {
+  color: #809087 !important;
+}
+
+html[data-theme='dark'] input::placeholder,
+html[data-theme='dark'] textarea::placeholder {
+  color: #7894a4 !important;
+}
+
+
+/* =========================================================
+   PRIMARY BUTTON
+========================================================= */
+
+html[data-theme='light'] .btn--style-primary {
+  background: #159447 !important;
+  border: 1px solid #159447 !important;
+  color: #ffffff !important;
+
+  border-radius: 8px !important;
+  font-weight: 650 !important;
+
+  box-shadow:
+    0 4px 12px rgba(21, 148, 71, 0.17);
+
+  transition:
+    background var(--alloy-transition),
+    transform var(--alloy-transition),
+    box-shadow var(--alloy-transition);
+}
+
+html[data-theme='dark'] .btn--style-primary {
+  background: #159447 !important;
+  border: 1px solid #22a957 !important;
+  color: #ffffff !important;
+
+  border-radius: 8px !important;
+  font-weight: 650 !important;
+
+  box-shadow:
+    0 4px 14px rgba(21, 148, 71, 0.22);
+
+  transition:
+    background var(--alloy-transition),
+    transform var(--alloy-transition),
+    box-shadow var(--alloy-transition);
+}
+
+
+/* =========================================================
+   PRIMARY BUTTON HOVER
+========================================================= */
+
+html[data-theme='light'] .btn--style-primary:hover {
+  background: #10743a !important;
+  border-color: #10743a !important;
+
+  transform: translateY(-1px);
+
+  box-shadow:
+    0 7px 18px rgba(21, 148, 71, 0.23);
+}
+
+html[data-theme='dark'] .btn--style-primary:hover {
+  background: #22a957 !important;
+  border-color: #22a957 !important;
+
+  transform: translateY(-1px);
+
+  box-shadow:
+    0 7px 20px rgba(34, 169, 87, 0.22);
+}
+
+
+/* =========================================================
+   SECONDARY BUTTONS
+========================================================= */
+
+html[data-theme='light'] .btn--style-secondary {
+  background: #ffffff !important;
+  color: #10743a !important;
+  border-color: #b9d4c2 !important;
+
+  border-radius: 8px !important;
+}
+
+html[data-theme='dark'] .btn--style-secondary {
+  background: #0a2438 !important;
+  color: #4ade80 !important;
+  border-color: #28617d !important;
+
+  border-radius: 8px !important;
+}
+
+
+/* =========================================================
+   CARDS
+========================================================= */
+
+html[data-theme='light'] .card {
+  background: #ffffff !important;
+  border: 1px solid #dce8e1 !important;
+
+  border-radius: var(--alloy-radius-lg) !important;
+
+  box-shadow:
+    0 2px 10px rgba(16, 32, 24, 0.035);
+
+  transition:
+    transform var(--alloy-transition),
+    border-color var(--alloy-transition),
+    box-shadow var(--alloy-transition);
+}
+
+html[data-theme='dark'] .card {
+  background: #0a2438 !important;
+  border: 1px solid #194661 !important;
+
+  border-radius: var(--alloy-radius-lg) !important;
+
+  box-shadow:
+    0 4px 18px rgba(0, 0, 0, 0.16);
+
+  transition:
+    transform var(--alloy-transition),
+    border-color var(--alloy-transition),
+    box-shadow var(--alloy-transition);
+}
+
+
+/* =========================================================
+   CARD HOVER
+========================================================= */
+
+html[data-theme='light'] .card:hover {
+  border-color: #a9d5b8 !important;
+
+  box-shadow:
+    0 9px 26px rgba(21, 148, 71, 0.075);
+
+  transform: translateY(-2px);
+}
+
+html[data-theme='dark'] .card:hover {
+  border-color: #28715d !important;
+
+  box-shadow:
+    0 9px 26px rgba(21, 148, 71, 0.12);
+
+  transform: translateY(-2px);
+}
+
+
+/* =========================================================
+   COLLECTION ITEMS
+========================================================= */
+
+html[data-theme='light'] .collection-list__title,
+html[data-theme='light'] .card__title {
+  color: #102018 !important;
+  font-weight: 650 !important;
+}
+
+html[data-theme='dark'] .collection-list__title,
+html[data-theme='dark'] .card__title {
+  color: #f4faf7 !important;
+  font-weight: 650 !important;
+}
+
+
+/* =========================================================
+   COLLECTION LINKS
+========================================================= */
+
+html[data-theme='light'] a {
+  color: #10743a;
+  transition: color var(--alloy-transition);
+}
+
+html[data-theme='dark'] a {
+  color: #4ade80;
+  transition: color var(--alloy-transition);
+}
+
+html[data-theme='light'] a:hover {
+  color: #0b5d2f;
+}
+
+html[data-theme='dark'] a:hover {
+  color: #86efac;
+}
+
+
+/* =========================================================
+   TABLES
+========================================================= */
+
+html[data-theme='light'] table {
+  background: #ffffff !important;
+  border-color: #dce8e1 !important;
+  border-radius: var(--alloy-radius-lg);
+}
+
+html[data-theme='dark'] table {
+  background: #0a2438 !important;
+  border-color: #194661 !important;
+}
+
+
+/* =========================================================
+   TABLE HEADER
+========================================================= */
+
+html[data-theme='light'] th {
+  background: #f4f9f6 !important;
+  color: #42584b !important;
+  font-weight: 650 !important;
+  border-bottom: 1px solid #dce8e1 !important;
+}
+
+html[data-theme='dark'] th {
+  background: #0c2b43 !important;
+  color: #cfe4da !important;
+  font-weight: 650 !important;
+  border-bottom: 1px solid #194661 !important;
+}
+
+
+/* =========================================================
+   TABLE ROW
+========================================================= */
+
+html[data-theme='light'] td {
+  border-bottom: 1px solid #edf2ef !important;
+}
+
+html[data-theme='dark'] td {
+  border-bottom: 1px solid #12364e !important;
+}
+
+
+/* =========================================================
+   TABLE HOVER
+========================================================= */
+
+html[data-theme='light'] tbody tr:hover {
+  background: #f3faf5 !important;
+}
+
+html[data-theme='dark'] tbody tr:hover {
+  background: #0d3048 !important;
+}
+
+
+/* =========================================================
+   FIELD DESCRIPTION
+========================================================= */
+
+html[data-theme='light'] .field-description,
+html[data-theme='light'] .description {
+  color: #687970 !important;
+}
+
+html[data-theme='dark'] .field-description,
+html[data-theme='dark'] .description {
+  color: #8da8b7 !important;
+}
+
+
+/* =========================================================
+   TABS
+========================================================= */
+
+html[data-theme='light'] [role='tab'] {
+  color: #607269 !important;
+}
+
+html[data-theme='dark'] [role='tab'] {
+  color: #91aebc !important;
+}
+
+html[data-theme='light'] [role='tab'][aria-selected='true'] {
+  color: #10743a !important;
+  border-bottom-color: #159447 !important;
+}
+
+html[data-theme='dark'] [role='tab'][aria-selected='true'] {
+  color: #4ade80 !important;
+  border-bottom-color: #22a957 !important;
+}
+
+
+/* =========================================================
+   CHECKBOX / RADIO
+========================================================= */
+
+html[data-theme='light'] input[type='checkbox'],
+html[data-theme='light'] input[type='radio'],
+html[data-theme='dark'] input[type='checkbox'],
+html[data-theme='dark'] input[type='radio'] {
+  accent-color: #159447 !important;
+}
+
+
+/* =========================================================
+   SELECT / DROPDOWN
+========================================================= */
+
+html[data-theme='light'] [role='listbox'],
+html[data-theme='light'] [role='menu'] {
+  background: #ffffff !important;
+  border-color: #dce8e1 !important;
+}
+
+html[data-theme='dark'] [role='listbox'],
+html[data-theme='dark'] [role='menu'] {
+  background: #0a2438 !important;
+  border-color: #194661 !important;
+}
+
+
+/* =========================================================
+   MODALS / DRAWERS
+========================================================= */
+
+html[data-theme='light'] [role='dialog'] {
+  background: #ffffff !important;
+  border-color: #dce8e1 !important;
+  box-shadow:
+    0 20px 60px rgba(16, 32, 24, 0.15);
+}
+
+html[data-theme='dark'] [role='dialog'] {
+  background: #081f32 !important;
+  border-color: #194661 !important;
+  box-shadow:
+    0 20px 60px rgba(0, 0, 0, 0.4);
+}
+
+
+/* =========================================================
+   BADGES / STATUS
+========================================================= */
+
+html[data-theme='light'] .pill,
+html[data-theme='light'] .badge {
+  background: #e5f6eb !important;
+  color: #10743a !important;
+  border-color: #bfe2ca !important;
+}
+
+html[data-theme='dark'] .pill,
+html[data-theme='dark'] .badge {
+  background: #103c4f !important;
+  color: #65e596 !important;
+  border-color: #24604e !important;
+}
+
+
+/* =========================================================
+   ERROR STATE
+========================================================= */
+
+html[data-theme='light'] .error {
+  color: #b42318;
+}
+
+html[data-theme='dark'] .error {
+  color: #ff8e8e;
+}
+
+
+/* =========================================================
+   SUCCESS STATE
+========================================================= */
+
+html[data-theme='light'] .success {
+  color: #10743a;
+}
+
+html[data-theme='dark'] .success {
+  color: #4ade80;
+}
+
+
+/* =========================================================
+   DIVIDERS
+========================================================= */
+
+html[data-theme='light'] hr {
+  border-color: #dce8e1 !important;
+}
+
+html[data-theme='dark'] hr {
+  border-color: #194661 !important;
+}
+
+
+/* =========================================================
+   SEARCH / COMMAND INPUTS
+========================================================= */
+
+html[data-theme='light'] input[type='search'] {
+  background: #ffffff !important;
+  border-color: #d5e2da !important;
+}
+
+html[data-theme='dark'] input[type='search'] {
+  background: #0a2438 !important;
+  border-color: #194661 !important;
+}
+
+
+/* =========================================================
+   FOCUS ACCESSIBILITY
+========================================================= */
+
+html[data-theme='light'] :focus-visible {
+  outline: 2px solid rgba(21, 148, 71, 0.45);
+  outline-offset: 2px;
+}
+
+html[data-theme='dark'] :focus-visible {
+  outline: 2px solid rgba(74, 222, 128, 0.5);
+  outline-offset: 2px;
+}
+
+
+/* =========================================================
+   SCROLLBAR — LIGHT
+========================================================= */
+
+html[data-theme='light'] ::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+html[data-theme='light'] ::-webkit-scrollbar-track {
+  background: #f4f8f6;
+}
+
+html[data-theme='light'] ::-webkit-scrollbar-thumb {
+  background: #c7d8ce;
+  border-radius: 10px;
+}
+
+html[data-theme='light'] ::-webkit-scrollbar-thumb:hover {
+  background: #9fbaaa;
+}
+
+
+/* =========================================================
+   SCROLLBAR — DARK
+========================================================= */
+
+html[data-theme='dark'] ::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+html[data-theme='dark'] ::-webkit-scrollbar-track {
+  background: #061a29;
+}
+
+html[data-theme='dark'] ::-webkit-scrollbar-thumb {
+  background: #194661;
+  border-radius: 10px;
+}
+
+html[data-theme='dark'] ::-webkit-scrollbar-thumb:hover {
+  background: #28617d;
+}
+
+
+/* =========================================================
+   ALLOYPRESS SIDEBAR - STRONG OVERRIDE
+========================================================= */
+
+@layer payload {
+
+  /* =======================================================
+     LIGHT SIDEBAR
+  ======================================================= */
+
+  html[data-theme='light'] .template-default .nav {
+    background: linear-gradient(
+      180deg,
+      #0f6b43 0%,
+      #0b5c3a 50%,
+      #084d32 100%
+    ) !important;
+
+    border-right: none !important;
+    color: #ffffff !important;
+
+    box-shadow:
+      4px 0 20px rgba(8, 77, 50, 0.12) !important;
+  }
+
+
+  /* =======================================================
+     DARK SIDEBAR
+  ======================================================= */
+
+  html[data-theme='dark'] .template-default .nav {
+    background: linear-gradient(
+      180deg,
+      #061d2d 0%,
+      #071a29 55%,
+      #04131f 100%
+    ) !important;
+
+    border-right: 1px solid #123b52 !important;
+    color: #ffffff !important;
+
+    box-shadow:
+      4px 0 24px rgba(0, 0, 0, 0.28) !important;
+  }
+
+
+  /* =======================================================
+     SIDEBAR BRAND AREA
+  ======================================================= */
+
+  html[data-theme='light'] .template-default .nav__brand {
+    background: rgba(255, 255, 255, 0.08) !important;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.12) !important;
+  }
+
+  html[data-theme='dark'] .template-default .nav__brand {
+    background: rgba(255, 255, 255, 0.025) !important;
+    border-bottom: 1px solid #123b52 !important;
+  }
+
+
+  /* =======================================================
+     SIDEBAR BRAND ICON
+  ======================================================= */
+
+  html[data-theme='light'] .template-default .nav__brand .icon path {
+    fill: #ffffff !important;
+  }
+
+  html[data-theme='dark'] .template-default .nav__brand .icon path {
+    fill: #22c55e !important;
+  }
+
+
+  /* =======================================================
+     COLLECTION SECTION LABEL
+  ======================================================= */
+
+  html[data-theme='light']
+  .template-default
+  .nav-group__label {
+    color: rgba(255, 255, 255, 0.65) !important;
+  }
+
+  html[data-theme='dark']
+  .template-default
+  .nav-group__label {
+    color: #7898aa !important;
+  }
+
+
+  /* =======================================================
+     SIDEBAR LINKS
+  ======================================================= */
+
+  html[data-theme='light']
+  .template-default
+  .nav__link {
+    color: rgba(255, 255, 255, 0.88) !important;
+
+    border-radius: 9px !important;
+
+    transition:
+      background 180ms ease,
+      color 180ms ease,
+      transform 180ms ease !important;
+  }
+
+  html[data-theme='dark']
+  .template-default
+  .nav__link {
+    color: #c9ddd5 !important;
+
+    border-radius: 9px !important;
+
+    transition:
+      background 180ms ease,
+      color 180ms ease,
+      transform 180ms ease !important;
+  }
+
+
+  /* =======================================================
+     SIDEBAR LINK HOVER
+  ======================================================= */
+
+  html[data-theme='light']
+  .template-default
+  .nav__link:hover {
+    background: rgba(255, 255, 255, 0.12) !important;
+    color: #ffffff !important;
+
+    transform: translateX(2px);
+  }
+
+  html[data-theme='dark']
+  .template-default
+  .nav__link:hover {
+    background: #0d3046 !important;
+    color: #4ade80 !important;
+
+    transform: translateX(2px);
+  }
+
+
+  /* =======================================================
+     ACTIVE LINK
+  ======================================================= */
+
+  html[data-theme='light']
+  .template-default
+  .nav__link.active {
+    background: rgba(255, 255, 255, 0.17) !important;
+
+    color: #ffffff !important;
+
+    font-weight: 650 !important;
+
+    box-shadow:
+      inset 3px 0 0 #ffffff,
+      0 4px 12px rgba(0, 0, 0, 0.08) !important;
+  }
+
+  html[data-theme='dark']
+  .template-default
+  .nav__link.active {
+    background:
+      linear-gradient(
+        90deg,
+        #103e50,
+        #0d3046
+      ) !important;
+
+    color: #4ade80 !important;
+
+    font-weight: 650 !important;
+
+    box-shadow:
+      inset 3px 0 0 #22c55e,
+      0 4px 14px rgba(0, 0, 0, 0.18) !important;
+  }
+
+
+  /* =======================================================
+     SIDEBAR SVG ICONS
+  ======================================================= */
+
+  html[data-theme='light']
+  .template-default
+  .nav svg {
+    color: rgba(255, 255, 255, 0.9) !important;
+  }
+
+  html[data-theme='dark']
+  .template-default
+  .nav svg {
+    color: #a8c8ba !important;
+  }
+
+
+  /* =======================================================
+     ACTIVE SVG ICON
+  ======================================================= */
+
+  html[data-theme='light']
+  .template-default
+  .nav__link.active svg {
+    color: #ffffff !important;
+  }
+
+  html[data-theme='dark']
+  .template-default
+  .nav__link.active svg {
+    color: #4ade80 !important;
+  }
+
+
+  /* =======================================================
+     SIDEBAR BUTTONS
+  ======================================================= */
+
+  html[data-theme='light']
+  .template-default
+  .nav button {
+    color: rgba(255, 255, 255, 0.9) !important;
+  }
+
+  html[data-theme='dark']
+  .template-default
+  .nav button {
+    color: #a8c8ba !important;
+  }
+
+
+  /* =======================================================
+     SIDEBAR BUTTON HOVER
+  ======================================================= */
+
+  html[data-theme='light']
+  .template-default
+  .nav button:hover {
+    background: rgba(255, 255, 255, 0.10) !important;
+  }
+
+  html[data-theme='dark']
+  .template-default
+  .nav button:hover {
+    background: #0d3046 !important;
+  }
+
+}

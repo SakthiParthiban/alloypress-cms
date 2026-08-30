@@ -26,6 +26,7 @@ const nextConfig: NextConfig = {
   turbopack: {
     root: path.resolve(dirname),
   },
+   allowedDevOrigins: ['harmony-ever-purpose-tunnel.trycloudflare.com',],
 }
 
 export default withPayload(nextConfig, { devBundleServerPackages: false })

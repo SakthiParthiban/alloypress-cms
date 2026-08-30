@@ -69,7 +69,14 @@ export interface Config {
   collections: {
     users: User;
     media: Media;
+    categories: Category;
+    tags: Tag;
+    posts: Post;
+    pages: Page;
+    'not-found-logs': NotFoundLog;
+    redirects: Redirect;
     'payload-kv': PayloadKv;
+    'payload-jobs': PayloadJob;
     'payload-locked-documents': PayloadLockedDocument;
     'payload-preferences': PayloadPreference;
     'payload-migrations': PayloadMigration;
@@ -78,13 +85,20 @@ export interface Config {
   collectionsSelect: {
     users: UsersSelect<false> | UsersSelect<true>;
     media: MediaSelect<false> | MediaSelect<true>;
+    categories: CategoriesSelect<false> | CategoriesSelect<true>;
+    tags: TagsSelect<false> | TagsSelect<true>;
+    posts: PostsSelect<false> | PostsSelect<true>;
+    pages: PagesSelect<false> | PagesSelect<true>;
+    'not-found-logs': NotFoundLogsSelect<false> | NotFoundLogsSelect<true>;
+    redirects: RedirectsSelect<false> | RedirectsSelect<true>;
     'payload-kv': PayloadKvSelect<false> | PayloadKvSelect<true>;
+    'payload-jobs': PayloadJobsSelect<false> | PayloadJobsSelect<true>;
     'payload-locked-documents': PayloadLockedDocumentsSelect<false> | PayloadLockedDocumentsSelect<true>;
     'payload-preferences': PayloadPreferencesSelect<false> | PayloadPreferencesSelect<true>;
     'payload-migrations': PayloadMigrationsSelect<false> | PayloadMigrationsSelect<true>;
   };
   db: {
-    defaultIDType: string;
+    defaultIDType: number;
   };
   fallbackLocale: null;
   globals: {};
@@ -95,7 +109,13 @@ export interface Config {
   };
   user: User;
   jobs: {
-    tasks: unknown;
+    tasks: {
+      schedulePublish: TaskSchedulePublish;
+      inline: {
+        input: unknown;
+        output: unknown;
+      };
+    };
     workflows: unknown;
   };
 }
@@ -118,11 +138,41 @@ export interface UserAuthOperations {
   };
 }
 /**
+ * Manage AlloyPress users and access roles.
+ *
  * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "users".
  */
 export interface User {
-  id: string;
+  id: number;
+  /**
+   * Display name shown across the AlloyPress system.
+   */
+  displayName?: string | null;
+  /**
+   * Unique username for the user.
+   */
+  username?: string | null;
+  /**
+   * Optional website URL associated with the user.
+   */
+  website?: string | null;
+  /**
+   * Short description or biography of the user.
+   */
+  bio?: string | null;
+  /**
+   * Admin: full access. Editor: content management. Viewer: read-only access.
+   */
+  role: 'admin' | 'editor' | 'viewer';
+  /**
+   * Original WordPress information preserved for migration.
+   */
+  legacy?: {
+    wordpressId?: number | null;
+    wordpressUsername?: string | null;
+    wordpressRole?: string | null;
+  };
   updatedAt: string;
   createdAt: string;
   email: string;
@@ -147,8 +197,31 @@ export interface User {
  * via the `definition` "media".
  */
 export interface Media {
-  id: string;
+  id: number;
+  /**
+   * Original WordPress media ID used for migration mapping.
+   */
+  wordpressId?: number | null;
+  /**
+   * Original WordPress media URL used during migration.
+   */
+  originalUrl?: string | null;
+  /**
+   * Alternative text for accessibility and image SEO. For audio files, use a short descriptive text.
+   */
   alt: string;
+  /**
+   * Title used for identifying and managing the media.
+   */
+  title?: string | null;
+  /**
+   * Optional caption displayed with the media.
+   */
+  caption?: string | null;
+  /**
+   * Optional description containing additional information about the media.
+   */
+  description?: string | null;
   updatedAt: string;
   createdAt: string;
   url?: string | null;
@@ -160,13 +233,299 @@ export interface Media {
   height?: number | null;
   focalX?: number | null;
   focalY?: number | null;
+  sizes?: {
+    thumbnail?: {
+      url?: string | null;
+      width?: number | null;
+      height?: number | null;
+      mimeType?: string | null;
+      filesize?: number | null;
+      filename?: string | null;
+    };
+  };
+}
+/**
+ * Content categories for AlloyPress posts.
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "categories".
+ */
+export interface Category {
+  id: number;
+  /**
+   * Category name displayed on the website.
+   */
+  name: string;
+  /**
+   * When enabled, the slug will auto-generate from the title field on save and autosave.
+   */
+  generateSlug?: boolean | null;
+  slug: string;
+  /**
+   * Optional description for the category.
+   */
+  description?: string | null;
+  /**
+   * Optional parent category for hierarchical categories.
+   */
+  parent?: (number | null) | Category;
+  /**
+   * Original WordPress identifiers preserved for migration and data mapping.
+   */
+  legacy?: {
+    /**
+     * Original WordPress category ID.
+     */
+    wordpressId?: number | null;
+    /**
+     * Original WordPress category slug.
+     */
+    wordpressSlug?: string | null;
+  };
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * Tags for AlloyPress posts.
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "tags".
+ */
+export interface Tag {
+  id: number;
+  /**
+   * Tag name displayed on the website.
+   */
+  name: string;
+  /**
+   * When enabled, the slug will auto-generate from the title field on save and autosave.
+   */
+  generateSlug?: boolean | null;
+  slug: string;
+  /**
+   * Optional description for the tag.
+   */
+  description?: string | null;
+  /**
+   * Original WordPress information preserved for migration.
+   */
+  legacy?: {
+    /**
+     * Original WordPress term ID.
+     */
+    wordpressId?: number | null;
+  };
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * Create, edit and manage AlloyPress blog posts.
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "posts".
+ */
+export interface Post {
+  id: number;
+  /**
+   * The main title of the blog post.
+   */
+  title: string;
+  /**
+   * The URL-friendly identifier used for the post URL.
+   */
+  slug: string;
+  /**
+   * Main article content. Add formatted text, links, images, videos, audio, code and tables.
+   */
+  content: {
+    root: {
+      type: string;
+      children: {
+        type: any;
+        version: number;
+        [k: string]: unknown;
+      }[];
+      direction: ('ltr' | 'rtl') | null;
+      format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
+      indent: number;
+      version: number;
+    };
+    [k: string]: unknown;
+  };
+  /**
+   * Short summary used in blog listings and RSS-style outputs.
+   */
+  excerpt?: string | null;
+  featuredImage?: (number | null) | Media;
+  imagePosition?: ('left' | 'right' | 'full') | null;
+  category: number | Category;
+  tags?: (number | Tag)[] | null;
+  author: number | User;
+  publishedAt?: string | null;
+  /**
+   * Editorial workflow: Draft → Review → Published.
+   */
+  workflowStatus?: ('draft' | 'review' | 'published') | null;
+  /**
+   * Marks this article as important pillar content for internal linking priority.
+   */
+  cornerstone?: boolean | null;
+  /**
+   * Controls whether this published post should appear in the sitemap.
+   */
+  includeInSitemap?: boolean | null;
+  /**
+   * Optional previous URL/slug that should redirect to this post after a URL change.
+   */
+  redirectFrom?: string | null;
+  /**
+   * Original WordPress information used only during migration.
+   */
+  legacy?: {
+    wordpressId?: number | null;
+  };
+  meta?: {
+    title?: string | null;
+    description?: string | null;
+    /**
+     * Maximum upload file size: 12MB. Recommended file size for images is <500KB.
+     */
+    image?: (number | null) | Media;
+    /**
+     * Primary keyword targeted for this post.
+     */
+    focusKeyword?: string | null;
+    canonicalURL?: string | null;
+    breadcrumbTitle?: string | null;
+    robots?: {
+      index?: boolean | null;
+      follow?: boolean | null;
+      noArchive?: boolean | null;
+      noImageIndex?: boolean | null;
+      noSnippet?: boolean | null;
+    };
+    advancedRobots?: {
+      maxSnippet?: number | null;
+      maxVideoPreview?: number | null;
+      maxImagePreview?: ('none' | 'standard' | 'large') | null;
+    };
+    openGraph?: {
+      title?: string | null;
+      description?: string | null;
+      image?: (number | null) | Media;
+    };
+    twitter?: {
+      title?: string | null;
+      description?: string | null;
+      image?: (number | null) | Media;
+    };
+  };
+  updatedAt: string;
+  createdAt: string;
+  _status?: ('draft' | 'published') | null;
+}
+/**
+ * Static pages for AlloyPress.
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "pages".
+ */
+export interface Page {
+  id: number;
+  title: string;
+  /**
+   * URL slug for this page.
+   */
+  slug: string;
+  /**
+   * Main content of the page.
+   */
+  content?: {
+    root: {
+      type: string;
+      children: {
+        type: any;
+        version: number;
+        [k: string]: unknown;
+      }[];
+      direction: ('ltr' | 'rtl') | null;
+      format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
+      indent: number;
+      version: number;
+    };
+    [k: string]: unknown;
+  } | null;
+  /**
+   * Short description or summary of the page.
+   */
+  excerpt?: string | null;
+  featuredImage?: (number | null) | Media;
+  status: 'draft' | 'published';
+  seo?: {
+    title?: string | null;
+    description?: string | null;
+    canonicalURL?: string | null;
+    openGraphImage?: (number | null) | Media;
+  };
+  /**
+   * Original WordPress page information preserved during migration.
+   */
+  legacy?: {
+    wordpressId?: number | null;
+    wordpressSlug?: string | null;
+    wordpressAuthorId?: number | null;
+  };
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "not-found-logs".
+ */
+export interface NotFoundLog {
+  id: number;
+  path: string;
+  referrer?: string | null;
+  userAgent?: string | null;
+  /**
+   * Optional. Only store this if required by the project privacy policy.
+   */
+  ip?: string | null;
+  count?: number | null;
+  lastSeenAt?: string | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "redirects".
+ */
+export interface Redirect {
+  id: number;
+  from: string;
+  to?: {
+    type?: ('reference' | 'custom') | null;
+    reference?:
+      | ({
+          relationTo: 'posts';
+          value: number | Post;
+        } | null)
+      | ({
+          relationTo: 'pages';
+          value: number | Page;
+        } | null);
+    url?: string | null;
+  };
+  type: '301';
+  updatedAt: string;
+  createdAt: string;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "payload-kv".
  */
 export interface PayloadKv {
-  id: string;
+  id: number;
   key: string;
   data:
     | {
@@ -180,23 +539,139 @@ export interface PayloadKv {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "payload-jobs".
+ */
+export interface PayloadJob {
+  id: number;
+  /**
+   * Input data provided to the job
+   */
+  input?:
+    | {
+        [k: string]: unknown;
+      }
+    | unknown[]
+    | string
+    | number
+    | boolean
+    | null;
+  taskStatus?:
+    | {
+        [k: string]: unknown;
+      }
+    | unknown[]
+    | string
+    | number
+    | boolean
+    | null;
+  completedAt?: string | null;
+  totalTried?: number | null;
+  /**
+   * If hasError is true this job will not be retried
+   */
+  hasError?: boolean | null;
+  /**
+   * If hasError is true, this is the error that caused it
+   */
+  error?:
+    | {
+        [k: string]: unknown;
+      }
+    | unknown[]
+    | string
+    | number
+    | boolean
+    | null;
+  /**
+   * Task execution log
+   */
+  log?:
+    | {
+        executedAt: string;
+        completedAt: string;
+        taskSlug: 'inline' | 'schedulePublish';
+        taskID: string;
+        input?:
+          | {
+              [k: string]: unknown;
+            }
+          | unknown[]
+          | string
+          | number
+          | boolean
+          | null;
+        output?:
+          | {
+              [k: string]: unknown;
+            }
+          | unknown[]
+          | string
+          | number
+          | boolean
+          | null;
+        state: 'failed' | 'succeeded';
+        error?:
+          | {
+              [k: string]: unknown;
+            }
+          | unknown[]
+          | string
+          | number
+          | boolean
+          | null;
+        id?: string | null;
+      }[]
+    | null;
+  taskSlug?: ('inline' | 'schedulePublish') | null;
+  queue?: string | null;
+  waitUntil?: string | null;
+  processing?: boolean | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "payload-locked-documents".
  */
 export interface PayloadLockedDocument {
-  id: string;
+  id: number;
   document?:
     | ({
         relationTo: 'users';
-        value: string | User;
+        value: number | User;
       } | null)
     | ({
         relationTo: 'media';
-        value: string | Media;
+        value: number | Media;
+      } | null)
+    | ({
+        relationTo: 'categories';
+        value: number | Category;
+      } | null)
+    | ({
+        relationTo: 'tags';
+        value: number | Tag;
+      } | null)
+    | ({
+        relationTo: 'posts';
+        value: number | Post;
+      } | null)
+    | ({
+        relationTo: 'pages';
+        value: number | Page;
+      } | null)
+    | ({
+        relationTo: 'not-found-logs';
+        value: number | NotFoundLog;
+      } | null)
+    | ({
+        relationTo: 'redirects';
+        value: number | Redirect;
       } | null);
   globalSlug?: string | null;
   user: {
     relationTo: 'users';
-    value: string | User;
+    value: number | User;
   };
   updatedAt: string;
   createdAt: string;
@@ -206,10 +681,10 @@ export interface PayloadLockedDocument {
  * via the `definition` "payload-preferences".
  */
 export interface PayloadPreference {
-  id: string;
+  id: number;
   user: {
     relationTo: 'users';
-    value: string | User;
+    value: number | User;
   };
   key?: string | null;
   value?:
@@ -229,7 +704,7 @@ export interface PayloadPreference {
  * via the `definition` "payload-migrations".
  */
 export interface PayloadMigration {
-  id: string;
+  id: number;
   name?: string | null;
   batch?: number | null;
   updatedAt: string;
@@ -240,6 +715,18 @@ export interface PayloadMigration {
  * via the `definition` "users_select".
  */
 export interface UsersSelect<T extends boolean = true> {
+  displayName?: T;
+  username?: T;
+  website?: T;
+  bio?: T;
+  role?: T;
+  legacy?:
+    | T
+    | {
+        wordpressId?: T;
+        wordpressUsername?: T;
+        wordpressRole?: T;
+      };
   updatedAt?: T;
   createdAt?: T;
   email?: T;
@@ -262,7 +749,12 @@ export interface UsersSelect<T extends boolean = true> {
  * via the `definition` "media_select".
  */
 export interface MediaSelect<T extends boolean = true> {
+  wordpressId?: T;
+  originalUrl?: T;
   alt?: T;
+  title?: T;
+  caption?: T;
+  description?: T;
   updatedAt?: T;
   createdAt?: T;
   url?: T;
@@ -274,6 +766,184 @@ export interface MediaSelect<T extends boolean = true> {
   height?: T;
   focalX?: T;
   focalY?: T;
+  sizes?:
+    | T
+    | {
+        thumbnail?:
+          | T
+          | {
+              url?: T;
+              width?: T;
+              height?: T;
+              mimeType?: T;
+              filesize?: T;
+              filename?: T;
+            };
+      };
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "categories_select".
+ */
+export interface CategoriesSelect<T extends boolean = true> {
+  name?: T;
+  generateSlug?: T;
+  slug?: T;
+  description?: T;
+  parent?: T;
+  legacy?:
+    | T
+    | {
+        wordpressId?: T;
+        wordpressSlug?: T;
+      };
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "tags_select".
+ */
+export interface TagsSelect<T extends boolean = true> {
+  name?: T;
+  generateSlug?: T;
+  slug?: T;
+  description?: T;
+  legacy?:
+    | T
+    | {
+        wordpressId?: T;
+      };
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "posts_select".
+ */
+export interface PostsSelect<T extends boolean = true> {
+  title?: T;
+  slug?: T;
+  content?: T;
+  excerpt?: T;
+  featuredImage?: T;
+  imagePosition?: T;
+  category?: T;
+  tags?: T;
+  author?: T;
+  publishedAt?: T;
+  workflowStatus?: T;
+  cornerstone?: T;
+  includeInSitemap?: T;
+  redirectFrom?: T;
+  legacy?:
+    | T
+    | {
+        wordpressId?: T;
+      };
+  meta?:
+    | T
+    | {
+        title?: T;
+        description?: T;
+        image?: T;
+        focusKeyword?: T;
+        canonicalURL?: T;
+        breadcrumbTitle?: T;
+        robots?:
+          | T
+          | {
+              index?: T;
+              follow?: T;
+              noArchive?: T;
+              noImageIndex?: T;
+              noSnippet?: T;
+            };
+        advancedRobots?:
+          | T
+          | {
+              maxSnippet?: T;
+              maxVideoPreview?: T;
+              maxImagePreview?: T;
+            };
+        openGraph?:
+          | T
+          | {
+              title?: T;
+              description?: T;
+              image?: T;
+            };
+        twitter?:
+          | T
+          | {
+              title?: T;
+              description?: T;
+              image?: T;
+            };
+      };
+  updatedAt?: T;
+  createdAt?: T;
+  _status?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "pages_select".
+ */
+export interface PagesSelect<T extends boolean = true> {
+  title?: T;
+  slug?: T;
+  content?: T;
+  excerpt?: T;
+  featuredImage?: T;
+  status?: T;
+  seo?:
+    | T
+    | {
+        title?: T;
+        description?: T;
+        canonicalURL?: T;
+        openGraphImage?: T;
+      };
+  legacy?:
+    | T
+    | {
+        wordpressId?: T;
+        wordpressSlug?: T;
+        wordpressAuthorId?: T;
+      };
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "not-found-logs_select".
+ */
+export interface NotFoundLogsSelect<T extends boolean = true> {
+  path?: T;
+  referrer?: T;
+  userAgent?: T;
+  ip?: T;
+  count?: T;
+  lastSeenAt?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "redirects_select".
+ */
+export interface RedirectsSelect<T extends boolean = true> {
+  from?: T;
+  to?:
+    | T
+    | {
+        type?: T;
+        reference?: T;
+        url?: T;
+      };
+  type?: T;
+  updatedAt?: T;
+  createdAt?: T;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
@@ -282,6 +952,37 @@ export interface MediaSelect<T extends boolean = true> {
 export interface PayloadKvSelect<T extends boolean = true> {
   key?: T;
   data?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "payload-jobs_select".
+ */
+export interface PayloadJobsSelect<T extends boolean = true> {
+  input?: T;
+  taskStatus?: T;
+  completedAt?: T;
+  totalTried?: T;
+  hasError?: T;
+  error?: T;
+  log?:
+    | T
+    | {
+        executedAt?: T;
+        completedAt?: T;
+        taskSlug?: T;
+        taskID?: T;
+        input?: T;
+        output?: T;
+        state?: T;
+        error?: T;
+        id?: T;
+      };
+  taskSlug?: T;
+  queue?: T;
+  waitUntil?: T;
+  processing?: T;
+  updatedAt?: T;
+  createdAt?: T;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
@@ -324,6 +1025,23 @@ export interface CollectionsWidget {
     [k: string]: unknown;
   };
   width: 'full';
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "TaskSchedulePublish".
+ */
+export interface TaskSchedulePublish {
+  input: {
+    type?: ('publish' | 'unpublish') | null;
+    locale?: string | null;
+    doc?: {
+      relationTo: 'posts';
+      value: number | Post;
+    } | null;
+    global?: string | null;
+    user?: (number | null) | User;
+  };
+  output?: unknown;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema

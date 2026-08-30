@@ -1,0 +1,222 @@
+{
+  "success": true,
+  "count": 27,
+  "logs": [
+    {
+      "id": 1,
+      "uri": "app",
+      "accessed": "2026-08-17 17:47:07",
+      "times_accessed": 6,
+      "referer": "",
+      "user_agent": ""
+    },
+    {
+      "id": 2,
+      "uri": "dist",
+      "accessed": "2026-08-17 17:46:59",
+      "times_accessed": 3,
+      "referer": "",
+      "user_agent": ""
+    },
+    {
+      "id": 3,
+      "uri": "static",
+      "accessed": "2026-08-17 17:42:32",
+      "times_accessed": 4,
+      "referer": "",
+      "user_agent": ""
+    },
+    {
+      "id": 4,
+      "uri": "public",
+      "accessed": "2026-08-17 17:42:40",
+      "times_accessed": 4,
+      "referer": "",
+      "user_agent": ""
+    },
+    {
+      "id": 5,
+      "uri": "scripts",
+      "accessed": "2026-08-17 17:42:47",
+      "times_accessed": 4,
+      "referer": "",
+      "user_agent": ""
+    },
+    {
+      "id": 6,
+      "uri": "src",
+      "accessed": "2026-08-17 17:46:30",
+      "times_accessed": 2,
+      "referer": "",
+      "user_agent": ""
+    },
+    {
+      "id": 7,
+      "uri": "assets",
+      "accessed": "2026-08-17 17:46:37",
+      "times_accessed": 2,
+      "referer": "",
+      "user_agent": ""
+    },
+    {
+      "id": 8,
+      "uri": "js",
+      "accessed": "2026-08-17 17:46:44",
+      "times_accessed": 2,
+      "referer": "",
+      "user_agent": ""
+    },
+    {
+      "id": 9,
+      "uri": "build",
+      "accessed": "2026-08-17 17:46:51",
+      "times_accessed": 2,
+      "referer": "",
+      "user_agent": ""
+    },
+    {
+      "id": 10,
+      "uri": "wp-content/themes/Divi/includes/builder/frontend-builder/assets/css/block-editor/divi-library-editor.css?ver=5.8.0",
+      "accessed": "2026-08-29 08:14:30",
+      "times_accessed": 25,
+      "referer": "",
+      "user_agent": ""
+    },
+    {
+      "id": 11,
+      "uri": "wp-content/themes/Divi/includes/builder/frontend-builder/assets/css/block-editor/placeholder-editor.css?ver=5.8.0",
+      "accessed": "2026-08-29 08:14:29",
+      "times_accessed": 24,
+      "referer": "",
+      "user_agent": ""
+    },
+    {
+      "id": 12,
+      "uri": "wp-content/themes/Divi/includes/builder/frontend-builder/assets/css/block-editor/layout-editor.css?ver=5.8.0",
+      "accessed": "2026-08-29 08:14:29",
+      "times_accessed": 25,
+      "referer": "",
+      "user_agent": ""
+    },
+    {
+      "id": 13,
+      "uri": "?p=101960&et_fb=1&PageSpeed=off",
+      "accessed": "2026-08-18 15:23:53",
+      "times_accessed": 1,
+      "referer": "",
+      "user_agent": ""
+    },
+    {
+      "id": 14,
+      "uri": "?p=101961&et_fb=1&PageSpeed=off",
+      "accessed": "2026-08-18 16:52:37",
+      "times_accessed": 1,
+      "referer": "",
+      "user_agent": ""
+    },
+    {
+      "id": 15,
+      "uri": "?p=101963&et_fb=1&PageSpeed=off",
+      "accessed": "2026-08-18 16:57:18",
+      "times_accessed": 1,
+      "referer": "",
+      "user_agent": ""
+    },
+    {
+      "id": 16,
+      "uri": "?p=101964&et_fb=1&PageSpeed=off",
+      "accessed": "2026-08-19 11:41:17",
+      "times_accessed": 1,
+      "referer": "",
+      "user_agent": ""
+    },
+    {
+      "id": 17,
+      "uri": "robot.txt",
+      "accessed": "2026-08-19 12:01:20",
+      "times_accessed": 1,
+      "referer": "",
+      "user_agent": ""
+    },
+    {
+      "id": 18,
+      "uri": "wp-content/uploads/2025/01/Molti-Background.png",
+      "accessed": "2026-08-29 08:56:47",
+      "times_accessed": 4,
+      "referer": "",
+      "user_agent": ""
+    },
+    {
+      "id": 19,
+      "uri": "CVS/Entries",
+      "accessed": "2026-08-22 08:35:48",
+      "times_accessed": 1,
+      "referer": "",
+      "user_agent": ""
+    },
+    {
+      "id": 20,
+      "uri": ".DS_Store",
+      "accessed": "2026-08-22 08:35:50",
+      "times_accessed": 1,
+      "referer": "",
+      "user_agent": ""
+    },
+    {
+      "id": 21,
+      "uri": "?p=101966&et_fb=1&PageSpeed=off",
+      "accessed": "2026-08-24 14:42:19",
+      "times_accessed": 1,
+      "referer": "",
+      "user_agent": ""
+    },
+    {
+      "id": 22,
+      "uri": "?p=101967&et_fb=1&PageSpeed=off",
+      "accessed": "2026-08-25 11:01:21",
+      "times_accessed": 1,
+      "referer": "",
+      "user_agent": ""
+    },
+    {
+      "id": 23,
+      "uri": "?page_id=101969&et_fb=1&PageSpeed=off",
+      "accessed": "2026-08-26 23:04:37",
+      "times_accessed": 1,
+      "referer": "",
+      "user_agent": ""
+    },
+    {
+      "id": 24,
+      "uri": "blogs/best-ai-voice-generators/json",
+      "accessed": "2026-08-28 22:11:47",
+      "times_accessed": 2,
+      "referer": "",
+      "user_agent": ""
+    },
+    {
+      "id": 25,
+      "uri": "blogs/best-ai-voice-generators/json?name=json&category_name=blogs%2Fbest-ai-voice-generators&et_fb=1&PageSpeed=off",
+      "accessed": "2026-08-28 20:36:54",
+      "times_accessed": 1,
+      "referer": "",
+      "user_agent": ""
+    },
+    {
+      "id": 26,
+      "uri": "wp-admin/admin",
+      "accessed": "2026-08-29 08:56:45",
+      "times_accessed": 1,
+      "referer": "",
+      "user_agent": ""
+    },
+    {
+      "id": 27,
+      "uri": "wp-admin/admin?name=admin&category_name=wp-admin&et_fb=1&PageSpeed=off",
+      "accessed": "2026-08-29 08:56:50",
+      "times_accessed": 1,
+      "referer": "",
+      "user_agent": ""
+    }
+  ]
+}
