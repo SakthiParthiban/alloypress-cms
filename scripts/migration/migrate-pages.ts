@@ -74,7 +74,44 @@ type MigrationStats = {
 
 const WORDPRESS_API_URL =
   process.env.WORDPRESS_API_URL ||
-  'https://staging.alloypress.com/wp-json/wp/v2'
+  'https://staging1.alloypress.com/wp-json/wp/v2'
+
+// ============================================================
+// ⬇ NEW — WORDPRESS AUTH (needed to see draft/pending/private pages)
+// ============================================================
+//
+// WordPress REST API only exposes `publish` status content to
+// unauthenticated requests. To pull draft/pending/private/future
+// pages, we must authenticate using a WordPress Application
+// Password (wp-admin → Users → Profile → Application Passwords),
+// sent as HTTP Basic Auth.
+//
+// If WP_USERNAME / WP_APP_PASSWORD are not set in .env, the script
+// still runs — but WordPress will silently ignore the `status`
+// query param and only return published content.
+// ============================================================
+
+function getWordPressAuthHeader(): Record<string, string> {
+  const username = process.env.WP_USERNAME
+  const appPassword = process.env.WP_APP_PASSWORD
+
+  if (!username || !appPassword) {
+    console.warn(
+      '  ⚠ WP_USERNAME / WP_APP_PASSWORD not set in .env — ' +
+        'only PUBLISHED pages will be fetched. Draft/pending/private ' +
+        'pages will be skipped.',
+    )
+    return {}
+  }
+
+  const token = Buffer.from(`${username}:${appPassword}`).toString(
+    'base64',
+  )
+
+  return {
+    Authorization: `Basic ${token}`,
+  }
+}
 
 // ============================================================
 // TEXT HELPERS
@@ -127,10 +164,7 @@ function normalizePath(value: string): string | null {
 }
 
 function stripWordPressSizeSuffix(value: string): string {
-  return value.replace(
-    /-\d{2,5}x\d{2,5}(?=\.[a-z0-9]+$)/i,
-    '',
-  )
+  return value.replace(/-\d{2,5}x\d{2,5}(?=\.[a-z0-9]+$)/i, '')
 }
 
 function normalizeImagePath(value: string): string | null {
@@ -147,13 +181,7 @@ function normalizeFilename(value: string): string {
   const path = normalizeImagePath(value)
 
   if (!path) {
-    return (
-      value
-        .split('/')
-        .pop()
-        ?.split('?')[0]
-        ?.toLowerCase() || ''
-    )
+    return value.split('/').pop()?.split('?')[0]?.toLowerCase() || ''
   }
 
   return path.split('/').pop()?.toLowerCase() || ''
@@ -162,6 +190,11 @@ function normalizeFilename(value: string): string {
 // ============================================================
 // FETCH ALL WORDPRESS PAGES
 // ============================================================
+//
+// ⬇ CHANGED — now sends the WP auth header and requests every
+// status (publish, draft, pending, private, future) instead of
+// relying on the unauthenticated default (publish-only).
+// ============================================================
 
 async function fetchAllPages(): Promise<WPPage[]> {
   const pages: WPPage[] = []
@@ -169,20 +202,30 @@ async function fetchAllPages(): Promise<WPPage[]> {
   let page = 1
   const perPage = 100
 
+  const authHeaders = getWordPressAuthHeader()
+
   while (true) {
     const url =
       `${WORDPRESS_API_URL}/pages` +
-      `?per_page=${perPage}&page=${page}`
+      `?per_page=${perPage}&page=${page}` +
+      `&status=publish,draft,pending,private,future`
 
-    console.log(
-      `Fetching WordPress pages page ${page}...`,
-    )
+    console.log(`Fetching WordPress pages page ${page}...`)
 
-    const response = await fetch(url)
+    const response = await fetch(url, {
+      headers: authHeaders,
+    })
 
     // WordPress returns 400 when page number exceeds available pages.
     if (response.status === 400) {
       break
+    }
+
+    if (response.status === 401 || response.status === 403) {
+      throw new Error(
+        `WordPress API auth failed (${response.status}). ` +
+          `Check WP_USERNAME / WP_APP_PASSWORD in .env.`,
+      )
     }
 
     if (!response.ok) {
@@ -217,9 +260,7 @@ async function fetchAllPages(): Promise<WPPage[]> {
 // MEDIA MAP
 // ============================================================
 
-async function buildMediaMaps(
-  payload: any,
-): Promise<MediaMaps> {
+async function buildMediaMaps(payload: any): Promise<MediaMaps> {
   const byWordPressId = new Map<number, number>()
   const byOriginalUrl = new Map<string, number>()
   const byPath = new Map<string, number>()
@@ -244,69 +285,41 @@ async function buildMediaMaps(
 
     // Your media migration stores WP ID at top level.
     if (typeof media.wordpressId === 'number') {
-      byWordPressId.set(
-        media.wordpressId,
-        payloadId,
-      )
+      byWordPressId.set(media.wordpressId, payloadId)
     }
 
     if (typeof media.originalUrl === 'string') {
-      const normalized = normalizeUrl(
-        media.originalUrl,
-      )
+      const normalized = normalizeUrl(media.originalUrl)
 
-      byOriginalUrl.set(
-        normalized,
-        payloadId,
-      )
+      byOriginalUrl.set(normalized, payloadId)
 
-      const path = normalizePath(
-        media.originalUrl,
-      )
+      const path = normalizePath(media.originalUrl)
 
       if (path) {
         byPath.set(path, payloadId)
-        byPath.set(
-          stripWordPressSizeSuffix(path),
-          payloadId,
-        )
+        byPath.set(stripWordPressSizeSuffix(path), payloadId)
       }
 
-      const filename = normalizeFilename(
-        media.originalUrl,
-      )
+      const filename = normalizeFilename(media.originalUrl)
 
       if (filename) {
-        byFilename.set(
-          filename,
-          payloadId,
-        )
+        byFilename.set(filename, payloadId)
       }
     }
 
     if (typeof media.filename === 'string') {
-      const filename = normalizeFilename(
-        media.filename,
-      )
+      const filename = normalizeFilename(media.filename)
 
       if (filename) {
-        byFilename.set(
-          filename,
-          payloadId,
-        )
+        byFilename.set(filename, payloadId)
       }
 
-      const publicURL =
-        process.env.R2_PUBLIC_URL
+      const publicURL = process.env.R2_PUBLIC_URL
 
       if (publicURL) {
-        const candidate =
-          `${publicURL.replace(/\/$/, '')}/${media.filename}`
+        const candidate = `${publicURL.replace(/\/$/, '')}/${media.filename}`
 
-        byOriginalUrl.set(
-          normalizeUrl(candidate),
-          payloadId,
-        )
+        byOriginalUrl.set(normalizeUrl(candidate), payloadId)
       }
     }
   }
@@ -332,27 +345,20 @@ function findMediaId(
     return undefined
   }
 
-  const normalized = normalizeUrl(
-    sourceUrl,
-  )
+  const normalized = normalizeUrl(sourceUrl)
 
   // 1. Exact URL
-  const exact =
-    mediaMaps.byOriginalUrl.get(
-      normalized,
-    )
+  const exact = mediaMaps.byOriginalUrl.get(normalized)
 
   if (exact) {
     return exact
   }
 
   // 2. Exact path
-  const sourcePath =
-    normalizePath(normalized)
+  const sourcePath = normalizePath(normalized)
 
   if (sourcePath) {
-    const exactPath =
-      mediaMaps.byPath.get(sourcePath)
+    const exactPath = mediaMaps.byPath.get(sourcePath)
 
     if (exactPath) {
       return exactPath
@@ -360,14 +366,10 @@ function findMediaId(
   }
 
   // 3. WordPress resized image
-  const normalizedImagePath =
-    normalizeImagePath(normalized)
+  const normalizedImagePath = normalizeImagePath(normalized)
 
   if (normalizedImagePath) {
-    const resizedMatch =
-      mediaMaps.byPath.get(
-        normalizedImagePath,
-      )
+    const resizedMatch = mediaMaps.byPath.get(normalizedImagePath)
 
     if (resizedMatch) {
       return resizedMatch
@@ -375,12 +377,10 @@ function findMediaId(
   }
 
   // 4. Filename fallback
-  const filename =
-    normalizeFilename(normalized)
+  const filename = normalizeFilename(normalized)
 
   if (filename) {
-    const filenameMatch =
-      mediaMaps.byFilename.get(filename)
+    const filenameMatch = mediaMaps.byFilename.get(filename)
 
     if (filenameMatch) {
       return filenameMatch
@@ -399,25 +399,18 @@ async function ensureMediaUploaded(
   mediaMaps: MediaMaps,
   payload: any,
 ): Promise<number | undefined> {
-  const normalized =
-    normalizeUrl(sourceUrl)
+  const normalized = normalizeUrl(sourceUrl)
 
-  const already =
-    mediaMaps.byOriginalUrl.get(
-      normalized,
-    )
+  const already = mediaMaps.byOriginalUrl.get(normalized)
 
   if (already) {
     return already
   }
 
   try {
-    console.log(
-      `    ↳ Auto-uploading missing media: ${sourceUrl}`,
-    )
+    console.log(`    ↳ Auto-uploading missing media: ${sourceUrl}`)
 
-    const response =
-      await fetch(sourceUrl)
+    const response = await fetch(sourceUrl)
 
     if (!response.ok) {
       console.warn(
@@ -427,98 +420,64 @@ async function ensureMediaUploaded(
       return undefined
     }
 
-    const arrayBuffer =
-      await response.arrayBuffer()
+    const arrayBuffer = await response.arrayBuffer()
 
-    const buffer =
-      Buffer.from(arrayBuffer)
+    const buffer = Buffer.from(arrayBuffer)
 
     const filename =
-      sourceUrl
-        .split('/')
-        .pop()
-        ?.split('?')[0] ||
-      `migrated-${Date.now()}`
+      sourceUrl.split('/').pop()?.split('?')[0] || `migrated-${Date.now()}`
 
     const mimetype =
-      response.headers.get(
-        'content-type',
-      ) ||
-      'application/octet-stream'
+      response.headers.get('content-type') || 'application/octet-stream'
 
-    const created =
-      await payload.create({
-        collection: 'media',
+    const created = await payload.create({
+      collection: 'media',
 
-        data: {
-          alt: filename,
-          originalUrl: sourceUrl,
-        },
+      data: {
+        alt: filename,
+        originalUrl: sourceUrl,
+      },
 
-        file: {
-          data: buffer,
-          mimetype,
-          name: filename,
-          size: buffer.length,
-        },
-      })
+      file: {
+        data: buffer,
+        mimetype,
+        name: filename,
+        size: buffer.length,
+      },
+    })
 
-    const payloadId =
-      Number(created.id)
+    const payloadId = Number(created.id)
 
     if (!Number.isFinite(payloadId)) {
-      console.warn(
-        `    ⚠ Invalid media ID returned: ${sourceUrl}`,
-      )
+      console.warn(`    ⚠ Invalid media ID returned: ${sourceUrl}`)
 
       return undefined
     }
 
     // Warm caches
-    mediaMaps.byOriginalUrl.set(
-      normalized,
-      payloadId,
-    )
+    mediaMaps.byOriginalUrl.set(normalized, payloadId)
 
-    mediaMaps.allPayloadIds.add(
-      payloadId,
-    )
+    mediaMaps.allPayloadIds.add(payloadId)
 
-    const path =
-      normalizePath(sourceUrl)
+    const path = normalizePath(sourceUrl)
 
     if (path) {
-      mediaMaps.byPath.set(
-        path,
-        payloadId,
-      )
+      mediaMaps.byPath.set(path, payloadId)
 
-      mediaMaps.byPath.set(
-        stripWordPressSizeSuffix(path),
-        payloadId,
-      )
+      mediaMaps.byPath.set(stripWordPressSizeSuffix(path), payloadId)
     }
 
-    const fname =
-      normalizeFilename(sourceUrl)
+    const fname = normalizeFilename(sourceUrl)
 
     if (fname) {
-      mediaMaps.byFilename.set(
-        fname,
-        payloadId,
-      )
+      mediaMaps.byFilename.set(fname, payloadId)
     }
 
-    console.log(
-      `    ↳ Auto-uploaded: ${filename} → Payload ID ${payloadId}`,
-    )
+    console.log(`    ↳ Auto-uploaded: ${filename} → Payload ID ${payloadId}`)
 
     return payloadId
   } catch (error) {
-    console.warn(
-      `    ⚠ On-demand media upload failed: ${sourceUrl}`,
-      error,
-    )
+    console.warn(`    ⚠ On-demand media upload failed: ${sourceUrl}`, error)
 
     return undefined
   }
@@ -539,29 +498,21 @@ async function prepareHTML(
   }
 
   const JSDOMCtor =
-    (JSDOM as any)?.JSDOM ??
-    (JSDOM as any)?.default?.JSDOM ??
-    JSDOM
+    (JSDOM as any)?.JSDOM ?? (JSDOM as any)?.default?.JSDOM ?? JSDOM
 
   if (typeof JSDOMCtor !== 'function') {
-    throw new Error(
-      'JSDOM constructor is unavailable.',
-    )
+    throw new Error('JSDOM constructor is unavailable.')
   }
 
-  const dom = new JSDOMCtor(
-    `<!DOCTYPE html><body>${html}</body>`,
-  )
+  const dom = new JSDOMCtor(`<!DOCTYPE html><body>${html}</body>`)
 
-  const document: Document =
-    dom.window.document
+  const document: Document = dom.window.document
 
   // ==========================================================
   // IMAGES
   // ==========================================================
 
-  const images =
-    document.querySelectorAll('img')
+  const images = document.querySelectorAll('img')
 
   for (const image of Array.from(images)) {
     stats.contentImagesFound++
@@ -575,27 +526,16 @@ async function prepareHTML(
     if (!src) {
       stats.contentImagesUnmapped++
 
-      console.warn(
-        '    ⚠ Image has no usable source.',
-      )
+      console.warn('    ⚠ Image has no usable source.')
 
       continue
     }
 
-    let mediaId =
-      findMediaId(
-        src,
-        mediaMaps,
-      )
+    let mediaId = findMediaId(src, mediaMaps)
 
     // Auto-upload if missing
     if (!mediaId) {
-      mediaId =
-        await ensureMediaUploaded(
-          src,
-          mediaMaps,
-          payload,
-        )
+      mediaId = await ensureMediaUploaded(src, mediaMaps, payload)
 
       if (mediaId) {
         stats.contentImagesAutoUploaded++
@@ -605,29 +545,18 @@ async function prepareHTML(
     if (!mediaId) {
       stats.contentImagesUnmapped++
 
-      console.warn(
-        `    ⚠ Image could not be mapped: ${src}`,
-      )
+      console.warn(`    ⚠ Image could not be mapped: ${src}`)
 
-      image.setAttribute(
-        'data-migration-unmapped-image',
-        'true',
-      )
+      image.setAttribute('data-migration-unmapped-image', 'true')
 
       continue
     }
 
     stats.contentImagesMapped++
 
-    image.setAttribute(
-      'data-lexical-upload-id',
-      String(mediaId),
-    )
+    image.setAttribute('data-lexical-upload-id', String(mediaId))
 
-    image.setAttribute(
-      'data-lexical-upload-relation-to',
-      'media',
-    )
+    image.setAttribute('data-lexical-upload-relation-to', 'media')
   }
 
   return document.body.innerHTML
@@ -642,20 +571,13 @@ function normalizeLexicalUploadNodes(
   mediaIds: Set<number>,
   stats: MigrationStats,
 ): any {
-  if (
-    value === null ||
-    value === undefined
-  ) {
+  if (value === null || value === undefined) {
     return value
   }
 
   if (Array.isArray(value)) {
     return value.map((item) =>
-      normalizeLexicalUploadNodes(
-        item,
-        mediaIds,
-        stats,
-      ),
+      normalizeLexicalUploadNodes(item, mediaIds, stats),
     )
   }
 
@@ -666,48 +588,31 @@ function normalizeLexicalUploadNodes(
   const node = { ...value }
 
   if (node.type === 'upload') {
-    const relationTo =
-      node.relationTo ||
-      node.relationToCollection ||
-      'media'
+    const relationTo = node.relationTo || node.relationToCollection || 'media'
 
     if (relationTo !== 'media') {
       return node
     }
 
-    let mediaId:
-      | number
-      | undefined
+    let mediaId: number | undefined
 
-    if (
-      typeof node.value === 'number'
-    ) {
+    if (typeof node.value === 'number') {
       mediaId = node.value
-    } else if (
-      typeof node.value === 'string'
-    ) {
-      const parsed =
-        Number(node.value)
+    } else if (typeof node.value === 'string') {
+      const parsed = Number(node.value)
 
       if (Number.isFinite(parsed)) {
         mediaId = parsed
       }
-    } else if (
-      node.value &&
-      typeof node.value === 'object'
-    ) {
-      const parsed =
-        Number(node.value.id)
+    } else if (node.value && typeof node.value === 'object') {
+      const parsed = Number(node.value.id)
 
       if (Number.isFinite(parsed)) {
         mediaId = parsed
       }
     }
 
-    if (
-      !mediaId ||
-      !mediaIds.has(mediaId)
-    ) {
+    if (!mediaId || !mediaIds.has(mediaId)) {
       stats.uploadNodesRejected++
 
       throw new Error(
@@ -720,18 +625,11 @@ function normalizeLexicalUploadNodes(
     node.type = 'upload'
     node.relationTo = 'media'
     node.value = mediaId
-    node.fields =
-      node.fields ?? {}
+    node.fields = node.fields ?? {}
 
-    node.format =
-      typeof node.format === 'string'
-        ? node.format
-        : ''
+    node.format = typeof node.format === 'string' ? node.format : ''
 
-    node.version =
-      typeof node.version === 'number'
-        ? node.version
-        : 3
+    node.version = typeof node.version === 'number' ? node.version : 3
 
     stats.uploadNodesNormalized++
 
@@ -739,12 +637,7 @@ function normalizeLexicalUploadNodes(
   }
 
   for (const key of Object.keys(node)) {
-    node[key] =
-      normalizeLexicalUploadNodes(
-        node[key],
-        mediaIds,
-        stats,
-      )
+    node[key] = normalizeLexicalUploadNodes(node[key], mediaIds, stats)
   }
 
   return node
@@ -754,15 +647,12 @@ function normalizeLexicalUploadNodes(
 // INVALID LINK VALIDATION
 // ============================================================
 
-function isValidHttpUrl(
-  value: unknown,
-): boolean {
+function isValidHttpUrl(value: unknown): boolean {
   if (typeof value !== 'string') {
     return false
   }
 
-  const trimmed =
-    value.trim()
+  const trimmed = value.trim()
 
   if (!trimmed) {
     return false
@@ -777,9 +667,7 @@ function isValidHttpUrl(
   }
 
   if (trimmed.startsWith('#')) {
-    return /^#[a-zA-Z0-9\-_]*$/.test(
-      trimmed,
-    )
+    return /^#[a-zA-Z0-9\-_]*$/.test(trimmed)
   }
 
   if (trimmed.startsWith('/')) {
@@ -787,8 +675,7 @@ function isValidHttpUrl(
   }
 
   try {
-    const url =
-      new URL(trimmed)
+    const url = new URL(trimmed)
 
     return (
       url.protocol === 'http:' ||
@@ -808,54 +695,34 @@ function sanitizeLinkNodesInChildren(
   const output: any[] = []
 
   for (const node of children) {
-    if (
-      !node ||
-      typeof node !== 'object'
-    ) {
+    if (!node || typeof node !== 'object') {
       output.push(node)
       continue
     }
 
     let fixedNode = node
 
-    if (
-      Array.isArray(node.children)
-    ) {
+    if (Array.isArray(node.children)) {
       fixedNode = {
         ...node,
 
-        children:
-          sanitizeLinkNodesInChildren(
-            node.children,
-            stats,
-          ),
+        children: sanitizeLinkNodesInChildren(node.children, stats),
       }
     }
 
-    if (
-      fixedNode.type === 'link'
-    ) {
-      const linkType =
-        fixedNode.fields?.linkType
+    if (fixedNode.type === 'link') {
+      const linkType = fixedNode.fields?.linkType
 
-      const url =
-        fixedNode.fields?.url
+      const url = fixedNode.fields?.url
 
-      if (
-        linkType === 'custom' &&
-        !isValidHttpUrl(url)
-      ) {
+      if (linkType === 'custom' && !isValidHttpUrl(url)) {
         console.warn(
-          `    ⚠ Invalid link removed: ${String(
-            url,
-          ).slice(0, 80)}...`,
+          `    ⚠ Invalid link removed: ${String(url).slice(0, 80)}...`,
         )
 
         stats.invalidLinksFixed++
 
-        output.push(
-          ...(fixedNode.children || []),
-        )
+        output.push(...(fixedNode.children || []))
 
         continue
       }
@@ -867,24 +734,14 @@ function sanitizeLinkNodesInChildren(
   return output
 }
 
-function sanitizeLexicalLinks(
-  lexicalJSON: any,
-  stats: MigrationStats,
-): any {
-  if (
-    !lexicalJSON ||
-    typeof lexicalJSON !== 'object'
-  ) {
+function sanitizeLexicalLinks(lexicalJSON: any, stats: MigrationStats): any {
+  if (!lexicalJSON || typeof lexicalJSON !== 'object') {
     return lexicalJSON
   }
 
-  const root =
-    lexicalJSON.root
+  const root = lexicalJSON.root
 
-  if (
-    !root ||
-    !Array.isArray(root.children)
-  ) {
+  if (!root || !Array.isArray(root.children)) {
     return lexicalJSON
   }
 
@@ -894,11 +751,7 @@ function sanitizeLexicalLinks(
     root: {
       ...root,
 
-      children:
-        sanitizeLinkNodesInChildren(
-          root.children,
-          stats,
-        ),
+      children: sanitizeLinkNodesInChildren(root.children, stats),
     },
   }
 }
@@ -907,38 +760,23 @@ function sanitizeLexicalLinks(
 // COUNT UPLOAD NODES
 // ============================================================
 
-function countUploadNodes(
-  value: any,
-): number {
-  if (
-    value === null ||
-    value === undefined
-  ) {
+function countUploadNodes(value: any): number {
+  if (value === null || value === undefined) {
     return 0
   }
 
   if (Array.isArray(value)) {
-    return value.reduce(
-      (total, item) =>
-        total +
-        countUploadNodes(item),
-      0,
-    )
+    return value.reduce((total, item) => total + countUploadNodes(item), 0)
   }
 
   if (typeof value !== 'object') {
     return 0
   }
 
-  let count =
-    value.type === 'upload'
-      ? 1
-      : 0
+  let count = value.type === 'upload' ? 1 : 0
 
   for (const key of Object.keys(value)) {
-    count += countUploadNodes(
-      value[key],
-    )
+    count += countUploadNodes(value[key])
   }
 
   return count
@@ -955,63 +793,39 @@ async function convertToLexical(
   stats: MigrationStats,
   payload: any,
 ) {
-  const preparedHTML =
-    await prepareHTML(
-      html,
-      mediaMaps,
-      stats,
-      payload,
-    )
+  const preparedHTML = await prepareHTML(html, mediaMaps, stats, payload)
 
   // Fail if an image could not be recovered.
-  if (
-    stats.contentImagesUnmapped > 0
-  ) {
+  if (stats.contentImagesUnmapped > 0) {
     throw new Error(
       `Content contains ${stats.contentImagesUnmapped} unmapped image(s). ` +
         `No image was removed. Check the source URL.`,
     )
   }
 
-  let lexicalJSON =
-    convertHTMLToLexical({
-      html: preparedHTML,
-      editorConfig,
-      JSDOM,
-    })
+  let lexicalJSON = convertHTMLToLexical({
+    html: preparedHTML,
+    editorConfig,
+    JSDOM,
+  })
 
   // Fix invalid links
-  lexicalJSON =
-    sanitizeLexicalLinks(
-      lexicalJSON,
-      stats,
-    )
+  lexicalJSON = sanitizeLexicalLinks(lexicalJSON, stats)
 
   // Normalize upload nodes
-  lexicalJSON =
-    normalizeLexicalUploadNodes(
-      lexicalJSON,
-      mediaMaps.allPayloadIds,
-      stats,
-    )
-
-  const uploadNodeCount =
-    countUploadNodes(
-      lexicalJSON,
-    )
-
-  console.log(
-    `    ↳ Expected upload nodes: ${stats.contentImagesMapped}`,
+  lexicalJSON = normalizeLexicalUploadNodes(
+    lexicalJSON,
+    mediaMaps.allPayloadIds,
+    stats,
   )
 
-  console.log(
-    `    ↳ Actual upload nodes: ${uploadNodeCount}`,
-  )
+  const uploadNodeCount = countUploadNodes(lexicalJSON)
 
-  if (
-    uploadNodeCount !==
-    stats.contentImagesMapped
-  ) {
+  console.log(`    ↳ Expected upload nodes: ${stats.contentImagesMapped}`)
+
+  console.log(`    ↳ Actual upload nodes: ${uploadNodeCount}`)
+
+  if (uploadNodeCount !== stats.contentImagesMapped) {
     throw new Error(
       `Content image conversion mismatch. ` +
         `Mapped images: ${stats.contentImagesMapped}, ` +
@@ -1026,23 +840,19 @@ async function convertToLexical(
 // FIND EXISTING PAGE
 // ============================================================
 
-async function findExistingPage(
-  payload: any,
-  wordpressId: number,
-) {
-  const result =
-    await payload.find({
-      collection: 'pages',
+async function findExistingPage(payload: any, wordpressId: number) {
+  const result = await payload.find({
+    collection: 'pages',
 
-      where: {
-        'legacy.wordpressId': {
-          equals: wordpressId,
-        },
+    where: {
+      'legacy.wordpressId': {
+        equals: wordpressId,
       },
+    },
 
-      limit: 1,
-      depth: 0,
-    })
+    limit: 1,
+    depth: 0,
+  })
 
   return result.docs[0] || null
 }
@@ -1058,28 +868,22 @@ export async function migratePages() {
   console.log('========================================')
   console.log('')
 
-  const payload =
-    await getPayload({
-      config,
-    })
+  const payload = await getPayload({
+    config,
+  })
 
   // ----------------------------------------------------------
   // FETCH WORDPRESS PAGES
   // ----------------------------------------------------------
 
-  const pages =
-    await fetchAllPages()
+  const pages = await fetchAllPages()
 
-  console.log(
-    `Found ${pages.length} WordPress pages`,
-  )
+  console.log(`Found ${pages.length} WordPress pages`)
 
   console.log('')
 
   if (pages.length === 0) {
-    console.log(
-      'No WordPress pages found.',
-    )
+    console.log('No WordPress pages found.')
 
     return
   }
@@ -1088,22 +892,13 @@ export async function migratePages() {
   // MEDIA MAP
   // ----------------------------------------------------------
 
-  console.log(
-    'Loading media mappings...',
-  )
+  console.log('Loading media mappings...')
 
-  const mediaMaps =
-    await buildMediaMaps(
-      payload,
-    )
+  const mediaMaps = await buildMediaMaps(payload)
 
-  console.log(
-    `Media mapped by WordPress ID: ${mediaMaps.byWordPressId.size}`,
-  )
+  console.log(`Media mapped by WordPress ID: ${mediaMaps.byWordPressId.size}`)
 
-  console.log(
-    `Media filename fallbacks: ${mediaMaps.byFilename.size}`,
-  )
+  console.log(`Media filename fallbacks: ${mediaMaps.byFilename.size}`)
 
   console.log('')
 
@@ -1111,10 +906,9 @@ export async function migratePages() {
   // LEXICAL CONFIG
   // ----------------------------------------------------------
 
-  const editorConfig =
-    await editorConfigFactory.default({
-      config,
-    })
+  const editorConfig = await editorConfigFactory.default({
+    config,
+  })
 
   // ----------------------------------------------------------
   // COUNTERS
@@ -1137,22 +931,14 @@ export async function migratePages() {
   // PAGE LOOP
   // ----------------------------------------------------------
 
-  for (
-    let index = 0;
-    index < pages.length;
-    index++
-  ) {
-    const page =
-      pages[index]
+  for (let index = 0; index < pages.length; index++) {
+    const page = pages[index]
 
     console.log(
-      `[${index + 1}/${pages.length}] ${cleanText(
-        page.title?.rendered,
-      )}`,
+      `[${index + 1}/${pages.length}] ${cleanText(page.title?.rendered)}`,
     )
 
-    const stats:
-      MigrationStats = {
+    const stats: MigrationStats = {
       contentImagesFound: 0,
       contentImagesMapped: 0,
       contentImagesUnmapped: 0,
@@ -1170,18 +956,14 @@ export async function migratePages() {
       // ------------------------------------------------------
 
       if (!page.id) {
-        console.warn(
-          '  ⚠ Missing WordPress page ID. Skipping.',
-        )
+        console.warn('  ⚠ Missing WordPress page ID. Skipping.')
 
         skipped++
         continue
       }
 
       if (!page.slug) {
-        console.warn(
-          '  ⚠ Missing page slug. Skipping.',
-        )
+        console.warn('  ⚠ Missing page slug. Skipping.')
 
         skipped++
         continue
@@ -1191,65 +973,44 @@ export async function migratePages() {
       // TITLE
       // ------------------------------------------------------
 
-      const title =
-        cleanText(
-          page.title?.rendered,
-        )
+      const title = cleanText(page.title?.rendered)
 
       if (!title) {
-        throw new Error(
-          'Page title is empty.',
-        )
+        throw new Error('Page title is empty.')
       }
 
       // ------------------------------------------------------
       // EXCERPT
       // ------------------------------------------------------
 
-      const excerpt =
-        cleanText(
-          page.excerpt?.rendered,
-        )
+      const excerpt = cleanText(page.excerpt?.rendered)
 
       // ------------------------------------------------------
       // CONTENT
       // ------------------------------------------------------
 
-      const rawContent =
-        page.content?.rendered ||
-        '<p></p>'
+      const rawContent = page.content?.rendered || '<p></p>'
 
-      content =
-        await convertToLexical(
-          rawContent,
-          editorConfig,
-          mediaMaps,
-          stats,
-          payload,
-        )
+      content = await convertToLexical(
+        rawContent,
+        editorConfig,
+        mediaMaps,
+        stats,
+        payload,
+      )
 
       // ------------------------------------------------------
       // FEATURED IMAGE
       // ------------------------------------------------------
 
-      let featuredImageId:
-        | number
-        | undefined
+      let featuredImageId: number | undefined
 
-      if (
-        page.featured_media &&
-        page.featured_media > 0
-      ) {
-        featuredImageId =
-          mediaMaps.byWordPressId.get(
-            page.featured_media,
-          )
+      if (page.featured_media && page.featured_media > 0) {
+        featuredImageId = mediaMaps.byWordPressId.get(page.featured_media)
 
         if (
           featuredImageId &&
-          !mediaMaps.allPayloadIds.has(
-            featuredImageId,
-          )
+          !mediaMaps.allPayloadIds.has(featuredImageId)
         ) {
           throw new Error(
             `Featured image Payload media ID is invalid: ${featuredImageId}`,
@@ -1266,49 +1027,41 @@ export async function migratePages() {
       // ------------------------------------------------------
       // STATUS
       // ------------------------------------------------------
+      //
+      // ⬇ NOTE — WordPress "private" and "future" pages are also
+      // pulled in now (see fetchAllPages), and are mapped to
+      // Payload "draft" here since only publish/draft exist on the
+      // Payload side. Adjust this if your Pages collection has a
+      // dedicated status for them.
+      // ------------------------------------------------------
 
-      const isPublished =
-        page.status === 'publish'
+      const isPublished = page.status === 'publish'
 
-      const status:
-        | 'draft'
-        | 'published' =
-        isPublished
-          ? 'published'
-          : 'draft'
+      const status: 'draft' | 'published' = isPublished
+        ? 'published'
+        : 'draft'
 
       // ------------------------------------------------------
       // WORDPRESS META / SEO
       // ------------------------------------------------------
 
       const wpMeta =
-        page.meta &&
-        typeof page.meta === 'object'
-          ? (page.meta as Record<
-              string,
-              any
-            >)
+        page.meta && typeof page.meta === 'object'
+          ? (page.meta as Record<string, any>)
           : {}
 
       const seoTitle =
-        typeof wpMeta.rank_math_title ===
-        'string'
-          ? cleanText(
-              wpMeta.rank_math_title,
-            )
+        typeof wpMeta.rank_math_title === 'string'
+          ? cleanText(wpMeta.rank_math_title)
           : undefined
 
       const seoDescription =
-        typeof wpMeta.rank_math_description ===
-        'string'
-          ? cleanText(
-              wpMeta.rank_math_description,
-            )
+        typeof wpMeta.rank_math_description === 'string'
+          ? cleanText(wpMeta.rank_math_description)
           : undefined
 
       const canonicalURL =
-        typeof wpMeta.rank_math_canonical_url ===
-        'string'
+        typeof wpMeta.rank_math_canonical_url === 'string'
           ? wpMeta.rank_math_canonical_url.trim()
           : undefined
 
@@ -1316,30 +1069,21 @@ export async function migratePages() {
       // OPEN GRAPH IMAGE
       // ------------------------------------------------------
 
-      let openGraphImageId:
-        | number
-        | undefined
+      let openGraphImageId: number | undefined
 
-      if (
-        typeof wpMeta.rank_math_facebook_image ===
-        'string'
-      ) {
-        openGraphImageId =
-          findMediaId(
-            wpMeta.rank_math_facebook_image,
-            mediaMaps,
-          )
+      if (typeof wpMeta.rank_math_facebook_image === 'string') {
+        openGraphImageId = findMediaId(
+          wpMeta.rank_math_facebook_image,
+          mediaMaps,
+        )
 
         // Try on-demand upload if missing.
-        if (
-          !openGraphImageId
-        ) {
-          openGraphImageId =
-            await ensureMediaUploaded(
-              wpMeta.rank_math_facebook_image,
-              mediaMaps,
-              payload,
-            )
+        if (!openGraphImageId) {
+          openGraphImageId = await ensureMediaUploaded(
+            wpMeta.rank_math_facebook_image,
+            mediaMaps,
+            payload,
+          )
         }
       }
 
@@ -1348,37 +1092,18 @@ export async function migratePages() {
       // ------------------------------------------------------
 
       const hasSEO =
-        seoTitle ||
-        seoDescription ||
-        canonicalURL ||
-        openGraphImageId
+        seoTitle || seoDescription || canonicalURL || openGraphImageId
 
       const seo = hasSEO
         ? {
-            ...(seoTitle
-              ? {
-                  title: seoTitle,
-                }
-              : {}),
+            ...(seoTitle ? { title: seoTitle } : {}),
 
-            ...(seoDescription
-              ? {
-                  description:
-                    seoDescription,
-                }
-              : {}),
+            ...(seoDescription ? { description: seoDescription } : {}),
 
-            ...(canonicalURL
-              ? {
-                  canonicalURL,
-                }
-              : {}),
+            ...(canonicalURL ? { canonicalURL } : {}),
 
             ...(openGraphImageId
-              ? {
-                  openGraphImage:
-                    openGraphImageId,
-                }
+              ? { openGraphImage: openGraphImageId }
               : {}),
           }
         : undefined
@@ -1387,10 +1112,7 @@ export async function migratePages() {
       // FINAL PAYLOAD DATA
       // ------------------------------------------------------
 
-      const data: Record<
-        string,
-        any
-      > = {
+      const data: Record<string, any> = {
         title,
 
         slug: page.slug,
@@ -1404,68 +1126,41 @@ export async function migratePages() {
         legacy: {
           wordpressId: page.id,
 
-          wordpressSlug:
-            page.slug,
+          wordpressSlug: page.slug,
 
-          wordpressAuthorId:
-            page.author,
+          wordpressAuthorId: page.author,
         },
 
-        ...(featuredImageId
-          ? {
-              featuredImage:
-                featuredImageId,
-            }
-          : {}),
+        ...(featuredImageId ? { featuredImage: featuredImageId } : {}),
 
-        ...(seo
-          ? {
-              seo,
-            }
-          : {}),
+        ...(seo ? { seo } : {}),
       }
 
       // ------------------------------------------------------
       // LOG
       // ------------------------------------------------------
 
-      console.log(
-        `  ↳ WordPress ID: ${page.id}`,
-      )
+      console.log(`  ↳ WordPress ID: ${page.id}`)
 
-      console.log(
-        `  ↳ Slug: ${page.slug}`,
-      )
+      console.log(`  ↳ Slug: ${page.slug}`)
 
-      console.log(
-        `  ↳ Status: ${page.status} → ${status}`,
-      )
+      console.log(`  ↳ Status: ${page.status} → ${status}`)
 
-      console.log(
-        `  ↳ Content images: ${stats.contentImagesMapped}`,
-      )
+      console.log(`  ↳ Content images: ${stats.contentImagesMapped}`)
 
       if (featuredImageId) {
-        console.log(
-          `  ↳ Featured Image: ${featuredImageId}`,
-        )
+        console.log(`  ↳ Featured Image: ${featuredImageId}`)
       }
 
       if (seo) {
-        console.log(
-          '  ↳ SEO: migrated',
-        )
+        console.log('  ↳ SEO: migrated')
       }
 
       // ------------------------------------------------------
       // FIND EXISTING
       // ------------------------------------------------------
 
-      const existing =
-        await findExistingPage(
-          payload,
-          page.id,
-        )
+      const existing = await findExistingPage(payload, page.id)
 
       // ------------------------------------------------------
       // UPDATE
@@ -1475,9 +1170,7 @@ export async function migratePages() {
         await payload.update({
           collection: 'pages',
 
-          id: Number(
-            existing.id,
-          ),
+          id: Number(existing.id),
 
           data,
 
@@ -1486,94 +1179,64 @@ export async function migratePages() {
 
         updated++
 
-        console.log(
-          `  ↳ Updated Payload Page ID: ${existing.id}`,
-        )
+        console.log(`  ↳ Updated Payload Page ID: ${existing.id}`)
       }
 
       // ------------------------------------------------------
       // CREATE
       // ------------------------------------------------------
-
       else {
-        const createdPage =
-          await payload.create({
-            collection: 'pages',
+        const createdPage = await payload.create({
+          collection: 'pages',
 
-            data,
+          data,
 
-            draft: !isPublished,
-          } as any)
+          draft: !isPublished,
+        } as any)
 
         created++
 
-        console.log(
-          `  ↳ Created Payload Page ID: ${createdPage.id}`,
-        )
+        console.log(`  ↳ Created Payload Page ID: ${createdPage.id}`)
       }
 
       // ------------------------------------------------------
       // STATS
       // ------------------------------------------------------
 
-      totalImagesFound +=
-        stats.contentImagesFound
+      totalImagesFound += stats.contentImagesFound
 
-      totalImagesMapped +=
-        stats.contentImagesMapped
+      totalImagesMapped += stats.contentImagesMapped
 
-      totalImagesUnmapped +=
-        stats.contentImagesUnmapped
+      totalImagesUnmapped += stats.contentImagesUnmapped
 
-      totalImagesAutoUploaded +=
-        stats.contentImagesAutoUploaded
+      totalImagesAutoUploaded += stats.contentImagesAutoUploaded
 
-      totalUploadNodesNormalized +=
-        stats.uploadNodesNormalized
+      totalUploadNodesNormalized += stats.uploadNodesNormalized
 
-      totalUploadNodesRejected +=
-        stats.uploadNodesRejected
+      totalUploadNodesRejected += stats.uploadNodesRejected
 
-      totalInvalidLinksFixed +=
-        stats.invalidLinksFixed
+      totalInvalidLinksFixed += stats.invalidLinksFixed
 
-      if (
-        stats.contentImagesAutoUploaded >
-        0
-      ) {
+      if (stats.contentImagesAutoUploaded > 0) {
         console.log(
           `  ↳ Images auto-uploaded: ${stats.contentImagesAutoUploaded}`,
         )
       }
 
-      if (
-        stats.invalidLinksFixed >
-        0
-      ) {
-        console.log(
-          `  ↳ Invalid links fixed: ${stats.invalidLinksFixed}`,
-        )
+      if (stats.invalidLinksFixed > 0) {
+        console.log(`  ↳ Invalid links fixed: ${stats.invalidLinksFixed}`)
       }
 
       console.log('')
-
     } catch (error) {
       failed++
 
-      console.error(
-        `  ✗ Failed: ${page.slug}`,
-      )
+      console.error(`  ✗ Failed: ${page.slug}`)
 
-      console.error(
-        '  FULL PAYLOAD ERROR:',
-      )
+      console.error('  FULL PAYLOAD ERROR:')
 
-      if (
-        error instanceof Error
-      ) {
-        console.error(
-          error.stack,
-        )
+      if (error instanceof Error) {
+        console.error(error.stack)
       } else {
         console.dir(error, {
           depth: null,
@@ -1585,28 +1248,18 @@ export async function migratePages() {
       // ------------------------------------------------------
 
       try {
-        const fs =
-          await import('fs')
+        const fs = await import('fs')
 
         fs.writeFileSync(
           `./failed-page-${page.id}-content.json`,
-          JSON.stringify(
-            content,
-            null,
-            2,
-          ),
+          JSON.stringify(content, null, 2),
         )
 
         console.error(
           `  📄 Content dumped to failed-page-${page.id}-content.json`,
         )
-      } catch (
-        dumpError
-      ) {
-        console.error(
-          '  Could not dump content:',
-          dumpError,
-        )
+      } catch (dumpError) {
+        console.error('  Could not dump content:', dumpError)
       }
 
       console.log('')
@@ -1621,69 +1274,39 @@ export async function migratePages() {
 
   console.log('')
 
-  console.log(
-    '========================================',
-  )
+  console.log('========================================')
 
-  console.log(
-    ' Page Migration Completed',
-  )
+  console.log(' Page Migration Completed')
 
-  console.log(
-    '========================================',
-  )
+  console.log('========================================')
 
   console.log('')
 
-  console.log(
-    `Total WordPress pages: ${pages.length}`,
-  )
+  console.log(`Total WordPress pages: ${pages.length}`)
 
-  console.log(
-    `Created: ${created}`,
-  )
+  console.log(`Created: ${created}`)
 
-  console.log(
-    `Updated: ${updated}`,
-  )
+  console.log(`Updated: ${updated}`)
 
-  console.log(
-    `Skipped: ${skipped}`,
-  )
+  console.log(`Skipped: ${skipped}`)
 
-  console.log(
-    `Failed: ${failed}`,
-  )
+  console.log(`Failed: ${failed}`)
 
   console.log('')
 
-  console.log(
-    `Content images found: ${totalImagesFound}`,
-  )
+  console.log(`Content images found: ${totalImagesFound}`)
 
-  console.log(
-    `Content images mapped: ${totalImagesMapped}`,
-  )
+  console.log(`Content images mapped: ${totalImagesMapped}`)
 
-  console.log(
-    `Content images unmapped: ${totalImagesUnmapped}`,
-  )
+  console.log(`Content images unmapped: ${totalImagesUnmapped}`)
 
-  console.log(
-    `Images auto-uploaded: ${totalImagesAutoUploaded}`,
-  )
+  console.log(`Images auto-uploaded: ${totalImagesAutoUploaded}`)
 
-  console.log(
-    `Upload nodes normalized: ${totalUploadNodesNormalized}`,
-  )
+  console.log(`Upload nodes normalized: ${totalUploadNodesNormalized}`)
 
-  console.log(
-    `Invalid upload nodes rejected: ${totalUploadNodesRejected}`,
-  )
+  console.log(`Invalid upload nodes rejected: ${totalUploadNodesRejected}`)
 
-  console.log(
-    `Invalid links fixed: ${totalInvalidLinksFixed}`,
-  )
+  console.log(`Invalid links fixed: ${totalInvalidLinksFixed}`)
 
   console.log('')
 
@@ -1694,21 +1317,14 @@ export async function migratePages() {
   if (
     failed === 0 &&
     totalImagesUnmapped === 0 &&
-    totalImagesMapped ===
-      totalUploadNodesNormalized
+    totalImagesMapped === totalUploadNodesNormalized
   ) {
-    console.log(
-      '✓ PAGE MIGRATION VERIFICATION PASSED',
-    )
+    console.log('✓ PAGE MIGRATION VERIFICATION PASSED')
   } else {
-    console.log(
-      '⚠ PAGE MIGRATION VERIFICATION REQUIRES REVIEW',
-    )
+    console.log('⚠ PAGE MIGRATION VERIFICATION REQUIRES REVIEW')
   }
 
-  console.log(
-    '========================================',
-  )
+  console.log('========================================')
 
   console.log('')
 }
@@ -1717,26 +1333,18 @@ export async function migratePages() {
 // RUN
 // ============================================================
 
-migratePages().catch(
-  (error) => {
-    console.error('')
+migratePages().catch((error) => {
+  console.error('')
 
-    console.error(
-      '========================================',
-    )
+  console.error('========================================')
 
-    console.error(
-      ' Page Migration Failed',
-    )
+  console.error(' Page Migration Failed')
 
-    console.error(
-      '========================================',
-    )
+  console.error('========================================')
 
-    console.error(error)
+  console.error(error)
 
-    console.error('')
+  console.error('')
 
-    process.exit(1)
-  },
-)
+  process.exit(1)
+})

@@ -40,7 +40,7 @@ type WordPressUser = {
 
 const WORDPRESS_API_URL =
   process.env.WORDPRESS_API_URL ||
-  'https://staging.alloypress.com/wp-json/wp/v2'
+  'https://staging1.alloypress.com/wp-json/wp/v2'
 
 const USERS_ENDPOINT = `${WORDPRESS_API_URL}/users`
 

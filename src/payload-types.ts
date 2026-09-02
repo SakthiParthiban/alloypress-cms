@@ -335,7 +335,7 @@ export interface Post {
    */
   slug: string;
   /**
-   * Main article content. Add formatted text, links, images, videos, audio, code and tables.
+   * Main article content. Add formatted text, links, images, videos, audio, styled boxes, buttons, code and tables.
    */
   content: {
     root: {
@@ -383,6 +383,10 @@ export interface Post {
    */
   legacy?: {
     wordpressId?: number | null;
+    /**
+     * Historical WordPress "modified" date, preserved from migration. Empty for posts created directly in Payload.
+     */
+    wordpressModifiedAt?: string | null;
   };
   meta?: {
     title?: string | null;
@@ -840,6 +844,7 @@ export interface PostsSelect<T extends boolean = true> {
     | T
     | {
         wordpressId?: T;
+        wordpressModifiedAt?: T;
       };
   meta?:
     | T

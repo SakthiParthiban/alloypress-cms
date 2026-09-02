@@ -60,6 +60,7 @@ export default buildConfig({
         Icon: '/components/AlloyPressIcon',
         Logo: '/components/AlloyPressLogo',
       },
+      Nav: '/components/AlloyNav',
 
       views: {
 

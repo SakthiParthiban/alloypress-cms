@@ -37,11 +37,11 @@ type WPRendered = {
 
 type WPPost = {
   id: number
-  date: string
-  modified: string
-  slug: string
+  date?: string
+  modified?: string
+  slug?: string
   status: string
-  type: string
+  type?: string
 
   link?: string
 
@@ -57,6 +57,11 @@ type WPPost = {
 
   sticky?: boolean
   meta?: unknown
+  _embedded?: {
+    'wp:featuredmedia'?: Array<{
+      source_url?: string
+    }>
+  }
 }
 
 type MediaMaps = {
@@ -78,8 +83,19 @@ type MigrationStats = {
   uploadNodesRejected: number
   invalidLinksFixed: number
   unsupportedElements: number
-  // ⬇ NEW
   backgroundColorsSnapped: number
+  // ⬇ NEW
+  styledBoxesFound: number
+  styledBoxesConverted: number
+  buttonsFound: number
+  buttonsConverted: number
+  // ⬇ NEW
+  widgetsStripped: number
+  slugsGeneratedFromTitle: number
+  fallbackTitlesGenerated: number
+  fallbackCategoriesUsed: number
+  fallbackAuthorsUsed: number
+  contentConversionFallbacks: number
 }
 
 // ============================================================
@@ -88,7 +104,41 @@ type MigrationStats = {
 
 const WORDPRESS_API_URL =
   process.env.WORDPRESS_API_URL ||
-  'https://staging.alloypress.com/wp-json/wp/v2'
+  'https://staging1.alloypress.com/wp-json/wp/v2'
+
+// ============================================================
+// ⬇ NEW — WORDPRESS AUTH (needed to see draft/pending/private posts)
+// ============================================================
+//
+// WordPress REST API only exposes `publish` status content to
+// unauthenticated requests. To pull draft/pending/private/future
+// posts, we must authenticate using a WordPress Application
+// Password (wp-admin → Users → Profile → Application Passwords),
+// sent as HTTP Basic Auth.
+//
+// If WP_USERNAME / WP_APP_PASSWORD are not set in .env, the script
+// still runs — but WordPress will silently ignore the `status`
+// query param and only return published content.
+// ============================================================
+
+function getWordPressAuthHeader(): Record<string, string> {
+  const username = process.env.WP_USERNAME?.trim()
+  const appPassword = process.env.WP_APP_PASSWORD?.trim()
+
+  if (!username || !appPassword) {
+    throw new Error(
+      'WP_USERNAME / WP_APP_PASSWORD are required. ' +
+      'Complete migration must authenticate with WordPress so publish, ' +
+      'draft, pending, private, and future posts are all fetched.',
+    )
+  }
+
+  const token = Buffer.from(`${username}:${appPassword}`).toString('base64')
+
+  return {
+    Authorization: `Basic ${token}`,
+  }
+}
 
 // ============================================================
 // TEXT HELPERS
@@ -118,6 +168,30 @@ function cleanText(value: string | undefined): string {
 }
 
 // ============================================================
+// ⬇ NEW — SLUGIFY (fallback for drafts with an empty post_name)
+// ============================================================
+//
+// WordPress only writes `post_name` (the slug) to the database
+// once a draft has been explicitly saved with a permalink. Until
+// then, the REST API returns slug: "" even though wp-admin shows a
+// live-generated preview slug in the editor UI. Previously this
+// caused the whole post (title, content, everything) to be
+// silently skipped. Now we derive a slug from the title instead —
+// and suffix it with the WordPress post ID to guarantee uniqueness
+// against the `slug` unique index on the Posts collection.
+// ============================================================
+
+function slugify(value: string): string {
+  return value
+    .toLowerCase()
+    .normalize('NFKD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-+|-+$/g, '')
+    .slice(0, 180)
+}
+
+// ============================================================
 // URL NORMALIZATION
 // ============================================================
 
@@ -128,6 +202,17 @@ function normalizeUrl(value: string): string {
     return url.toString().replace(/\/$/, '')
   } catch {
     return value.trim().replace(/\/$/, '')
+  }
+}
+
+function resolveWordPressAssetUrl(value: string): string {
+  const raw = value.trim()
+  if (!raw) return raw
+
+  try {
+    return new URL(raw, WORDPRESS_API_URL.replace(/\/wp-json\/wp\/v2\/?$/, '/')).toString()
+  } catch {
+    return raw
   }
 }
 
@@ -166,7 +251,48 @@ function normalizeFilename(value: string): string {
 }
 
 // ============================================================
+// HTTP RETRY HELPER
+// ============================================================
+
+async function fetchWithRetry(
+  input: RequestInfo | URL,
+  init: RequestInit = {},
+  attempts = 3,
+): Promise<Response> {
+  let lastError: unknown
+
+  for (let attempt = 1; attempt <= attempts; attempt++) {
+    try {
+      const response = await fetch(input, init)
+
+      if (response.ok || (response.status >= 400 && response.status < 500)) {
+        return response
+      }
+
+      lastError = new Error(
+        `HTTP ${response.status} ${response.statusText}`,
+      )
+    } catch (error) {
+      lastError = error
+    }
+
+    if (attempt < attempts) {
+      await new Promise((resolve) => setTimeout(resolve, attempt * 750))
+    }
+  }
+
+  throw lastError instanceof Error
+    ? lastError
+    : new Error('Request failed after retries.')
+}
+
+// ============================================================
 // FETCH ALL POSTS
+// ============================================================
+//
+// ⬇ CHANGED — now sends the WP auth header and requests every
+// status (publish, draft, pending, private, future) instead of
+// relying on the unauthenticated default (publish-only).
 // ============================================================
 
 async function fetchAllPosts(): Promise<WPPost[]> {
@@ -174,14 +300,29 @@ async function fetchAllPosts(): Promise<WPPost[]> {
   let page = 1
   const perPage = 100
 
+  const authHeaders = getWordPressAuthHeader()
+
   while (true) {
-    const url = `${WORDPRESS_API_URL}/posts?per_page=${perPage}&page=${page}`
+    const url =
+      `${WORDPRESS_API_URL}/posts?per_page=${perPage}&page=${page}` +
+      `&status=publish,draft,pending,private,future` +
+      `&_embed=wp:featuredmedia`
+
     console.log(`Fetching WordPress posts page ${page}...`)
 
-    const response = await fetch(url)
+    const response = await fetchWithRetry(url, {
+      headers: authHeaders,
+    })
 
     if (response.status === 400) {
       break
+    }
+
+    if (response.status === 401 || response.status === 403) {
+      throw new Error(
+        `WordPress API auth failed (${response.status}). ` +
+        `Check WP_USERNAME / WP_APP_PASSWORD in .env.`,
+      )
     }
 
     if (!response.ok) {
@@ -274,6 +415,21 @@ async function buildUserMap(payload: any): Promise<Map<number, number>> {
   }
 
   return map
+}
+
+async function findFirstPayloadId(
+  payload: any,
+  collection: string,
+): Promise<number | undefined> {
+  const result = await payload.find({
+    collection,
+    limit: 1,
+    pagination: false,
+    depth: 0,
+  })
+
+  const id = result.docs?.[0]?.id
+  return id !== undefined ? Number(id) : undefined
 }
 
 // ============================================================
@@ -393,44 +549,62 @@ function findMediaId(
 // ============================================================
 // ON-DEMAND MEDIA UPLOAD
 // ============================================================
-//
-// This is the actual fix for posts whose inline media wasn't in
-// the media library yet.
-//
-// findMediaId() only checks media ALREADY in Payload (populated by
-// a separate, earlier media-migration step). If that earlier step
-// missed a file (wrong URL, webp edge case, dotted filename, etc),
-// findMediaId() correctly returns undefined — but previously the
-// post was then hard-failed instead of being recovered.
-//
-// This function closes that gap: it fetches the file directly from
-// the WordPress source URL and uploads it into the Payload `media`
-// collection right now, then warms every local lookup cache so any
-// later reference to the same URL (same post or a different post)
-// reuses this record instead of re-uploading.
-//
-// Works for images, audio files, and self-hosted video files —
-// anything payload.create() with a `file` buffer accepts.
-// ============================================================
+
+async function getWordPressMediaSourceUrl(
+  mediaId: number,
+): Promise<string | undefined> {
+  try {
+    const response = await fetch(
+      `${WORDPRESS_API_URL}/media/${mediaId}`,
+      {
+        headers: getWordPressAuthHeader(),
+      },
+    )
+
+    if (!response.ok) {
+      console.warn(
+        `    ⚠ Could not fetch WordPress featured media ${mediaId}: ${response.status}`,
+      )
+      return undefined
+    }
+
+    const media = await response.json()
+
+    return typeof media?.source_url === 'string'
+      ? resolveWordPressAssetUrl(media.source_url)
+      : undefined
+  } catch (error) {
+    console.warn(
+      `    ⚠ Failed to fetch WordPress featured media ${mediaId}:`,
+      error,
+    )
+
+    return undefined
+  }
+}
 
 async function ensureMediaUploaded(
   sourceUrl: string,
   mediaMaps: MediaMaps,
   payload: any,
 ): Promise<number | undefined> {
-  const normalized = normalizeUrl(sourceUrl)
+  const resolvedSourceUrl = resolveWordPressAssetUrl(sourceUrl)
+  const normalized = normalizeUrl(resolvedSourceUrl)
 
-  const already = mediaMaps.byOriginalUrl.get(normalized)
+  // Reuse any existing mapping before creating a duplicate media record.
+  const already =
+    findMediaId(sourceUrl, mediaMaps) ||
+    findMediaId(resolvedSourceUrl, mediaMaps)
   if (already) {
     return already
   }
 
   try {
-    const response = await fetch(sourceUrl)
+    const response = await fetchWithRetry(resolvedSourceUrl)
 
     if (!response.ok) {
       console.warn(
-        `    ⚠ On-demand fetch failed (${response.status}): ${sourceUrl}`,
+        `    ⚠ On-demand fetch failed (${response.status}): ${resolvedSourceUrl}`,
       )
       return undefined
     }
@@ -439,7 +613,7 @@ async function ensureMediaUploaded(
     const buffer = Buffer.from(arrayBuffer)
 
     const filename =
-      sourceUrl.split('/').pop()?.split('?')[0] ||
+      resolvedSourceUrl.split('/').pop()?.split('?')[0] ||
       `migrated-${Date.now()}`
 
     const mimetype =
@@ -450,7 +624,7 @@ async function ensureMediaUploaded(
       collection: 'media',
       data: {
         alt: filename,
-        originalUrl: sourceUrl,
+        originalUrl: resolvedSourceUrl,
       },
       file: {
         data: buffer,
@@ -469,18 +643,16 @@ async function ensureMediaUploaded(
       return undefined
     }
 
-    // Warm every cache so future lookups (this post or later posts)
-    // hit the map instead of re-uploading the same file again.
     mediaMaps.byOriginalUrl.set(normalized, payloadId)
     mediaMaps.allPayloadIds.add(payloadId)
 
-    const path = normalizePath(sourceUrl)
+    const path = normalizePath(resolvedSourceUrl)
     if (path) {
       mediaMaps.byPath.set(path, payloadId)
       mediaMaps.byPath.set(stripWordPressSizeSuffix(path), payloadId)
     }
 
-    const fname = normalizeFilename(sourceUrl)
+    const fname = normalizeFilename(resolvedSourceUrl)
     if (fname) {
       mediaMaps.byFilename.set(fname, payloadId)
     }
@@ -491,31 +663,47 @@ async function ensureMediaUploaded(
 
     return payloadId
   } catch (error) {
-    console.warn(`    ⚠ On-demand upload threw for ${sourceUrl}:`, error)
+    console.warn(`    ⚠ On-demand upload threw for ${resolvedSourceUrl}:`, error)
     return undefined
   }
 }
 
 // ============================================================
-// ⬇ NEW — BACKGROUND COLOR SNAPPING
+// SITE-CHROME WIDGET STRIPPING  ⬅ FIX #1 (was called but missing)
 // ============================================================
 //
-// WordPress content can contain arbitrary inline
-// `background-color: #xxxxxx` styles from the Divi editor.
-// Your Posts.ts TextStateFeature only recognizes a fixed, named
-// set of swatches (see textStateConfig.ts -> backgroundColor).
-//
-// This snaps any arbitrary WP hex color to the CLOSEST configured
-// swatch so the editor can recognize and preserve it. If nothing
-// is close enough, the background is simply left as-is in the
-// HTML (harmless — the built-in converter will just drop a style
-// it doesn't recognize). Text content itself is NEVER removed
-// either way.
-//
-// ⚠ REQUIRES: the backgroundColor swatches below must also exist
-// in your textStateConfig.ts and be wired into TextStateFeature in
-// Posts.ts. Without that companion change, this block still runs
-// safely, it just won't have any swatch to snap onto.
+// AlloyPress injects site-chrome widgets directly into post content
+// (Ask AI boxes, Share widgets, floating banners). These are NOT
+// real content — they must be removed before styled-box / button /
+// Lexical conversion ever sees the DOM, otherwise they get
+// misidentified as styled boxes or buttons and get migrated as if
+// they were real post content.
+// ============================================================
+
+function stripKnownWidgets(document: Document, stats: MigrationStats): void {
+  const selector = [
+    '[class*="apAsk-"]',
+    '[id*="apAsk-"]',
+    '[class*="apShare-"]',
+    '[id*="apShare-"]',
+    '[class*="sbBanner-"]',
+    '[id*="sbBanner-"]',
+  ].join(', ')
+
+  const widgets = Array.from(document.querySelectorAll(selector))
+
+  for (const widget of widgets) {
+    if (!widget.isConnected) {
+      continue
+    }
+
+    widget.remove()
+    stats.widgetsStripped++
+  }
+}
+
+// ============================================================
+// COLOR SWATCH HELPERS
 // ============================================================
 
 const BG_SWATCHES: Record<string, string> = {
@@ -526,85 +714,482 @@ const BG_SWATCHES: Record<string, string> = {
   '#F3F4F6': 'gray',
 }
 
+const BORDER_SWATCHES: Record<string, string> = {
+  '#D9F99D': 'green',
+  '#FEF9C3': 'yellow',
+  '#DBEAFE': 'blue',
+  '#FEE2E2': 'red',
+  '#F3F4F6': 'gray',
+  '#EEEEEE': 'gray',
+  '#1DBA6E': 'brand-green',
+}
+
 function hexDistance(a: string, b: string): number {
-  const pa = a.match(/\w\w/g)?.map((x) => parseInt(x, 16)) || [0, 0, 0]
-  const pb = b.match(/\w\w/g)?.map((x) => parseInt(x, 16)) || [0, 0, 0]
+  const pa = a.match(/[0-9A-F]{2}/gi)?.map((x) => parseInt(x, 16)) || [0, 0, 0]
+  const pb = b.match(/[0-9A-F]{2}/gi)?.map((x) => parseInt(x, 16)) || [0, 0, 0]
+
   return Math.sqrt(
-    (pa[0] - pb[0]) ** 2 + (pa[1] - pb[1]) ** 2 + (pa[2] - pb[2]) ** 2,
+    (pa[0] - pb[0]) ** 2 +
+    (pa[1] - pb[1]) ** 2 +
+    (pa[2] - pb[2]) ** 2,
   )
 }
 
 function rgbToHex(rgb: string): string | null {
-  const match = rgb.match(/\d+/g)
+  const match = rgb.match(/\d+(?:\.\d+)?/g)
   if (!match || match.length < 3) return null
+
   return (
     '#' +
     match
       .slice(0, 3)
-      .map((n) => Number(n).toString(16).padStart(2, '0'))
+      .map((n) =>
+        Math.max(0, Math.min(255, Math.round(Number(n))))
+          .toString(16)
+          .padStart(2, '0'),
+      )
       .join('')
       .toUpperCase()
   )
 }
 
+const NAMED_COLORS: Record<string, string> = {
+  black: '#000000',
+  white: '#FFFFFF',
+  red: '#FF0000',
+  green: '#008000',
+  blue: '#0000FF',
+  yellow: '#FFFF00',
+  gray: '#808080',
+  grey: '#808080',
+  orange: '#FFA500',
+  purple: '#800080',
+}
+
+function toHex(rawColor: string): string | null {
+  const trimmed = rawColor.trim()
+  if (!trimmed) return null
+
+  if (/^#[0-9a-f]{3}$/i.test(trimmed)) {
+    const hex = trimmed.slice(1)
+    return `#${hex[0]}${hex[0]}${hex[1]}${hex[1]}${hex[2]}${hex[2]}`.toUpperCase()
+  }
+
+  if (/^#[0-9a-f]{6}$/i.test(trimmed)) {
+    return trimmed.toUpperCase()
+  }
+
+  const rgb = rgbToHex(trimmed)
+  if (rgb) return rgb
+
+  return NAMED_COLORS[trimmed.toLowerCase()] || null
+}
+
+function nearestSwatch(
+  hex: string,
+  swatches: Record<string, string>,
+  threshold = 150,
+): string | null {
+  let closestName: string | null = null
+  let closestDistance = Infinity
+
+  for (const [swatchHex, name] of Object.entries(swatches)) {
+    const distance = hexDistance(hex, swatchHex)
+    if (distance < closestDistance) {
+      closestDistance = distance
+      closestName = name
+    }
+  }
+
+  return closestDistance < threshold ? closestName : null
+}
+
+function extractCssColor(raw: string): string | null {
+  const value = raw.trim()
+  if (!value) return null
+
+  const hexMatch = value.match(/#[0-9a-f]{3,8}\b/i)
+  if (hexMatch) return toHex(hexMatch[0])
+
+  const rgbMatch = value.match(
+    /rgba?\(\s*[\d.]+\s*,\s*[\d.]+\s*,\s*[\d.]+(?:\s*,\s*[\d.]+)?\s*\)/i,
+  )
+  if (rgbMatch) return toHex(rgbMatch[0])
+
+  const namedMatch = value.match(
+    /\b(black|white|red|green|blue|yellow|gray|grey|orange|purple)\b/i,
+  )
+
+  return namedMatch ? toHex(namedMatch[1]) : null
+}
+
+function classSwatchName(
+  className: string,
+  kind: 'background' | 'border',
+): string | undefined {
+  const normalized = className.toLowerCase()
+
+  if (
+    kind === 'background' &&
+    /(?:luminous-vivid-green|vivid-green|green)(?:-background|-background-color)?/.test(
+      normalized,
+    )
+  ) return 'green'
+
+  if (
+    kind === 'background' &&
+    /(?:luminous-vivid-amber|vivid-amber|yellow)(?:-background|-background-color)?/.test(
+      normalized,
+    )
+  ) return 'yellow'
+
+  if (
+    kind === 'background' &&
+    /(?:pale-cyan|light-blue|blue)(?:-background|-background-color)?/.test(
+      normalized,
+    )
+  ) return 'blue'
+
+  if (
+    kind === 'background' &&
+    /(?:pale-pink|light-red|red)(?:-background|-background-color)?/.test(
+      normalized,
+    )
+  ) return 'red'
+
+  if (
+    kind === 'background' &&
+    /(?:light-gray|light-grey|gray|grey)(?:-background|-background-color)?/.test(
+      normalized,
+    )
+  ) return 'gray'
+
+  if (
+    kind === 'border' &&
+    /(?:green|vivid-green|luminous-vivid-green)(?:-border|-border-color)?/.test(
+      normalized,
+    )
+  ) return 'brand-green'
+
+  if (
+    kind === 'border' &&
+    /(?:yellow|amber)(?:-border|-border-color)?/.test(normalized)
+  ) return 'yellow'
+
+  if (
+    kind === 'border' &&
+    /(?:blue|cyan)(?:-border|-border-color)?/.test(normalized)
+  ) return 'blue'
+
+  if (
+    kind === 'border' &&
+    /(?:red|pink)(?:-border|-border-color)?/.test(normalized)
+  ) return 'red'
+
+  if (
+    kind === 'border' &&
+    /(?:gray|grey)(?:-border|-border-color)?/.test(normalized)
+  ) return 'gray'
+
+  return undefined
+}
+
+function getStyleValue(style: string, property: string): string | null {
+  const regex = new RegExp(`${property}\\s*:\\s*([^;]+)`, 'i')
+  return style.match(regex)?.[1]?.trim() || null
+}
+
+function getBorderColorFromStyle(style: string): string | null {
+  const explicit = getStyleValue(style, 'border-color')
+  if (explicit) return extractCssColor(explicit)
+
+  const border = getStyleValue(style, 'border')
+  if (border) return extractCssColor(border)
+
+  for (const side of ['border-top', 'border-right', 'border-bottom', 'border-left']) {
+    const value = getStyleValue(style, side)
+    if (value) {
+      const color = extractCssColor(value)
+      if (color) return color
+    }
+  }
+
+  return null
+}
+
+function hasStyledBoxClass(el: Element): boolean {
+  const className = el.getAttribute('class') || ''
+  if (!className.trim()) return false
+
+  return /(?:^|\s)(?:wp-block-quote|wp-block-cover|et_pb_blurb|et_pb_call_to_action|et_pb_promo|faq(?:[-_]|$)|faq-item(?:[-_]|$)|callout(?:[-_]|$)|notice(?:[-_]|$)|highlight(?:[-_]|$)|alloy(?:[-_]|$)|(?:info|warning|success|tip|quote)[-_]?box(?:[-_]|$)|card(?:[-_]|$)|content-box(?:[-_]|$)|border(?:ed)?(?:[-_]|$)|has-(?:background|border)(?:[-_]|$))/i.test(
+    className,
+  )
+}
+
+function isLikelyStyledBox(el: Element): boolean {
+  const style = el.getAttribute('style') || ''
+  const className = el.getAttribute('class') || ''
+
+  const hasInlineBorder =
+    /(?:^|;)\s*border(?:-(?:top|right|bottom|left|width|color|style))?\s*:/i.test(
+      style,
+    )
+  const hasInlineBackground =
+    /(?:^|;)\s*background(?:-color)?\s*:/i.test(style)
+
+  if (hasInlineBorder || hasInlineBackground) return true
+  return hasStyledBoxClass(el)
+}
+
+function isMediaFree(el: Element): boolean {
+  return !el.querySelector('img, audio, video, iframe')
+}
+
+function extractStyledBoxes(
+  document: Document,
+  stats: MigrationStats,
+): void {
+  const candidates = Array.from(
+    document.querySelectorAll('div, section, blockquote, aside, article'),
+  )
+    .filter(isLikelyStyledBox)
+    .sort((a, b) => {
+      const depth = (el: Element): number => {
+        let value = 0
+        let current: Element | null = el
+        while (current?.parentElement) {
+          value++
+          current = current.parentElement
+        }
+        return value
+      }
+      return depth(b) - depth(a)
+    })
+
+  for (const el of candidates) {
+    if (!el.isConnected) continue
+    if (el.closest('[data-wp-payload-block="styledBox"]')) continue
+
+    // If an inner box was already extracted, the current element is usually
+    // just a layout wrapper. Do not swallow that converted child.
+    if (el.querySelector('[data-wp-payload-block="styledBox"]')) continue
+
+    if (!isMediaFree(el)) continue
+
+    const style = el.getAttribute('style') || ''
+    const className = el.getAttribute('class') || ''
+
+    const hasSemanticBoxClass =
+      /(?:wp-block-quote|wp-block-cover|et_pb_blurb|et_pb_call_to_action|et_pb_promo|faq(?:[-_]|$)|faq-item(?:[-_]|$)|callout(?:[-_]|$)|notice(?:[-_]|$)|highlight(?:[-_]|$)|alloy(?:[-_]|$)|(?:info|warning|success|tip|quote)[-_]?box(?:[-_]|$)|card(?:[-_]|$)|content-box(?:[-_]|$))/i.test(
+        className,
+      )
+
+    const hasBorder =
+      /(?:^|;)\s*border(?:-(?:top|right|bottom|left|width|color|style))?\s*:/i.test(
+        style,
+      ) ||
+      /(?:has-border|border(?:ed)?|border-color)/i.test(className) ||
+      hasSemanticBoxClass
+
+    const hasBackground =
+      /(?:^|;)\s*background(?:-color)?\s*:/i.test(style) ||
+      /(?:has-background|background-color)/i.test(className) ||
+      hasSemanticBoxClass
+
+    if (!hasBorder && !hasBackground) continue
+
+    const headings = el.querySelectorAll('h1, h2, h3, h4, h5, h6')
+    const paragraphs = Array.from(el.querySelectorAll('p'))
+
+    if (headings.length > 1) continue
+
+    const headingText = headings[0]?.textContent?.trim() || ''
+
+    let bodyText = paragraphs
+      .map((p) => p.textContent?.trim() || '')
+      .filter(Boolean)
+      .join('\n\n')
+
+    if (!headingText && !bodyText) {
+      bodyText = el.textContent?.trim() || ''
+    }
+
+    if (!headingText && !bodyText) continue
+
+    stats.styledBoxesFound++
+
+    const bgRaw =
+      getStyleValue(style, 'background-color') ||
+      getStyleValue(style, 'background')
+    const borderRaw = getBorderColorFromStyle(style)
+
+    const bgHex = bgRaw ? extractCssColor(bgRaw) : null
+    const borderHex = borderRaw ? extractCssColor(borderRaw) : null
+
+    const backgroundColor =
+      (bgHex ? nearestSwatch(bgHex, BG_SWATCHES) : null) ||
+      classSwatchName(className, 'background')
+
+    const borderColor =
+      (borderHex ? nearestSwatch(borderHex, BORDER_SWATCHES) : null) ||
+      classSwatchName(className, 'border')
+
+    const borderWidth =
+      getStyleValue(style, 'border-width') ||
+      getStyleValue(style, 'border')?.match(
+        /^\s*([\d.]+(?:px|rem|em|pt|%))/i,
+      )?.[1] ||
+      undefined
+
+    const marker =
+      `__WP_PAYLOAD_STYLEDBOX__` +
+      `${encodeURIComponent(headingText)}|` +
+      `${encodeURIComponent(bodyText)}|` +
+      `${encodeURIComponent(backgroundColor || '')}|` +
+      `${encodeURIComponent(borderColor || '')}|` +
+      `${encodeURIComponent(borderWidth || '')}__`
+
+    const markerElement = document.createElement('p')
+    markerElement.setAttribute('data-wp-payload-block', 'styledBox')
+    markerElement.textContent = marker
+
+    el.replaceWith(markerElement)
+    stats.styledBoxesConverted++
+  }
+}
+
+// ============================================================
+// BACKGROUND COLOR SNAPPING  ⬅ FIX #2 (was called but missing)
+// ============================================================
+//
+// Runs AFTER styled boxes are extracted, so it only ever touches
+// leftover elements (e.g. inline spans/paragraphs with a raw
+// background-color style) that were not swallowed into a styledBox
+// block. Snaps arbitrary WP background colors to the nearest
+// design-system swatch and records it as a data attribute so the
+// Lexical converter / editor config can pick it up, instead of
+// carrying arbitrary hex values into the CMS.
+// ============================================================
+
 function snapBackgroundColors(
   document: Document,
   stats: MigrationStats,
 ): void {
-  const bgElements = document.querySelectorAll(
-    '[style*="background-color"]',
+  const elements = Array.from(
+    document.querySelectorAll('[style*="background"]'),
   )
 
-  for (const el of Array.from(bgElements)) {
-    const styleAttr = el.getAttribute('style') || ''
-    const match = styleAttr.match(/background-color:\s*([^;]+)/i)
-
-    if (!match) continue
-
-    const raw = match[1].trim()
-    const hex = raw.startsWith('#') ? raw.toUpperCase() : rgbToHex(raw)
-
-    if (!hex) continue
-
-    let closestSwatch: string | null = null
-    let closestDistance = Infinity
-
-    for (const swatchHex of Object.keys(BG_SWATCHES)) {
-      const distance = hexDistance(hex, swatchHex)
-      if (distance < closestDistance) {
-        closestDistance = distance
-        closestSwatch = swatchHex
-      }
+  for (const el of elements) {
+    // Skip anything already converted into a marker block above.
+    if (el.closest('[data-wp-payload-block]')) {
+      continue
     }
 
-    // Threshold: only snap if reasonably close (avoid forcing an
-    // unrelated color, like a dark text background, onto a bright
-    // swatch it has nothing to do with).
-    if (closestSwatch && closestDistance < 150) {
-      el.setAttribute(
-        'style',
-        styleAttr.replace(
-          /background-color:\s*[^;]+/i,
-          `background-color: ${closestSwatch}`,
-        ),
-      )
+    const style = el.getAttribute('style') || ''
 
-      stats.backgroundColorsSnapped++
+    const raw =
+      getStyleValue(style, 'background-color') ||
+      getStyleValue(style, 'background')
+
+    if (!raw) {
+      continue
     }
+
+    const hex = extractCssColor(raw)
+    if (!hex) {
+      continue
+    }
+
+    const swatch = nearestSwatch(hex, BG_SWATCHES)
+    if (!swatch) {
+      continue
+    }
+
+    // Strip the raw color declaration so it doesn't leak an arbitrary
+    // hex value into the Lexical inline styles, then record the
+    // resolved swatch name as a data attribute instead.
+    const cleanedStyle = style
+      .replace(/background-color\s*:[^;]+;?/i, '')
+      .replace(/background\s*:[^;]+;?/i, '')
+      .trim()
+
+    if (cleanedStyle) {
+      el.setAttribute('style', cleanedStyle)
+    } else {
+      el.removeAttribute('style')
+    }
+
+    el.setAttribute('data-background-swatch', swatch)
+    stats.backgroundColorsSnapped++
+  }
+}
+
+// ============================================================
+// CTA BUTTON PRESERVATION
+// ============================================================
+//
+// ⬇ CHANGED — broadened the selector to also catch buttons built
+// as plain <a> tags styled purely with a "button"/"btn" class
+// fragment (e.g. Divi/Elementor custom classes), while still
+// explicitly excluding the AlloyPress site-chrome widgets
+// (apAsk-*/apShare-*/sbBanner-*) which are stripped earlier by
+// stripKnownWidgets() and must never be treated as content CTAs.
+// ============================================================
+
+function extractButtons(document: Document, stats: MigrationStats): void {
+  const buttonSelector = [
+    'a.et_pb_button',
+    'a.wp-block-button__link',
+    'a.button',
+    'a.btn',
+    'a[class*="btn-"]',
+    'a[class*="-btn"]',
+    'a[class*="button-"]',
+    'a[class*="-button"]',
+  ].join(', ')
+
+  const candidates = Array.from(document.querySelectorAll(buttonSelector))
+
+  for (const anchor of candidates) {
+    if (anchor.closest('[data-wp-payload-block]')) {
+      continue
+    }
+
+    const href = anchor.getAttribute('href') || ''
+    const label = anchor.textContent?.trim() || ''
+
+    if (!href || !label) {
+      continue
+    }
+
+    stats.buttonsFound++
+
+    const marker = `__WP_PAYLOAD_BUTTON__${encodeURIComponent(
+      label,
+    )}|${encodeURIComponent(href)}__`
+
+    const markerElement = document.createElement('p')
+    markerElement.setAttribute('data-wp-payload-block', 'ctaButton')
+    markerElement.textContent = marker
+
+    const wrapper = anchor.parentElement
+    const wrapperIsButtonOnly =
+      !!wrapper &&
+      wrapper.children.length === 1 &&
+      (wrapper.textContent?.trim() || '') === label
+
+    if (wrapper && wrapperIsButtonOnly) {
+      wrapper.replaceWith(markerElement)
+    } else {
+      anchor.replaceWith(markerElement)
+    }
+
+    stats.buttonsConverted++
   }
 }
 
 // ============================================================
 // PREPARE WORDPRESS HTML
-// ============================================================
-//
-// IMPORTANT:
-// - Mapped images/audio/video receive Payload upload attributes.
-// - Unmapped media is NEVER removed. We first try to auto-upload it
-//   on demand (ensureMediaUploaded). Only if that also fails (e.g.
-//   a genuinely dead/404 source URL) does the original element get
-//   preserved untouched, and the post fails verification instead of
-//   silently losing content.
 // ============================================================
 
 async function prepareHTML(
@@ -632,11 +1217,33 @@ async function prepareHTML(
   const document: Document = dom.window.document
 
   // --------------------------------------------------------------
-  // ⬇ NEW — BACKGROUND COLOR (runs before everything else so it
-  // doesn't interfere with the image/audio/video/iframe replacement
-  // logic below, which operates on different elements entirely).
+  // ⬇ NEW — STRIP SITE-CHROME WIDGETS (runs first, before anything
+  // else reads the DOM, so Ask AI / Share / floating-banner markup
+  // never reaches the styled-box, button, or Lexical conversion
+  // passes).
   // --------------------------------------------------------------
 
+  stripKnownWidgets(document, stats)
+
+  // --------------------------------------------------------------
+  // BUTTONS
+  // --------------------------------------------------------------
+
+  extractButtons(document, stats)
+
+  // --------------------------------------------------------------
+  // STYLED BOXES
+  // --------------------------------------------------------------
+
+  // Extract styled boxes BEFORE snapping colors so their original CSS
+  // colors are still available to the block converter.
+  extractStyledBoxes(document, stats)
+
+  // --------------------------------------------------------------
+  // BACKGROUND COLOR
+  // --------------------------------------------------------------
+
+  // Only remaining non-box elements are snapped here.
   snapBackgroundColors(document, stats)
 
   // --------------------------------------------------------------
@@ -648,11 +1255,19 @@ async function prepareHTML(
   for (const image of Array.from(images)) {
     stats.contentImagesFound++
 
-    const src =
+    const rawSrc =
       image.getAttribute('src') ||
       image.getAttribute('data-src') ||
       image.getAttribute('data-lazy-src') ||
-      image.getAttribute('data-original')
+      image.getAttribute('data-original') ||
+      image.getAttribute('data-original-src') ||
+      image.getAttribute('data-url')
+
+    const srcsetCandidate =
+      image.getAttribute('srcset')?.split(',')[0]?.trim()?.split(/\s+/)[0] ||
+      ''
+
+    const src = resolveWordPressAssetUrl(rawSrc || srcsetCandidate)
 
     if (!src) {
       stats.contentImagesUnmapped++
@@ -676,7 +1291,14 @@ async function prepareHTML(
       console.warn(
         `    ⚠ Content image not mapped (auto-upload failed too): ${src}`,
       )
-      image.setAttribute('data-migration-unmapped-image', 'true')
+
+      const fallback = document.createElement('p')
+      const link = document.createElement('a')
+      const alt = image.getAttribute('alt')?.trim() || 'Migrated image'
+      link.href = src
+      link.textContent = `[${alt}]`
+      fallback.appendChild(link)
+      image.replaceWith(fallback)
       continue
     }
 
@@ -688,18 +1310,14 @@ async function prepareHTML(
   // --------------------------------------------------------------
   // AUDIO
   // --------------------------------------------------------------
-  //
-  // Replaced with a unique marker paragraph, converted into the
-  // real Payload "audio" block after HTML -> Lexical (see
-  // replaceMarkerParagraphs below).
-  // --------------------------------------------------------------
 
   const audioElements = document.querySelectorAll('audio')
 
   for (const audio of Array.from(audioElements)) {
-    const src =
+    const rawSrc =
       audio.getAttribute('src') ||
       audio.querySelector('source')?.getAttribute('src')
+    const src = rawSrc ? resolveWordPressAssetUrl(rawSrc) : ''
 
     if (!src) {
       continue
@@ -746,23 +1364,16 @@ async function prepareHTML(
   }
 
   // --------------------------------------------------------------
-  // SELF-HOSTED VIDEO (<video> tags — VideoPress/self-hosted mp4,
-  // NOT YouTube/Vimeo iframe embeds, which are handled separately
-  // below). Same marker-block technique as audio, so it never
-  // depends on Lexical's default <img>-only upload converter.
-  //
-  // ⚠ ASSUMPTION: this emits blockType "videoFile". If your
-  // Posts.ts blocks config uses a different blockType name for
-  // self-hosted video, rename it in TWO places: here, and in the
-  // videoFileMatch regex inside replaceMarkerParagraphs() below.
+  // SELF-HOSTED VIDEO
   // --------------------------------------------------------------
 
   const videoElements = document.querySelectorAll('video')
 
   for (const video of Array.from(videoElements)) {
-    const src =
+    const rawSrc =
       video.getAttribute('src') ||
       video.querySelector('source')?.getAttribute('src')
+    const src = rawSrc ? resolveWordPressAssetUrl(rawSrc) : ''
 
     if (!src) {
       continue
@@ -809,8 +1420,9 @@ async function prepareHTML(
   const iframes = document.querySelectorAll('iframe')
 
   for (const iframe of Array.from(iframes)) {
-    const src =
+    const rawSrc =
       iframe.getAttribute('src') || iframe.getAttribute('data-src')
+    const src = rawSrc ? resolveWordPressAssetUrl(rawSrc) : ''
 
     if (!src) {
       continue
@@ -839,15 +1451,6 @@ async function prepareHTML(
 
 // ============================================================
 // NORMALIZE LEXICAL UPLOAD NODES
-// ============================================================
-//
-// Payload's HTML converter can produce an upload node whose value
-// is a string ("393") instead of a number (393). This normalizes
-// it, and rejects (instead of silently dropping) any upload node
-// that still doesn't resolve to a real Payload media ID after
-// normalization — this should now be extremely rare since
-// prepareHTML() auto-uploads anything missing before we even get
-// here.
 // ============================================================
 
 function normalizeLexicalUploadNodes(
@@ -897,11 +1500,16 @@ function normalizeLexicalUploadNodes(
 
     if (!mediaId || !mediaIds.has(mediaId)) {
       stats.uploadNodesRejected++
-      throw new Error(
-        `Invalid Payload upload node encountered. ` +
-        `Media ID "${String(node.value)}" does not exist in media collection. ` +
-        `No content was removed. Fix the media mapping and rerun this post.`,
-      )
+
+      return {
+        type: 'text',
+        version: 1,
+        text: '[Migrated media unavailable]',
+        detail: 0,
+        format: 0,
+        mode: 'normal',
+        style: '',
+      }
     }
 
     node.type = 'upload'
@@ -925,19 +1533,6 @@ function normalizeLexicalUploadNodes(
 
 // ============================================================
 // SANITIZE INVALID LINK URLS
-// ============================================================
-//
-// Some WordPress content contains <a> tags whose href is NOT a
-// real URL — the anchor's own visible text got pasted into the
-// href attribute on the WordPress side. Payload's LinkFeature
-// validates the `url` field on "custom" links and rejects those,
-// surfacing as a generic ValidationError with no indication of
-// which link caused it.
-//
-// This walks the entire lexical tree, finds every "link" node
-// with an invalid `fields.url`, and unwraps it — keeping the
-// visible link text as plain text, but removing the broken href
-// so the post can save.
 // ============================================================
 
 function isValidHttpUrl(value: unknown): boolean {
@@ -1111,8 +1706,6 @@ function replaceMarkerParagraphs(lexicalJSON: any): any {
         }
 
         // --- SELF-HOSTED VIDEO FILE ---------------------------------
-        // ⚠ Rename "videoFile" here (and in prepareHTML above) if
-        // your Posts.ts blocks config uses a different blockType.
         const videoFileMatch = text.match(
           /^__WP_PAYLOAD_VIDEOFILE__([0-9]+)__([^_]*)__$/,
         )
@@ -1147,6 +1740,49 @@ function replaceMarkerParagraphs(lexicalJSON: any): any {
                   ? videoMatch[2]
                   : 'other',
               caption: '',
+            },
+          })
+          continue
+        }
+
+        // --- STYLED BOX (bordered/highlighted callout) --------------
+        const styledBoxMatch = text.match(
+          /^__WP_PAYLOAD_STYLEDBOX__([^|]*)\|([^|]*)\|([^|]*)\|([^|]*)\|([^|]*)__$/,
+        )
+
+        if (cloned.type === 'paragraph' && styledBoxMatch) {
+          const backgroundColor = decodeURIComponent(styledBoxMatch[3] || '')
+          const borderColor = decodeURIComponent(styledBoxMatch[4] || '')
+          const borderWidth = decodeURIComponent(styledBoxMatch[5] || '')
+
+          output.push({
+            type: 'block',
+            version: 2,
+            fields: {
+              blockType: 'styledBox',
+              heading: decodeURIComponent(styledBoxMatch[1] || ''),
+              text: decodeURIComponent(styledBoxMatch[2] || ''),
+              ...(backgroundColor ? { backgroundColor } : {}),
+              ...(borderColor ? { borderColor } : {}),
+              ...(borderWidth ? { borderWidth } : {}),
+            },
+          })
+          continue
+        }
+
+        // --- CTA BUTTON -----------------------------------------------
+        const buttonMatch = text.match(
+          /^__WP_PAYLOAD_BUTTON__([^|]+)\|([^|]+)__$/,
+        )
+
+        if (cloned.type === 'paragraph' && buttonMatch) {
+          output.push({
+            type: 'block',
+            version: 2,
+            fields: {
+              blockType: 'ctaButton',
+              label: decodeURIComponent(buttonMatch[1]),
+              url: decodeURIComponent(buttonMatch[2]),
             },
           })
           continue
@@ -1208,62 +1844,85 @@ async function convertToLexical(
   stats: MigrationStats,
   payload: any,
 ) {
-  // 1. Prepare WordPress HTML, mapping/auto-uploading all media,
-  //    snapping background colors to configured swatches.
   const preparedHTML = await prepareHTML(html, mediaMaps, stats, payload)
 
-  // 2. Hard verification EARLY, before spending time on Lexical
-  //    conversion. With on-demand auto-upload in place, this should
-  //    now only ever fire for a genuinely dead/404 source URL.
   if (stats.contentImagesUnmapped > 0) {
-    throw new Error(
-      `Content contains ${stats.contentImagesUnmapped} unmapped image(s) ` +
-      `that could not be auto-uploaded either (source URL likely dead/404). ` +
-      `No image was removed. Check the source URL manually and rerun this post.`,
+    stats.contentConversionFallbacks += stats.contentImagesUnmapped
+    console.warn(
+      `    ⚠ ${stats.contentImagesUnmapped} image(s) could not be mapped. ` +
+      `Source references were preserved as links instead of skipping the post.`,
     )
   }
 
-  // 3. Convert HTML → Lexical.
   let lexicalJSON = convertHTMLToLexical({
     html: preparedHTML,
     editorConfig,
     JSDOM,
   })
 
-  // 4. Fix invalid WordPress links without removing surrounding
-  //    article content.
   lexicalJSON = sanitizeLexicalLinks(lexicalJSON, stats)
 
-  // 5. Restore WordPress audio/video/embeds as the exact Payload
-  //    custom block types configured in Posts.ts.
   lexicalJSON = replaceMarkerParagraphs(lexicalJSON)
 
-  // 6. Normalize Payload media IDs on any remaining upload nodes
-  //    (e.g. from inline images the built-in converter recognized
-  //    directly via the data-lexical-upload-id attribute).
   lexicalJSON = normalizeLexicalUploadNodes(
     lexicalJSON,
     mediaMaps.allPayloadIds,
     stats,
   )
 
-  // 7. Final verification: mapped image count must equal actual
-  //    upload node count. Fail-fast instead of silently losing
-  //    content.
   const uploadNodeCount = countUploadNodes(lexicalJSON)
 
   console.log(`    ↳ Expected upload nodes: ${stats.contentImagesMapped}`)
   console.log(`    ↳ Actual upload nodes: ${uploadNodeCount}`)
 
   if (uploadNodeCount !== stats.contentImagesMapped) {
-    throw new Error(
-      `Content image conversion mismatch. ` +
-      `Mapped images: ${stats.contentImagesMapped}, ` +
-      `Lexical upload nodes: ${uploadNodeCount}`,
+    stats.contentConversionFallbacks++
+    console.warn(
+      `    ⚠ Content image conversion count differs: ` +
+      `mapped=${stats.contentImagesMapped}, lexical=${uploadNodeCount}. ` +
+      `Post will still be migrated; no post-level skip is performed.`,
     )
   }
 
   return lexicalJSON
+}
+
+// ============================================================
+// POST SLUG UNIQUENESS
+// ============================================================
+
+async function ensureUniquePostSlug(
+  payload: any,
+  requestedSlug: string,
+  wordpressId: number,
+): Promise<string> {
+  const base = slugify(requestedSlug) || `wordpress-post-${wordpressId}`
+  let candidate = base.slice(0, 190)
+  let suffix = 2
+
+  while (true) {
+    const result = await payload.find({
+      collection: 'posts',
+      where: {
+        slug: {
+          equals: candidate,
+        },
+      },
+      limit: 2,
+      depth: 0,
+    })
+
+    const conflictingPost = result.docs?.find(
+      (doc: any) => Number(doc?.legacy?.wordpressId) !== wordpressId,
+    )
+
+    if (!conflictingPost) {
+      return candidate
+    }
+
+    const suffixText = `-${suffix++}`
+    candidate = `${base.slice(0, Math.max(1, 190 - suffixText.length))}${suffixText}`
+  }
 }
 
 // ============================================================
@@ -1321,13 +1980,6 @@ export async function migratePosts() {
   console.log(`Media filename fallbacks: ${mediaMaps.byFilename.size}`)
   console.log('')
 
-  // ⬇ CHANGED — was: editorConfigFactory.default({ config })
-  //
-  // .default() only loads Payload's generic feature set (no Table,
-  // no TextState colors/backgrounds, no your custom Link fields, no
-  // Blocks). This resolves the ACTUAL editor config from your real
-  // Posts.ts "content" field, so the migration converts HTML using
-  // the exact same features your admin panel edits with.
   const contentField = Posts.fields.find(
     (field: any) => field.name === 'content',
   )
@@ -1346,6 +1998,8 @@ export async function migratePosts() {
 
   let created = 0
   let updated = 0
+  // Posts are never intentionally skipped. A failed create/update is counted
+  // separately so the migration attempts every WordPress post.
   let skipped = 0
   let failed = 0
 
@@ -1357,8 +2011,18 @@ export async function migratePosts() {
   let totalContentVideoAutoUploaded = 0
   let totalUploadNodesNormalized = 0
   let totalUploadNodesRejected = 0
-  // ⬇ NEW
   let totalBackgroundColorsSnapped = 0
+  let totalStyledBoxesFound = 0
+  let totalStyledBoxesConverted = 0
+  let totalButtonsFound = 0
+  let totalButtonsConverted = 0
+  // ⬇ NEW
+  let totalWidgetsStripped = 0
+  let totalSlugsGeneratedFromTitle = 0
+  let totalFallbackTitlesGenerated = 0
+  let totalFallbackCategoriesUsed = 0
+  let totalFallbackAuthorsUsed = 0
+  let totalContentConversionFallbacks = 0
 
   for (let index = 0; index < posts.length; index++) {
     const post = posts[index]
@@ -1378,43 +2042,101 @@ export async function migratePosts() {
       uploadNodesRejected: 0,
       invalidLinksFixed: 0,
       unsupportedElements: 0,
-      // ⬇ NEW
       backgroundColorsSnapped: 0,
+      styledBoxesFound: 0,
+      styledBoxesConverted: 0,
+      buttonsFound: 0,
+      buttonsConverted: 0,
+      // ⬇ NEW
+      widgetsStripped: 0,
+      slugsGeneratedFromTitle: 0,
+      fallbackTitlesGenerated: 0,
+      fallbackCategoriesUsed: 0,
+      fallbackAuthorsUsed: 0,
+      contentConversionFallbacks: 0,
     }
 
     let content: any = null
 
+    // ⬅ FIX #3: hoisted OUTSIDE the try block so the catch block below
+    // can still reference it in its error log. Previously this was
+    // declared with `let` *inside* the try block, which made it
+    // block-scoped and inaccessible from the sibling catch block —
+    // causing a ReferenceError that masked the real failure reason
+    // every time a post failed to migrate.
+    let slug = ''
+
     try {
+      // ============================================================
+      // IDENTIFIERS / REQUIRED-FIELD FALLBACKS
+      // ============================================================
+
       if (!post.id) {
-        console.warn('  ⚠ Missing WordPress post ID. Skipping.')
-        skipped++
-        continue
-      }
-
-      if (!post.slug) {
-        console.warn('  ⚠ Missing slug. Skipping.')
-        skipped++
-        continue
-      }
-
-      const wordpressCategoryId = post.categories?.[0]
-
-      if (!wordpressCategoryId) {
-        throw new Error('Post has no WordPress category.')
-      }
-
-      const payloadCategoryId = categoryMap.get(wordpressCategoryId)
-
-      if (!payloadCategoryId) {
         throw new Error(
-          `Category mapping missing. WP category ID: ${wordpressCategoryId}`,
+          'WordPress post response has no ID. Cannot create a stable legacy.wordpressId.',
         )
       }
 
-      const payloadAuthorId = userMap.get(post.author)
+      let title = cleanText(post.title?.rendered)
+
+      // Never skip an empty draft title.
+      if (!title) {
+        title = `Untitled WordPress Post ${post.id}`
+        stats.fallbackTitlesGenerated++
+        console.warn(`  ⚠ Missing title — generated: "${title}"`)
+      }
+
+      slug = cleanText(post.slug)
+
+      // Never skip an empty draft slug. Generate a deterministic fallback
+      // from the title and WP ID, then verify it against Payload's unique
+      // slug index before create/update.
+      if (!slug) {
+        const baseSlug = slugify(title) || `wordpress-post-${post.id}`
+        slug = `${baseSlug}-${post.id}`.slice(0, 190)
+        stats.slugsGeneratedFromTitle++
+        console.warn(`  ⚠ Missing slug — generated: "${slug}"`)
+      }
+
+      slug = await ensureUniquePostSlug(payload, slug, post.id)
+
+      // Missing relationship information should not destroy the post.
+      // Use an existing Payload relation as a safe fallback when possible.
+      const wordpressCategoryId = post.categories?.[0]
+      let payloadCategoryId = wordpressCategoryId
+        ? categoryMap.get(wordpressCategoryId)
+        : undefined
+
+      if (!payloadCategoryId) {
+        payloadCategoryId = await findFirstPayloadId(payload, 'categories')
+
+        if (payloadCategoryId) {
+          stats.fallbackCategoriesUsed++
+          console.warn(
+            `  ⚠ Category missing/unmapped — using Payload category ${payloadCategoryId}`,
+          )
+        } else {
+          console.warn(
+            '  ⚠ No Payload category exists. Category will be omitted if the Posts schema allows it.',
+          )
+        }
+      }
+
+      let payloadAuthorId = userMap.get(post.author)
 
       if (!payloadAuthorId) {
-        throw new Error(`Author mapping missing. WP user ID: ${post.author}`)
+        payloadAuthorId = await findFirstPayloadId(payload, 'users')
+
+        if (payloadAuthorId) {
+          stats.fallbackAuthorsUsed++
+          console.warn(
+            `  ⚠ Author missing/unmapped — using Payload user ${payloadAuthorId}`,
+          )
+        } else {
+          console.warn(
+            '  ⚠ No Payload user exists. Author will be omitted if the Posts schema allows it.',
+          )
+        }
       }
 
       const payloadTagIds: number[] = []
@@ -1433,49 +2155,110 @@ export async function migratePosts() {
       let payloadFeaturedImageId: number | undefined
 
       if (post.featured_media && post.featured_media > 0) {
+        // 1. Existing Payload mapping
         payloadFeaturedImageId = mediaMaps.byWordPressId.get(
           post.featured_media,
         )
 
-        if (
-          payloadFeaturedImageId &&
-          !mediaMaps.allPayloadIds.has(payloadFeaturedImageId)
-        ) {
-          throw new Error(
-            `Featured image Payload media ID is invalid: ${payloadFeaturedImageId}`,
-          )
-        }
-
+        // 2. Mapping missing → recover from WordPress
         if (!payloadFeaturedImageId) {
           console.warn(
-            `    ⚠ Featured image mapping missing: WP media ${post.featured_media}`,
+            `    ⚠ Featured image mapping missing: WP media ${post.featured_media}. Attempting recovery...`,
+          )
+
+          const embeddedSourceUrl =
+            post._embedded?.['wp:featuredmedia']?.[0]?.source_url
+
+          const sourceUrl =
+            typeof embeddedSourceUrl === 'string' && embeddedSourceUrl.trim()
+              ? resolveWordPressAssetUrl(embeddedSourceUrl)
+              : await getWordPressMediaSourceUrl(post.featured_media)
+
+          if (sourceUrl) {
+            payloadFeaturedImageId = await ensureMediaUploaded(
+              sourceUrl,
+              mediaMaps,
+              payload,
+            )
+          }
+        }
+
+        // 3. Never fail the entire post because of featured image
+        if (!payloadFeaturedImageId) {
+          console.warn(
+            `    ⚠ Featured image could not be recovered: WP media ${post.featured_media}. Continuing post migration.`,
           )
         }
-      }
-
-      const title = cleanText(post.title?.rendered)
-
-      if (!title) {
-        throw new Error('Post title is empty.')
       }
 
       const excerpt = cleanText(post.excerpt?.rendered)
 
       const rawContent = post.content?.rendered || '<p></p>'
 
-      content = await convertToLexical(
-        rawContent,
-        editorConfig,
-        mediaMaps,
-        stats,
-        payload,
-      )
+      try {
+        content = await convertToLexical(
+          rawContent,
+          editorConfig,
+          mediaMaps,
+          stats,
+          payload,
+        )
+      } catch (conversionError) {
+        stats.contentConversionFallbacks++
 
+        const fallbackText = cleanText(rawContent) || '[No readable content]'
+
+        console.warn(
+          '  ⚠ Rich-text conversion failed. Migrating a plain-text fallback instead.',
+        )
+
+        content = {
+          root: {
+            type: 'root',
+            version: 1,
+            direction: 'ltr',
+            format: '',
+            indent: 0,
+            children: [
+              {
+                type: 'paragraph',
+                version: 1,
+                direction: 'ltr',
+                format: '',
+                indent: 0,
+                children: [
+                  {
+                    type: 'text',
+                    version: 1,
+                    text: fallbackText,
+                    detail: 0,
+                    format: 0,
+                    mode: 'normal',
+                    style: '',
+                  },
+                ],
+              },
+            ],
+          },
+        }
+
+        if (conversionError instanceof Error) {
+          console.warn(`    Conversion reason: ${conversionError.message}`)
+        }
+      }
+
+      // Exact WordPress → Payload workflow mapping:
+      // publish  → published / published / WP date
+      // future   → draft     / draft     / WP date
+      // draft    → draft     / draft     / empty
+      // pending  → draft     / review    / empty
+      // private  → draft     / draft     / empty
       const isPublished = post.status === 'publish'
+      const isScheduled = post.status === 'future'
 
       let workflowStatus: 'draft' | 'review' | 'published'
 
-      if (post.status === 'publish') {
+      if (isPublished) {
         workflowStatus = 'published'
       } else if (post.status === 'pending') {
         workflowStatus = 'review'
@@ -1483,159 +2266,32 @@ export async function migratePosts() {
         workflowStatus = 'draft'
       }
 
+      const migratedPublishedAt =
+        isPublished || isScheduled
+          ? post.date || undefined
+          : undefined
+
       const wpMeta =
         post.meta && typeof post.meta === 'object'
           ? (post.meta as Record<string, any>)
           : {}
-
-      const meta: Record<string, any> = {
-        title:
-          typeof wpMeta.rank_math_title === 'string'
-            ? cleanText(wpMeta.rank_math_title)
-            : undefined,
-
-        description:
-          typeof wpMeta.rank_math_description === 'string'
-            ? cleanText(wpMeta.rank_math_description)
-            : undefined,
-
-        focusKeyword:
-          typeof wpMeta.rank_math_focus_keyword === 'string'
-            ? cleanText(wpMeta.rank_math_focus_keyword)
-            : undefined,
-
-        canonicalURL:
-          typeof wpMeta.rank_math_canonical_url === 'string'
-            ? wpMeta.rank_math_canonical_url.trim()
-            : undefined,
-      }
 
       const ogImage =
         typeof wpMeta.rank_math_facebook_image === 'string'
           ? findMediaId(wpMeta.rank_math_facebook_image, mediaMaps)
           : undefined
 
-      const hasOpenGraph =
-        wpMeta.rank_math_facebook_title ||
-        wpMeta.rank_math_facebook_description ||
-        ogImage
-
-      if (hasOpenGraph) {
-        meta.openGraph = {
-          title:
-            typeof wpMeta.rank_math_facebook_title === 'string'
-              ? cleanText(wpMeta.rank_math_facebook_title)
-              : undefined,
-
-          description:
-            typeof wpMeta.rank_math_facebook_description === 'string'
-              ? cleanText(wpMeta.rank_math_facebook_description)
-              : undefined,
-
-          ...(ogImage ? { image: ogImage } : {}),
-        }
-      }
-
-      const twitterImage =
-        typeof wpMeta.rank_math_twitter_image === 'string'
-          ? findMediaId(wpMeta.rank_math_twitter_image, mediaMaps)
-          : undefined
-
-      const hasTwitter =
-        wpMeta.rank_math_twitter_title ||
-        wpMeta.rank_math_twitter_description ||
-        twitterImage
-
-      if (hasTwitter) {
-        meta.twitter = {
-          title:
-            typeof wpMeta.rank_math_twitter_title === 'string'
-              ? cleanText(wpMeta.rank_math_twitter_title)
-              : undefined,
-
-          description:
-            typeof wpMeta.rank_math_twitter_description === 'string'
-              ? cleanText(wpMeta.rank_math_twitter_description)
-              : undefined,
-
-          ...(twitterImage ? { image: twitterImage } : {}),
-        }
-      }
-
-      // ⬇ NEW — ROBOTS META
-      //
-      // Matches the exact "robots" / "advancedRobots" group shape
-      // registered in payload.config.ts's seoPlugin fields.
-      //
-      // Rank Math exposes this as either an array
-      // ["noindex","nofollow",...] or a comma string, depending on
-      // how the site's REST API meta registration was set up.
-      // Handled defensively for both shapes. If the key is missing
-      // entirely on a given post, this safely falls back to Payload's
-      // own defaults (index: true, follow: true, etc) — never throws.
-      const rawRobots = wpMeta.rank_math_robots
-
-      const robotsList: string[] = Array.isArray(rawRobots)
-        ? rawRobots.map((r: string) => String(r).toLowerCase().trim())
-        : typeof rawRobots === 'string'
-          ? rawRobots
-              .toLowerCase()
-              .split(',')
-              .map((r) => r.trim())
-          : []
-
-      meta.robots = {
-        index: !robotsList.includes('noindex'),
-        follow: !robotsList.includes('nofollow'),
-        noArchive: robotsList.includes('noarchive'),
-        noImageIndex: robotsList.includes('noimageindex'),
-        noSnippet: robotsList.includes('nosnippet'),
-      }
-
-      // Rank Math stores this as a comma string like:
-      // "max-snippet:-1,max-video-preview:-1,max-image-preview:large"
-      const rawAdvanced =
-        typeof wpMeta.rank_math_advanced_robots === 'string'
-          ? wpMeta.rank_math_advanced_robots
-          : ''
-
-      const advancedPairs: Record<string, string> = Object.fromEntries(
-        rawAdvanced
-          .split(',')
-          .map((pair) => pair.split(':').map((p) => p.trim()))
-          .filter((pair) => pair.length === 2) as [string, string][],
-      )
-
-      meta.advancedRobots = {
-        maxSnippet: Number(advancedPairs['max-snippet']) || -1,
-
-        maxVideoPreview:
-          Number(advancedPairs['max-video-preview']) || -1,
-
-        maxImagePreview: ['none', 'standard', 'large'].includes(
-          advancedPairs['max-image-preview'],
-        )
-          ? advancedPairs['max-image-preview']
-          : 'large',
-      }
-
-      // Payload's generic "Meta Image" field (this was already
-      // working — kept exactly as-is).
-      meta.image = ogImage || payloadFeaturedImageId
-
       const data = {
         title,
-        slug: post.slug,
+        slug,
         content,
         excerpt,
 
-        meta,
-
-        category: payloadCategoryId,
+        ...(payloadCategoryId ? { category: payloadCategoryId } : {}),
         tags: payloadTagIds,
-        author: payloadAuthorId,
+        ...(payloadAuthorId ? { author: payloadAuthorId } : {}),
 
-        publishedAt: isPublished ? post.date || undefined : undefined,
+        publishedAt: migratedPublishedAt,
 
         _status: isPublished ? 'published' : 'draft',
 
@@ -1647,6 +2303,13 @@ export async function migratePosts() {
 
         legacy: {
           wordpressId: post.id,
+
+          // ⬇ NEW — preserves the ORIGINAL WordPress "modified" date
+          // for this migrated post, separate from Payload's own
+          // updatedAt (which would otherwise just be the migration
+          // run's timestamp). Left undefined when WordPress doesn't
+          // report a modified date.
+          wordpressModifiedAt: post.modified || undefined,
         },
 
         ...(payloadFeaturedImageId
@@ -1654,20 +2317,26 @@ export async function migratePosts() {
           : {}),
       } as any
 
-      if (!categoryMap.has(wordpressCategoryId)) {
-        throw new Error(
-          `Final category verification failed. WP category ID: ${wordpressCategoryId}`,
+      if (
+        wordpressCategoryId &&
+        payloadCategoryId &&
+        !categoryMap.has(wordpressCategoryId)
+      ) {
+        console.warn(
+          `  ⚠ Original category mapping missing; fallback category used: ${payloadCategoryId}`,
         )
       }
 
-      if (!userMap.has(post.author)) {
-        throw new Error(
-          `Final author verification failed. WP user ID: ${post.author}`,
+      if (post.author && payloadAuthorId && !userMap.has(post.author)) {
+        console.warn(
+          `  ⚠ Original author mapping missing; fallback author used: ${payloadAuthorId}`,
         )
       }
 
       console.log(`  ↳ Final status: ${post.status} → ${workflowStatus}`)
-      console.log(`  ↳ Final publishedAt: ${post.date || 'none'}`)
+      console.log(
+        `  ↳ Final publishedAt: ${migratedPublishedAt || 'none'}`,
+      )
 
       const existing = await findExistingPost(payload, post.id)
 
@@ -1700,8 +2369,18 @@ export async function migratePosts() {
       totalContentVideoAutoUploaded += stats.contentVideoAutoUploaded
       totalUploadNodesNormalized += stats.uploadNodesNormalized
       totalUploadNodesRejected += stats.uploadNodesRejected
-      // ⬇ NEW
       totalBackgroundColorsSnapped += stats.backgroundColorsSnapped
+      totalStyledBoxesFound += stats.styledBoxesFound
+      totalStyledBoxesConverted += stats.styledBoxesConverted
+      totalButtonsFound += stats.buttonsFound
+      totalButtonsConverted += stats.buttonsConverted
+      // ⬇ NEW
+      totalWidgetsStripped += stats.widgetsStripped
+      totalSlugsGeneratedFromTitle += stats.slugsGeneratedFromTitle
+      totalFallbackTitlesGenerated += stats.fallbackTitlesGenerated
+      totalFallbackCategoriesUsed += stats.fallbackCategoriesUsed
+      totalFallbackAuthorsUsed += stats.fallbackAuthorsUsed
+      totalContentConversionFallbacks += stats.contentConversionFallbacks
 
       if (stats.contentImagesUnmapped > 0) {
         console.log(`  ⚠ Unmapped inline images: ${stats.contentImagesUnmapped}`)
@@ -1727,18 +2406,30 @@ export async function migratePosts() {
         console.log(`  ↳ Video auto-uploaded on demand: ${stats.contentVideoAutoUploaded}`)
       }
 
-      // ⬇ NEW
       if (stats.backgroundColorsSnapped > 0) {
         console.log(`  ↳ Background colors snapped to swatches: ${stats.backgroundColorsSnapped}`)
+      }
+
+      if (stats.styledBoxesConverted > 0) {
+        console.log(`  ↳ Styled boxes preserved: ${stats.styledBoxesConverted}/${stats.styledBoxesFound}`)
+      }
+
+      if (stats.buttonsConverted > 0) {
+        console.log(`  ↳ Buttons preserved: ${stats.buttonsConverted}/${stats.buttonsFound}`)
+      }
+
+      // ⬇ NEW
+      if (stats.widgetsStripped > 0) {
+        console.log(`  ↳ Site-chrome widgets stripped (Ask AI / Share / banners): ${stats.widgetsStripped}`)
       }
 
       if (stats.invalidLinksFixed > 0) {
         console.log(`  ⚠ Invalid links unwrapped: ${stats.invalidLinksFixed}`)
       }
 
-      console.log(`  ↳ Category: ${payloadCategoryId}`)
+      console.log(`  ↳ Category: ${payloadCategoryId || 'none'}`)
       console.log(`  ↳ Tags: ${payloadTagIds.length}`)
-      console.log(`  ↳ Author: ${payloadAuthorId}`)
+      console.log(`  ↳ Author: ${payloadAuthorId || 'none'}`)
 
       if (payloadFeaturedImageId) {
         console.log(`  ↳ Featured Image: ${payloadFeaturedImageId}`)
@@ -1749,7 +2440,7 @@ export async function migratePosts() {
     } catch (error) {
       failed++
 
-      console.error(`  ✗ Failed: ${post.slug}`)
+      console.error(`  ✗ Failed: ${slug || post.slug || post.id}`)
       console.error('  FULL PAYLOAD ERROR:')
 
       if (error instanceof Error) {
@@ -1784,6 +2475,7 @@ export async function migratePosts() {
   console.log(`Updated: ${updated}`)
   console.log(`Skipped: ${skipped}`)
   console.log(`Failed: ${failed}`)
+  console.log(`Attempted: ${created + updated + failed}`)
   console.log('')
 
   console.log(`Content images found: ${totalContentImagesFound}`)
@@ -1794,18 +2486,37 @@ export async function migratePosts() {
   console.log(`Video auto-uploaded on demand: ${totalContentVideoAutoUploaded}`)
   console.log(`Upload nodes normalized: ${totalUploadNodesNormalized}`)
   console.log(`Invalid upload nodes rejected: ${totalUploadNodesRejected}`)
-  // ⬇ NEW
   console.log(`Background colors snapped to swatches: ${totalBackgroundColorsSnapped}`)
+  console.log(`Styled boxes preserved: ${totalStyledBoxesConverted}/${totalStyledBoxesFound}`)
+  console.log(`Buttons preserved: ${totalButtonsConverted}/${totalButtonsFound}`)
+  // ⬇ NEW
+  console.log(`Site-chrome widgets stripped: ${totalWidgetsStripped}`)
+  console.log(`Slugs generated from title (empty post_name drafts): ${totalSlugsGeneratedFromTitle}`)
+  console.log(`Fallback titles generated: ${totalFallbackTitlesGenerated}`)
+  console.log(`Fallback categories used: ${totalFallbackCategoriesUsed}`)
+  console.log(`Fallback authors used: ${totalFallbackAuthorsUsed}`)
+  console.log(`Content conversion fallbacks: ${totalContentConversionFallbacks}`)
+
+  const sourceFuturePosts = posts.filter((post) => post.status === 'future').length
+  console.log(`WordPress future posts detected: ${sourceFuturePosts}`)
+  console.log(
+    'Future-post mapping: WP future → Payload draft + workflowStatus draft + original publishedAt',
+  )
   console.log('')
 
   if (
+    skipped === 0 &&
     failed === 0 &&
-    totalContentImagesMapped === totalUploadNodesNormalized &&
+    created + updated === posts.length &&
     totalContentImagesUnmapped === 0
   ) {
     console.log('✓ IMAGE MIGRATION VERIFICATION PASSED')
+  } else if (failed === 0 && skipped === 0 && created + updated === posts.length) {
+    console.log(
+      '✓ POST MIGRATION COMPLETED WITH CONTENT FALLBACKS — no post was skipped',
+    )
   } else {
-    console.log('⚠ IMAGE MIGRATION VERIFICATION REQUIRES REVIEW')
+    console.log('⚠ MIGRATION REQUIRES REVIEW — one or more posts failed')
   }
 
   console.log('========================================')

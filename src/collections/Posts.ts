@@ -52,6 +52,30 @@ export const Posts: CollectionConfig = {
   },
 
   // ==========================================================
+  // PUBLISH LIFECYCLE
+  // ==========================================================
+  // Keep Payload's built-in status, the custom workflow status,
+  // and publishedAt consistent without overwriting historical
+  // WordPress publication dates restored by migration.
+  hooks: {
+    beforeChange: [
+      async ({ data }) => {
+        if (data._status === 'published') {
+          // Only assign a date when a published document does not
+          // already have one. This preserves migrated WP dates.
+          if (!data.publishedAt) {
+            data.publishedAt = new Date().toISOString()
+          }
+
+          data.workflowStatus = 'published'
+        }
+
+        return data
+      },
+    ],
+  },
+
+  // ==========================================================
   // CUSTOM ENDPOINTS
   // ==========================================================
 
@@ -253,11 +277,20 @@ export const Posts: CollectionConfig = {
           // ==================================================
           // TEXT COLOR / FONT / SIZE / STYLE
           // ==================================================
+          //
+          // NOTE: the migration script's snapBackgroundColors()
+          // snaps arbitrary inline background-color styles to the
+          // named swatches: green / yellow / blue / red / gray.
+          // Make sure textStateConfig.backgroundColor (in
+          // '@/fields/textStateConfig') defines exactly those
+          // swatch names, or migrated background colors won't be
+          // recognized by the editor/frontend.
+          // ==================================================
 
           TextStateFeature({
             state: {
               color: textStateConfig.color,
-              backgroundColor: textStateConfig.backgroundColor, 
+              backgroundColor: textStateConfig.backgroundColor,
               fontFamily: textStateConfig.fontFamily,
               fontSize: textStateConfig.fontSize,
               textStyle: textStateConfig.textStyle,
@@ -367,7 +400,7 @@ export const Posts: CollectionConfig = {
               }),
 
               // =================================================
-              // VIDEO / EMBED
+              // VIDEO / EMBED (YouTube, Vimeo, other iframes)
               // =================================================
 
               {
@@ -405,6 +438,48 @@ export const Posts: CollectionConfig = {
                         value: 'other',
                       },
                     ],
+                  },
+
+                  {
+                    name: 'caption',
+                    type: 'text',
+                    label: 'Caption',
+                  },
+                ],
+              },
+
+              // =================================================
+              // ⬇ NEW — SELF-HOSTED VIDEO FILE
+              // =================================================
+              // The migration script's video pass (self-hosted
+              // <video src="..."> tags, as opposed to <iframe>
+              // embeds) emits blockType: 'videoFile' with a
+              // `video` upload relation + `caption`. This block
+              // was referenced by the script but never registered
+              // here, so those videos would fail to save.
+              // =================================================
+
+              {
+                slug: 'videoFile',
+
+                labels: {
+                  singular: 'Video File',
+                  plural: 'Video Files',
+                },
+
+                fields: [
+                  {
+                    name: 'video',
+                    type: 'upload',
+                    relationTo: 'media',
+                    required: true,
+
+                    label: 'Video File',
+
+                    admin: {
+                      description:
+                        'Select a self-hosted video file from the Media library.',
+                    },
                   },
 
                   {
@@ -465,6 +540,129 @@ export const Posts: CollectionConfig = {
                   },
                 ],
               },
+
+              // =================================================
+              // ⬇ NEW — STYLED BOX (bordered / highlighted callout)
+              // =================================================
+              // extractStyledBoxes() in the migration script
+              // detects WordPress <div>/<section>/<blockquote>
+              // elements with an inline border and/or
+              // background-color (FAQ boxes, quote boxes, "Alloy
+              // Pick" cards, etc.) and emits blockType:
+              // 'styledBox' with heading/text/backgroundColor/
+              // borderColor/borderWidth. The script's own comment
+              // warned this block was required but not yet
+              // registered — added here.
+              // =================================================
+
+              {
+                slug: 'styledBox',
+
+                labels: {
+                  singular: 'Styled Box',
+                  plural: 'Styled Boxes',
+                },
+
+                fields: [
+                  {
+                    name: 'heading',
+                    type: 'text',
+                    label: 'Heading',
+                  },
+
+                  {
+                    name: 'text',
+                    type: 'textarea',
+                    label: 'Body Text',
+                  },
+
+                  {
+                    name: 'backgroundColor',
+                    type: 'select',
+                    label: 'Background Color',
+
+                    options: [
+                      { label: 'Green', value: 'green' },
+                      { label: 'Yellow', value: 'yellow' },
+                      { label: 'Blue', value: 'blue' },
+                      { label: 'Red', value: 'red' },
+                      { label: 'Gray', value: 'gray' },
+                    ],
+
+                    admin: {
+                      description:
+                        'Matches the swatch names produced by the WordPress migration background-color snapping.',
+                    },
+                  },
+
+                  {
+                    name: 'borderColor',
+                    type: 'select',
+                    label: 'Border Color',
+
+                    options: [
+                      { label: 'Green', value: 'green' },
+                      { label: 'Yellow', value: 'yellow' },
+                      { label: 'Blue', value: 'blue' },
+                      { label: 'Red', value: 'red' },
+                      { label: 'Gray', value: 'gray' },
+                      { label: 'Brand Green', value: 'brand-green' },
+                    ],
+
+                    admin: {
+                      description:
+                        'Matches the swatch names produced by the WordPress migration border-color snapping (includes brand-green for #1DBA6E).',
+                    },
+                  },
+
+                  {
+                    name: 'borderWidth',
+                    type: 'text',
+                    label: 'Border Width',
+
+                    admin: {
+                      description:
+                        'e.g. "1.5px". Taken from the original inline border-width style when present.',
+                    },
+                  },
+                ],
+              },
+
+              // =================================================
+              // ⬇ NEW — CTA BUTTON
+              // =================================================
+              // extractButtons() in the migration script detects
+              // WordPress button elements (Divi et_pb_button,
+              // Gutenberg wp-block-button__link, .button/.btn) and
+              // emits blockType: 'ctaButton' with label + url.
+              // This block was referenced but never registered —
+              // added here.
+              // =================================================
+
+              {
+                slug: 'ctaButton',
+
+                labels: {
+                  singular: 'CTA Button',
+                  plural: 'CTA Buttons',
+                },
+
+                fields: [
+                  {
+                    name: 'label',
+                    type: 'text',
+                    required: true,
+                    label: 'Button Label',
+                  },
+
+                  {
+                    name: 'url',
+                    type: 'text',
+                    required: true,
+                    label: 'Button URL',
+                  },
+                ],
+              },
             ],
           }),
 
@@ -478,7 +676,7 @@ export const Posts: CollectionConfig = {
 
       admin: {
         description:
-          'Main article content. Add formatted text, links, images, videos, audio, code and tables.',
+          'Main article content. Add formatted text, links, images, videos, audio, styled boxes, buttons, code and tables.',
       },
     },
 
@@ -687,6 +885,24 @@ export const Posts: CollectionConfig = {
           unique: true,
           index: true,
           label: 'WordPress ID',
+        },
+
+        // ⬇ NEW — preserves the ORIGINAL WordPress post.modified date
+        // for migrated posts, separate from Payload's own updatedAt.
+        // Empty for posts created directly in Payload.
+        {
+          name: 'wordpressModifiedAt',
+          type: 'date',
+          label: 'WordPress Modified Date',
+          index: true,
+
+          admin: {
+            description:
+              'Historical WordPress "modified" date, preserved from migration. Empty for posts created directly in Payload.',
+            date: {
+              pickerAppearance: 'dayAndTime',
+            },
+          },
         },
       ],
     },

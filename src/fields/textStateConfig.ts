@@ -1,4 +1,7 @@
 export const textStateConfig = {
+  // ============================================================
+  // TEXT COLOR
+  // ============================================================
   color: {
     black: {
       label: 'Black',
@@ -57,36 +60,45 @@ export const textStateConfig = {
     },
   },
 
-    backgroundColor: {
-    green: {
+  // ============================================================
+  // BACKGROUND COLOR
+  //
+  // IMPORTANT:
+  // These keys intentionally use a unique "bg" prefix.
+  // Payload's editor UI can render state option values using
+  // React keys. Using green/gray/red/etc. here would collide
+  // with the text-color state values.
+  // ============================================================
+  backgroundColor: {
+    bgGreen: {
       label: 'Green Highlight',
       css: {
         'background-color': '#D9F99D',
       },
     },
 
-    yellow: {
+    bgYellow: {
       label: 'Yellow Highlight',
       css: {
         'background-color': '#FEF9C3',
       },
     },
 
-    blue: {
+    bgBlue: {
       label: 'Blue Highlight',
       css: {
         'background-color': '#DBEAFE',
       },
     },
 
-    red: {
+    bgRed: {
       label: 'Red Highlight',
       css: {
         'background-color': '#FEE2E2',
       },
     },
 
-    gray: {
+    bgGray: {
       label: 'Gray Highlight',
       css: {
         'background-color': '#F3F4F6',
@@ -94,6 +106,9 @@ export const textStateConfig = {
     },
   },
 
+  // ============================================================
+  // FONT FAMILY
+  // ============================================================
   fontFamily: {
     default: {
       label: 'Default',
@@ -145,6 +160,9 @@ export const textStateConfig = {
     },
   },
 
+  // ============================================================
+  // FONT SIZE
+  // ============================================================
   fontSize: {
     small: {
       label: 'Small',
@@ -182,6 +200,9 @@ export const textStateConfig = {
     },
   },
 
+  // ============================================================
+  // TEXT STYLE
+  // ============================================================
   textStyle: {
     regular: {
       label: 'Normal',
@@ -213,6 +234,9 @@ export const textStateConfig = {
     },
   },
 
+  // ============================================================
+  // TEXT DECORATION
+  // ============================================================
   decoration: {
     none: {
       label: 'None',

@@ -25,7 +25,7 @@ type WordPressCategory = {
  */
 const WORDPRESS_API_URL =
   process.env.WORDPRESS_API_URL ||
-  'https://staging.alloypress.com/wp-json/wp/v2'
+  'https://staging1.alloypress.com/wp-json/wp/v2'
 
 /**
  * Fetch all WordPress categories
