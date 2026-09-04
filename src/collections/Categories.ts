@@ -5,15 +5,10 @@ const isAdmin: Access = ({ req }) => {
   return req.user?.role === 'admin'
 }
 
-const canRead: Access = ({ req }) => {
-  const role = req.user?.role
-
-  return role === 'editor' || role === 'admin'
-}
+const canRead: Access = () => true 
 
 export const Categories: CollectionConfig = {
   slug: 'categories',
-
   // ==========================================================
   // ADMIN
   // ==========================================================
