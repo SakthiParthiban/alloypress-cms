@@ -326,7 +326,7 @@ export async function migrateMedia() {
     await fs.mkdtemp(
       path.join(
         os.tmpdir(),
-        'alloypress-media-',
+        'alloypress-tmp-',
       ),
     )
 

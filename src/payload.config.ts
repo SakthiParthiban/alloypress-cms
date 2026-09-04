@@ -572,7 +572,7 @@ export default buildConfig({
       },
 
       bucket:
-        process.env.R2_BUCKET || 'alloypress-media',
+        process.env.R2_BUCKET || 'default-bucket',
 
       config: {
 
