@@ -1,0 +1,401 @@
+/* =========================================================
+   AI TOOL REVIEWS
+   Global Design System
+========================================================= */
+
+.ai-tool-reviews {
+  position: relative;
+  width: 100%;
+  padding: 78px 0 86px;
+  background: transparent;
+  isolation: isolate;
+}
+
+/* =========================================================
+   HEADER
+========================================================= */
+
+.ai-tool-reviews-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 24px;
+  margin-bottom: 30px;
+}
+
+.ai-tool-reviews-header h2 {
+  position: relative;
+  margin: 0;
+  padding-left: 12px;
+
+  font-family: "Sora", sans-serif;
+  font-size: 22px;
+  font-weight: 700;
+  line-height: 1.2;
+  letter-spacing: -0.035em;
+
+  color: var(--foreground);
+}
+
+.ai-tool-reviews-header h2::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 1px;
+
+  width: 3px;
+  height: 20px;
+
+  border-radius: var(--radius-pill);
+  background: var(--brand);
+  box-shadow: 0 0 12px var(--brand-glow);
+}
+
+/* =========================================================
+   VIEW ALL
+========================================================= */
+
+.ai-tool-reviews-header .learn-ai-view-all {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+
+  flex: 0 0 auto;
+
+  padding: 8px 13px;
+
+  border: 1px solid var(--border);
+  border-radius: var(--radius-pill);
+
+  background: var(--brand-soft);
+
+  color: var(--brand);
+
+  font-family: "DM Mono", monospace;
+  font-size: 10px;
+  font-weight: 600;
+  line-height: 1;
+  letter-spacing: 0.06em;
+
+  text-decoration: none;
+
+  transition:
+    transform 220ms ease,
+    gap 220ms ease,
+    border-color 220ms ease,
+    background 220ms ease;
+}
+
+.ai-tool-reviews-header .learn-ai-view-all:hover {
+  gap: 10px;
+  transform: translateY(-2px);
+
+  border-color: var(--border-strong);
+
+  background: color-mix(
+    in srgb,
+    var(--brand) 12%,
+    transparent
+  );
+}
+
+/* =========================================================
+   GRID
+========================================================= */
+
+.ai-tool-reviews-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+
+  gap: 18px;
+
+  width: 100%;
+}
+
+/* =========================================================
+   CARD
+========================================================= */
+
+.ai-tool-review-card {
+  display: flex;
+  flex-direction: column;
+
+  min-width: 0;
+  height: 100%;
+
+  overflow: hidden;
+
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+
+  background: var(--card);
+
+  color: inherit;
+  text-decoration: none;
+
+  box-shadow: var(--shadow-sm);
+
+  transition:
+    transform 300ms cubic-bezier(.22, 1, .36, 1),
+    border-color 300ms ease,
+    box-shadow 300ms ease;
+}
+
+.ai-tool-review-card:hover {
+  transform: translateY(-5px);
+
+  border-color: var(--border-strong);
+
+  box-shadow:
+    var(--shadow-md),
+    0 0 24px var(--brand-glow);
+}
+
+/* =========================================================
+   IMAGE
+========================================================= */
+
+.ai-tool-review-image {
+  position: relative;
+
+  width: 100%;
+  aspect-ratio: 16 / 10;
+
+  overflow: hidden;
+
+  background: var(--surface-2);
+}
+
+.ai-tool-review-image img {
+  display: block;
+
+  width: 100%;
+  height: 100%;
+
+  object-fit: cover;
+
+  transition:
+    transform 500ms cubic-bezier(.22, 1, .36, 1);
+}
+
+.ai-tool-review-card:hover
+.ai-tool-review-image img {
+  transform: scale(1.04);
+}
+
+/* =========================================================
+   IMAGE PLACEHOLDER
+========================================================= */
+
+.ai-tool-review-image-placeholder {
+  width: 100%;
+  height: 100%;
+
+  background:
+    radial-gradient(
+      circle at 30% 20%,
+      color-mix(in srgb, var(--brand) 14%, transparent),
+      transparent 55%
+    ),
+    linear-gradient(
+      135deg,
+      var(--surface-2),
+      var(--card)
+    );
+}
+
+/* =========================================================
+   CONTENT
+========================================================= */
+
+.ai-tool-review-content {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+
+  min-width: 0;
+
+  padding: 17px 17px 19px;
+}
+
+/* =========================================================
+   META
+========================================================= */
+
+.ai-tool-review-meta {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+
+  gap: 7px;
+
+  margin-bottom: 9px;
+
+  font-family: "DM Mono", monospace;
+  font-size: 8px;
+  font-weight: 500;
+  line-height: 1.3;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+
+  color: var(--text-muted);
+}
+
+.ai-tool-review-meta span:first-child {
+  color: var(--brand);
+  font-weight: 600;
+}
+
+/* =========================================================
+   TITLE
+========================================================= */
+
+.ai-tool-review-content h3 {
+  display: -webkit-box;
+
+  margin: 0;
+
+  overflow: hidden;
+
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 3;
+
+  font-family: "Sora", sans-serif;
+  font-size: 15px;
+  font-weight: 650;
+  line-height: 1.4;
+  letter-spacing: -0.025em;
+
+  color: var(--foreground);
+
+  transition: color 200ms ease;
+}
+
+.ai-tool-review-card:hover
+.ai-tool-review-content h3 {
+  color: var(--brand);
+}
+
+/* =========================================================
+   EXCERPT
+========================================================= */
+
+.ai-tool-review-content p {
+  display: -webkit-box;
+
+  margin: 9px 0 0;
+
+  overflow: hidden;
+
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 3;
+
+  font-family: "Lora", serif;
+  font-size: 12px;
+  line-height: 1.6;
+
+  color: var(--text-secondary);
+}
+
+/* =========================================================
+   READ REVIEW
+========================================================= */
+
+.ai-tool-review-read {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+
+  margin-top: auto;
+  padding-top: 16px;
+
+  font-family: "Sora", sans-serif;
+  font-size: 10px;
+  font-weight: 600;
+  line-height: 1;
+
+  color: var(--foreground);
+}
+
+.ai-tool-review-read span {
+  color: var(--brand);
+
+  transition:
+    transform 200ms ease;
+}
+
+.ai-tool-review-card:hover
+.ai-tool-review-read span {
+  transform: translate(2px, -2px);
+}
+
+/* =========================================================
+   TABLET
+========================================================= */
+
+@media (max-width: 1050px) {
+  .ai-tool-reviews-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 16px;
+  }
+}
+
+/* =========================================================
+   MOBILE
+========================================================= */
+
+@media (max-width: 640px) {
+  .ai-tool-reviews {
+    padding: 60px 0 65px;
+  }
+
+  .ai-tool-reviews-header {
+    margin-bottom: 22px;
+    gap: 14px;
+  }
+
+  .ai-tool-reviews-header h2 {
+    font-size: 19px;
+  }
+
+  .ai-tool-reviews-header h2::before {
+    height: 18px;
+  }
+
+  .ai-tool-reviews-header .learn-ai-view-all {
+    padding: 7px 10px;
+    font-size: 9px;
+  }
+
+  .ai-tool-reviews-grid {
+    grid-template-columns: 1fr;
+    gap: 15px;
+  }
+
+  .ai-tool-review-content {
+    padding: 16px;
+  }
+
+  .ai-tool-review-content h3 {
+    font-size: 14px;
+  }
+
+  .ai-tool-review-content p {
+    font-size: 12px;
+  }
+}
+
+/* =========================================================
+   REDUCED MOTION
+========================================================= */
+
+@media (prefers-reduced-motion: reduce) {
+  .ai-tool-review-card,
+  .ai-tool-review-image img,
+  .ai-tool-review-content h3,
+  .ai-tool-review-read span,
+  .ai-tool-reviews-header .learn-ai-view-all {
+    transition: none !important;
+  }
+}

@@ -1,5 +1,5 @@
 import Hero from "@/components/home/Hero";
-import Trending from "@/components/home/Trending";
+import LatestUpdate from "@/components/home/LatestUpdates";
 import CategorySection from "@/components/home/CategorySection";
 import AlloyPick from "@/components/home/AlloyPick";
 import LearnAboutAI from "@/components/home/LearnAboutAI";
@@ -13,9 +13,9 @@ export default function Home() {
   return (
     <main>
       <Hero />
-      <Trending />
       <CategorySection />
       <AlloyPick />
+      <LatestUpdate />
       <PopularResources />
       <LearnAboutAI/>
       <RecentAINews />

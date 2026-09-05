@@ -47,7 +47,11 @@ function getMediaUrl(
     return media.url;
   }
 
-  return `http://localhost:3001${media.url}`;
+  const cmsUrl =
+    process.env.PAYLOAD_API_URL ||
+    "http://localhost:3001/api";
+
+  return `${cmsUrl.replace(/\/api$/, "")}${media.url}`;
 }
 
 function getCategory(
@@ -56,10 +60,7 @@ function getCategory(
   name: string;
   slug: string;
 } {
-  if (
-    !category ||
-    typeof category === "number"
-  ) {
+  if (!category || typeof category === "number") {
     return {
       name: "AI",
       slug: "ai",
@@ -99,30 +100,18 @@ function isValidPost(post: Post): boolean {
     return false;
   }
 
-  const title = post.title
-    .trim()
-    .toLowerCase();
+  const title = post.title.trim().toLowerCase();
+  const category = getCategory(post.category);
 
-  const category = getCategory(
-    post.category
-  );
-
-  /*
-   * Remove migrated WordPress junk.
-   */
-  if (
-    title.includes("untitled wordpress")
-  ) {
+  // Remove migrated WordPress junk.
+  if (title.includes("untitled wordpress")) {
     return false;
   }
 
-  /*
-   * Remove Uncategorized content.
-   */
+  // Remove Uncategorized content.
   if (
     category.slug === "uncategorized" ||
-    category.name.toLowerCase() ===
-      "uncategorized"
+    category.name.toLowerCase() === "uncategorized"
   ) {
     return false;
   }
@@ -135,21 +124,30 @@ function isValidPost(post: Post): boolean {
    ========================================================= */
 
 async function getPublishedPosts(): Promise<Post[]> {
-  const data =
-    await payloadFetch<PayloadResponse>(
-      "/posts?where[workflowStatus][equals]=published&sort=-publishedAt&limit=30&depth=1",
-      {
-        next: {
-          revalidate: 60,
-        },
-      }
+  try {
+    const data =
+      await payloadFetch<PayloadResponse>(
+        "/posts?where[workflowStatus][equals]=published&sort=-publishedAt&limit=30&depth=1",
+        {
+          next: {
+            revalidate: 60,
+          },
+        }
+      );
+
+    if (!data?.docs) {
+      return [];
+    }
+
+    return data.docs.filter(isValidPost);
+  } catch (error) {
+    console.error(
+      "Alloy Pick / Trending posts error:",
+      error
     );
 
-  if (!data?.docs) {
     return [];
   }
-
-  return data.docs.filter(isValidPost);
 }
 
 /* =========================================================
@@ -163,9 +161,7 @@ function selectAlloyPick(
     return null;
   }
 
-  /*
-   * 1. Prefer cornerstone content.
-   */
+  // 1. Prefer cornerstone content.
   const cornerstone = posts.find(
     (post) => post.cornerstone === true
   );
@@ -174,13 +170,7 @@ function selectAlloyPick(
     return cornerstone;
   }
 
-  /*
-   * 2. Otherwise use an older meaningful post.
-   *
-   * Posts are newest → oldest.
-   * Pick from the older portion so Alloy Pick
-   * doesn't always duplicate the newest article.
-   */
+  // 2. Otherwise choose from the older meaningful portion.
   const olderStart = Math.floor(
     posts.length * 0.45
   );
@@ -212,15 +202,19 @@ export default async function AlloyPick() {
   }
 
   /*
-   * Recent posts:
-   * newest valid posts excluding Alloy Pick.
+   * NEW HOMEPAGE STRUCTURE
+   *
+   * Alloy Pick + Trending Articles
+   *
+   * Recent Posts has been completely removed.
    */
-  const recentPosts = posts
+
+  const trendingPosts = posts
     .filter(
       (post) =>
         post.id !== alloyPick.id
     )
-    .slice(0, 3);
+    .slice(0, 5);
 
   const pickImage =
     getMediaUrl(
@@ -234,8 +228,8 @@ export default async function AlloyPick() {
 
   return (
     <section
-      className="alloy-pick-section"
-      aria-labelledby="alloy-pick-title"
+      className="alloy-trending-section"
+      aria-labelledby="alloy-trending-title"
     >
       <div className="container">
 
@@ -243,16 +237,20 @@ export default async function AlloyPick() {
             HEADER
         ================================================= */}
 
-        <div className="alloy-pick-header">
-          <div className="alloy-pick-heading">
-            <span
-              className="alloy-pick-line"
-              aria-hidden="true"
-            />
+        <div className="alloy-trending-header">
 
-            <h2 id="alloy-pick-title">
-              Alloy Pick
-            </h2>
+          <div className="alloy-trending-heading">
+
+            <div>
+              <span className="eyebrow">
+                TRENDING NOW
+              </span>
+
+              <h2 id="alloy-trending-title">
+                Alloy Picks
+              </h2>
+            </div>
+
           </div>
 
           <Link
@@ -264,16 +262,17 @@ export default async function AlloyPick() {
               →
             </span>
           </Link>
+
         </div>
 
         {/* =================================================
-            CONTENT
+            ALLOY PICK + TRENDING
         ================================================= */}
 
-        <div className="alloy-pick-grid">
+        <div className="alloy-trending-grid">
 
           {/* =================================================
-              FEATURED POST
+              ALLOY PICK
           ================================================= */}
 
           <Link
@@ -281,6 +280,7 @@ export default async function AlloyPick() {
             className="alloy-featured-card"
             aria-label={`Read ${alloyPick.title}`}
           >
+
             <div className="alloy-featured-image">
 
               {pickImage ? (
@@ -296,7 +296,7 @@ export default async function AlloyPick() {
                         "AlloyPress featured article"
                   }
                   fill
-                  sizes="(max-width: 900px) 100vw, 60vw"
+                  sizes="(max-width: 900px) 100vw, 58vw"
                   priority
                 />
               ) : (
@@ -304,11 +304,10 @@ export default async function AlloyPick() {
                   className="alloy-image-placeholder"
                   aria-hidden="true"
                 >
-                  <div className="alloy-placeholder-grid" />
-
                   <span>AI</span>
                 </div>
               )}
+
             </div>
 
             <div className="alloy-featured-content">
@@ -323,7 +322,7 @@ export default async function AlloyPick() {
                 </span>
 
                 <span>
-                  FEATURED
+                  ALLOY PICK
                 </span>
               </div>
 
@@ -331,13 +330,8 @@ export default async function AlloyPick() {
                 {alloyPick.title}
               </h3>
 
-              {alloyPick.excerpt && (
-                <p>
-                  {alloyPick.excerpt}
-                </p>
-              )}
-
               <div className="alloy-featured-meta">
+
                 <span>
                   AlloyPress Team
                 </span>
@@ -357,40 +351,30 @@ export default async function AlloyPick() {
                   )}
                 </time>
 
-                <span aria-hidden="true">
-                  •
-                </span>
-
-                <span>
-                  {pickCategory.name}
-                </span>
               </div>
+
             </div>
+
           </Link>
 
           {/* =================================================
-              RECENT POSTS
+              TRENDING ARTICLES
+              NO IMAGES
           ================================================= */}
 
-          <div className="alloy-recent">
+          <div className="alloy-trending-posts">
 
-            <div className="alloy-recent-heading">
-              <span
-                className="alloy-recent-dot"
-                aria-hidden="true"
-              />
-
-              RECENT POSTS
+            <div className="alloy-trending-posts-heading">
+              <span className="trending-live-dot" />
+              <span>
+                TRENDING ARTICLES
+              </span>
             </div>
 
-            <div className="alloy-recent-list">
+            <div className="alloy-trending-list">
 
-              {recentPosts.map(
-                (post) => {
-                  const image =
-                    getMediaUrl(
-                      post.featuredImage
-                    );
+              {trendingPosts.map(
+                (post, index) => {
 
                   const category =
                     getCategory(
@@ -401,40 +385,21 @@ export default async function AlloyPick() {
                     <Link
                       key={post.id}
                       href={`/blogs/${post.slug}`}
-                      className="alloy-recent-card"
+                      className="alloy-trending-card"
                       aria-label={`Read ${post.title}`}
                     >
-                      <div className="alloy-recent-image">
 
-                        {image ? (
-                          <Image
-                            src={image}
-                            alt={
-                              typeof post.featuredImage ===
-                              "object"
-                                ? post.featuredImage?.alt ||
-                                  post.title ||
-                                  "AlloyPress article"
-                                : post.title ||
-                                  "AlloyPress article"
-                            }
-                            fill
-                            sizes="72px"
-                          />
-                        ) : (
-                          <div
-                            className="alloy-recent-placeholder"
-                            aria-hidden="true"
-                          >
-                            AI
-                          </div>
-                        )}
-                      </div>
+                      <span className="alloy-trending-number">
+                        {String(
+                          index + 1
+                        ).padStart(2, "0")}
+                      </span>
 
-                      <div className="alloy-recent-content">
+                      <div className="alloy-trending-content">
 
-                        <div className="alloy-recent-meta">
-                          <span className="alloy-recent-category">
+                        <div className="alloy-trending-meta">
+
+                          <span>
                             {category.name}
                           </span>
 
@@ -448,28 +413,33 @@ export default async function AlloyPick() {
                               post.publishedAt
                             )}
                           </time>
+
                         </div>
 
                         <h3>
                           {post.title}
                         </h3>
+
                       </div>
 
                       <span
-                        className="alloy-recent-arrow"
+                        className="alloy-trending-arrow"
                         aria-hidden="true"
                       >
                         ↗
                       </span>
+
                     </Link>
                   );
                 }
               )}
 
             </div>
+
           </div>
 
         </div>
+
       </div>
     </section>
   );

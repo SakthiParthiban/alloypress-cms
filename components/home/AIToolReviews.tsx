@@ -1,5 +1,3 @@
-import AIToolReviewsCarousel from "./AIToolReviewsCarousel";
-
 const PAYLOAD_URL =
   process.env.PAYLOAD_API_URL || "http://localhost:3001/api";
 
@@ -21,7 +19,6 @@ export type ReviewPost = {
 
 async function getReviewPosts(): Promise<ReviewPost[]> {
   try {
-    // Get Reviews category
     const categoryResponse = await fetch(
       `${PAYLOAD_URL}/categories?where[slug][equals]=reviews&limit=1`,
       {
@@ -42,7 +39,6 @@ async function getReviewPosts(): Promise<ReviewPost[]> {
       return [];
     }
 
-    // Get published review posts
     const postsResponse = await fetch(
       `${PAYLOAD_URL}/posts?where[workflowStatus][equals]=published&where[category][equals]=${encodeURIComponent(
         category.id
@@ -72,7 +68,7 @@ async function getReviewPosts(): Promise<ReviewPost[]> {
           post?.slug &&
           !/^Untitled WordPress Post/i.test(post.title)
       )
-      .slice(0, 8);
+      .slice(0, 4);
   } catch {
     return [];
   }
@@ -89,10 +85,7 @@ function getImageUrl(
   }
 
   if (typeof featuredImage === "number") {
-    return `${PAYLOAD_URL.replace(
-      /\/api$/,
-      ""
-    )}/api/media/${featuredImage}`;
+    return `${PAYLOAD_URL.replace(/\/api$/, "")}/api/media/${featuredImage}`;
   }
 
   return null;
@@ -170,7 +163,49 @@ export default async function AIToolReviews() {
           </a>
         </div>
 
-        <AIToolReviewsCarousel cards={cards} />
+        <div className="ai-tool-reviews-grid">
+          {cards.map((card) => (
+            <a
+              key={card.id}
+              href={`/reviews/${card.slug}`}
+              className="ai-tool-review-card"
+            >
+              <div className="ai-tool-review-image">
+                {card.image ? (
+                  <img
+                    src={card.image}
+                    alt={card.imageAlt}
+                    loading="lazy"
+                  />
+                ) : (
+                  <div className="ai-tool-review-image-placeholder" />
+                )}
+              </div>
+
+              <div className="ai-tool-review-content">
+                <div className="ai-tool-review-meta">
+                  <span>AI TOOL REVIEW</span>
+                  {card.publishedAt && (
+                    <>
+                      <span aria-hidden="true">·</span>
+                      <time>{card.publishedAt}</time>
+                    </>
+                  )}
+                </div>
+
+                <h3>{card.title}</h3>
+
+                {card.excerpt && (
+                  <p>{card.excerpt}</p>
+                )}
+
+                <span className="ai-tool-review-read">
+                  Read review <span>↗</span>
+                </span>
+              </div>
+            </a>
+          ))}
+        </div>
       </div>
     </section>
   );

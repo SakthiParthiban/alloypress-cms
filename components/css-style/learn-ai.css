@@ -1,0 +1,905 @@
+/*=========================================================
+   LEARN ABOUT AI
+   INFINITE PREMIUM CAROUSEL
+========================================================= */
+
+.learn-ai-section {
+  position: relative;
+
+  overflow: hidden;
+
+  padding:
+    72px 0 88px;
+
+  background:
+    radial-gradient(
+      circle at 8% 45%,
+      rgba(24, 201, 116, 0.035),
+      transparent 28%
+    ),
+    radial-gradient(
+      circle at 92% 60%,
+      rgba(24, 201, 116, 0.045),
+      transparent 30%
+    ),
+    var(--background);
+}
+
+
+/* =========================================================
+   HEADER
+========================================================= */
+
+.learn-ai-header {
+  display: flex;
+
+  align-items: center;
+
+  justify-content: space-between;
+
+  margin-bottom:
+    24px;
+}
+
+
+/* =========================================================
+   HEADING
+========================================================= */
+
+.learn-ai-heading {
+  display: flex;
+
+  align-items: center;
+
+  gap:
+    10px;
+}
+
+.learn-ai-heading-line {
+  width:
+    4px;
+
+  height:
+    27px;
+
+  flex:
+    0 0 auto;
+
+  border-radius:
+    999px;
+
+  background:
+    linear-gradient(
+      180deg,
+      #20d77e,
+      #12b866
+    );
+
+  box-shadow:
+    0 0 16px
+    rgba(24, 201, 116, 0.20);
+}
+
+.learn-ai-heading h2 {
+  margin:
+    0;
+
+  font-family:
+    "Sora",
+    sans-serif;
+
+  font-size:
+    25px;
+
+  line-height:
+    1.1;
+
+  font-weight:
+    750;
+
+  letter-spacing:
+    -0.055em;
+
+  color:
+    var(--foreground);
+}
+
+
+/* =========================================================
+   VIEW ALL
+========================================================= */
+
+.learn-ai-view-all {
+  display: inline-flex;
+  width: fit-content;
+  flex: 0 0 auto;
+  align-items: center;
+  gap: 7px;
+  padding: 8px 13px;
+  border: 1px solid rgba(24, 201, 116, 0.18);
+  border-radius: 999px;
+  background: rgba(24, 201, 116, 0.045);
+  color: var(--brand);
+  font-family: "DM Mono", monospace;
+  font-size: 9px;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-decoration: none;
+  white-space: nowrap;
+  transition: transform 220ms ease, background 220ms ease, gap 220ms ease;
+}
+
+.learn-ai-view-all:hover {
+  transform: translateY(-2px);
+  gap: 10px;
+  background: rgba(24, 201, 116, 0.09);
+}
+
+
+/* =========================================================
+   CAROUSEL
+========================================================= */
+
+.learn-ai-carousel {
+  position:
+    relative;
+
+  width:
+    100%;
+}
+
+
+/* =========================================================
+   TRACK
+========================================================= */
+
+.learn-ai-track {
+  display:
+    flex;
+
+  gap:
+    16px;
+
+  width:
+    100%;
+
+  overflow-x:
+    auto;
+
+  overflow-y:
+    hidden;
+
+  padding:
+    4px 2px 10px;
+
+  scrollbar-width:
+    none;
+
+  -ms-overflow-style:
+    none;
+
+  scroll-snap-type:
+    x mandatory;
+
+  scroll-padding:
+    2px;
+
+  touch-action:
+    pan-x;
+
+  cursor:
+    grab;
+
+  user-select:
+    none;
+
+  -webkit-user-select:
+    none;
+}
+
+.learn-ai-track::-webkit-scrollbar {
+  display:
+    none;
+}
+
+.learn-ai-track:active {
+  cursor:
+    grabbing;
+}
+
+
+/* =========================================================
+   CARD
+========================================================= */
+
+.learn-ai-card {
+  position:
+    relative;
+
+  flex:
+    0 0
+    calc(
+      (100% - 32px) / 3
+    );
+
+  min-width:
+    0;
+
+  overflow:
+    hidden;
+
+  scroll-snap-align:
+    start;
+
+  scroll-snap-stop:
+    always;
+
+  border:
+    1px solid
+    var(--border);
+
+  border-radius:
+    17px;
+
+  background:
+    var(--card);
+
+  box-shadow:
+    0 10px 35px
+    rgba(20, 35, 45, 0.045);
+
+  transition:
+    transform 420ms
+      cubic-bezier(.22, 1, .36, 1),
+    border-color 300ms ease,
+    box-shadow 420ms ease;
+}
+
+
+/* =========================================================
+   CARD HOVER
+========================================================= */
+
+.learn-ai-card:hover {
+  transform:
+    translateY(-6px);
+
+  border-color:
+    rgba(24, 201, 116, 0.30);
+
+  box-shadow:
+    0 25px 60px
+      rgba(20, 35, 45, 0.11),
+    0 8px 22px
+      rgba(24, 201, 116, 0.055);
+}
+
+
+/* =========================================================
+   LINK
+========================================================= */
+
+.learn-ai-card-link {
+  display:
+    block;
+
+  width:
+    100%;
+
+  color:
+    inherit;
+
+  text-decoration:
+    none;
+}
+
+
+/* =========================================================
+   IMAGE
+========================================================= */
+
+.learn-ai-image {
+  position:
+    relative;
+
+  width:
+    100%;
+
+  aspect-ratio:
+    16 / 9;
+
+  overflow:
+    hidden;
+
+  background:
+    #07100d;
+}
+
+.learn-ai-image-inner {
+  object-fit:
+    cover;
+
+  transition:
+    transform 750ms
+      cubic-bezier(.22, 1, .36, 1);
+}
+
+.learn-ai-card:hover
+.learn-ai-image-inner {
+  transform:
+    scale(1.045);
+}
+
+
+/* =========================================================
+   IMAGE OVERLAY
+========================================================= */
+
+.learn-ai-image-overlay {
+  position:
+    absolute;
+
+  inset:
+    0;
+
+  background:
+    linear-gradient(
+      180deg,
+      transparent 45%,
+      rgba(0, 0, 0, 0.45)
+    );
+
+  pointer-events:
+    none;
+}
+
+
+/* =========================================================
+   CATEGORY LABEL
+========================================================= */
+
+.learn-ai-image-label {
+  position:
+    absolute;
+
+  left:
+    13px;
+
+  bottom:
+    12px;
+
+  z-index:
+    2;
+
+  padding:
+    6px 9px;
+
+  border:
+    1px solid
+    rgba(255, 255, 255, 0.25);
+
+  border-radius:
+    999px;
+
+  background:
+    rgba(5, 15, 11, 0.62);
+
+  backdrop-filter:
+    blur(10px);
+
+  -webkit-backdrop-filter:
+    blur(10px);
+
+  color:
+    #ffffff;
+
+  font-family:
+    "DM Mono",
+    monospace;
+
+  font-size:
+    7px;
+
+  line-height:
+    1;
+
+  font-weight:
+    600;
+
+  letter-spacing:
+    0.10em;
+
+  text-transform:
+    uppercase;
+}
+
+
+/* =========================================================
+   FALLBACK IMAGE
+========================================================= */
+
+.learn-ai-image-fallback {
+  position:
+    absolute;
+
+  inset:
+    0;
+
+  display:
+    grid;
+
+  place-items:
+    center;
+
+  background:
+    radial-gradient(
+      circle at center,
+      rgba(24, 201, 116, 0.22),
+      transparent 58%
+    ),
+    #08130f;
+}
+
+.learn-ai-image-fallback span {
+  font-family:
+    "DM Mono",
+    monospace;
+
+  font-size:
+    34px;
+
+  color:
+    var(--brand);
+}
+
+
+/* =========================================================
+   CARD CONTENT
+========================================================= */
+
+.learn-ai-card-content {
+  padding:
+    17px 17px 15px;
+}
+
+
+/* =========================================================
+   META
+========================================================= */
+
+.learn-ai-meta {
+  display:
+    flex;
+
+  align-items:
+    center;
+
+  gap:
+    7px;
+
+  margin-bottom:
+    8px;
+
+  font-family:
+    "DM Mono",
+    monospace;
+
+  font-size:
+    7px;
+
+  line-height:
+    1;
+
+  letter-spacing:
+    0.08em;
+
+  text-transform:
+    uppercase;
+
+  color:
+    var(--brand);
+}
+
+.learn-ai-meta i {
+  width:
+    3px;
+
+  height:
+    3px;
+
+  flex:
+    0 0 auto;
+
+  border-radius:
+    50%;
+
+  background:
+    var(--muted-foreground);
+}
+
+
+/* =========================================================
+   TITLE
+========================================================= */
+
+.learn-ai-card-content h3 {
+  display:
+    -webkit-box;
+
+  margin:
+    0 0 8px;
+
+  overflow:
+    hidden;
+
+  font-family:
+    "Sora",
+    sans-serif;
+
+  font-size:
+    15px;
+
+  line-height:
+    1.36;
+
+  font-weight:
+    680;
+
+  letter-spacing:
+    -0.035em;
+
+  color:
+    var(--foreground);
+
+  -webkit-line-clamp:
+    2;
+
+  -webkit-box-orient:
+    vertical;
+}
+
+
+/* =========================================================
+   EXCERPT
+========================================================= */
+
+.learn-ai-card-content p {
+  display:
+    -webkit-box;
+
+  margin:
+    0 0 14px;
+
+  overflow:
+    hidden;
+
+  font-family:
+    "Lora",
+    serif;
+
+  font-size:
+    10.5px;
+
+  line-height:
+    1.6;
+
+  color:
+    var(--muted-foreground);
+
+  -webkit-line-clamp:
+    2;
+
+  -webkit-box-orient:
+    vertical;
+}
+
+
+/* =========================================================
+   FOOTER
+========================================================= */
+
+.learn-ai-card-footer {
+  display:
+    flex;
+
+  align-items:
+    center;
+
+  justify-content:
+    space-between;
+
+  padding-top:
+    11px;
+
+  border-top:
+    1px solid
+    var(--border);
+
+  font-family:
+    "DM Mono",
+    monospace;
+
+  font-size:
+    7px;
+
+  line-height:
+    1;
+
+  color:
+    var(--muted-foreground);
+}
+
+.learn-ai-card-arrow {
+  font-size:
+    11px;
+
+  color:
+    var(--muted-foreground);
+
+  transition:
+    transform 220ms ease,
+    color 220ms ease;
+}
+
+.learn-ai-card:hover
+.learn-ai-card-arrow {
+  transform:
+    translate(
+      2px,
+      -2px
+    );
+
+  color:
+    var(--brand);
+}
+
+
+/* =========================================================
+   PAGINATION
+========================================================= */
+
+.learn-ai-pagination {
+  display:
+    flex;
+
+  align-items:
+    center;
+
+  justify-content:
+    center;
+
+  gap:
+    7px;
+
+  margin-top:
+    17px;
+}
+
+
+/* =========================================================
+   DOT
+========================================================= */
+
+.learn-ai-dot {
+  width:
+    6px;
+
+  height:
+    6px;
+
+  padding:
+    0;
+
+  border:
+    0;
+
+  border-radius:
+    999px;
+
+  background:
+    var(--muted-foreground);
+
+  opacity:
+    0.28;
+
+  cursor:
+    pointer;
+
+  transition:
+    width 300ms
+      cubic-bezier(.22, 1, .36, 1),
+    opacity 250ms ease,
+    background 250ms ease,
+    transform 250ms ease;
+}
+
+.learn-ai-dot:hover {
+  opacity:
+    0.60;
+
+  transform:
+    scale(1.2);
+}
+
+
+/* =========================================================
+   ACTIVE DOT
+========================================================= */
+
+.learn-ai-dot.is-active {
+  width:
+    24px;
+
+  opacity:
+    1;
+
+  background:
+    var(--brand);
+
+  box-shadow:
+    0 0 12px
+    rgba(24, 201, 116, 0.30);
+}
+
+
+/* =========================================================
+   DARK MODE
+========================================================= */
+
+[data-theme="dark"]
+.learn-ai-section,
+.dark
+.learn-ai-section {
+  background:
+    radial-gradient(
+      circle at 8% 45%,
+      rgba(24, 201, 116, 0.05),
+      transparent 28%
+    ),
+    radial-gradient(
+      circle at 92% 60%,
+      rgba(24, 201, 116, 0.065),
+      transparent 30%
+    ),
+    var(--background);
+}
+
+[data-theme="dark"]
+.learn-ai-card,
+.dark
+.learn-ai-card {
+  background:
+    rgba(14, 24, 20, 0.86);
+
+  border-color:
+    rgba(24, 201, 116, 0.13);
+}
+
+[data-theme="dark"]
+.learn-ai-card:hover,
+.dark
+.learn-ai-card:hover {
+  border-color:
+    rgba(24, 201, 116, 0.32);
+}
+
+
+/* =========================================================
+   TABLET
+========================================================= */
+
+@media (max-width: 1050px) {
+
+  .learn-ai-section {
+    padding:
+      64px 0 78px;
+  }
+
+  .learn-ai-card {
+    flex:
+      0 0
+      calc(
+        (100% - 16px) / 2
+      );
+  }
+}
+
+
+/* =========================================================
+   MOBILE
+========================================================= */
+
+@media (max-width: 650px) {
+
+  .learn-ai-section {
+    padding:
+      54px 0 68px;
+  }
+
+  .learn-ai-header {
+    margin-bottom:
+      18px;
+  }
+
+  .learn-ai-heading {
+    gap:
+      8px;
+  }
+
+  .learn-ai-heading-line {
+    width:
+      3px;
+
+    height:
+      22px;
+  }
+
+  .learn-ai-heading h2 {
+    font-size:
+      20px;
+  }
+
+  .learn-ai-view-all {
+    padding:
+      7px 10px;
+
+    font-size:
+      8px;
+  }
+
+  .learn-ai-track {
+    gap:
+      13px;
+
+    padding:
+      3px 2px 8px;
+  }
+
+  .learn-ai-card {
+    flex:
+      0 0
+      88%;
+  }
+
+  .learn-ai-card-content {
+    padding:
+      15px;
+  }
+
+  .learn-ai-card-content h3 {
+    font-size:
+      16px;
+  }
+
+  .learn-ai-card-content p {
+    font-size:
+      10px;
+  }
+
+  .learn-ai-pagination {
+    margin-top:
+      15px;
+  }
+}
+
+
+/* =========================================================
+   REDUCED MOTION
+========================================================= */
+
+@media (prefers-reduced-motion: reduce) {
+
+  .learn-ai-card,
+  .learn-ai-image-inner,
+  .learn-ai-card-arrow,
+  .learn-ai-view-all,
+  .learn-ai-dot {
+    transition:
+      none !important;
+  }
+
+  .learn-ai-track {
+    scroll-behavior:
+      auto;
+  }
+}

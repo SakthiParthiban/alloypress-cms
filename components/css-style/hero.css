@@ -1,0 +1,2664 @@
+/* =========================================================
+   ALLOYPRESS — HERO SECTION
+   Theme values are intentionally inherited from globals.css.
+   Do not hardcode brand/background/text colors in this file.
+   ========================================================= */
+
+/* =========================================================
+   HOME HERO
+   ========================================================= */
+
+.home-hero {
+  position: relative;
+  isolation: isolate;
+
+  overflow: hidden;
+
+  padding: 54px 0 48px;
+
+  background: transparent;
+
+  color: var(--foreground);
+}
+
+/* Very subtle editorial grid */
+.home-hero::before {
+  content: "";
+
+  position: absolute;
+  inset: 0;
+
+  pointer-events: none;
+
+  opacity: 0.32;
+
+  background-image:
+    linear-gradient(
+      to right,
+      var(--border) 1px,
+      transparent 1px
+    ),
+    linear-gradient(
+      to bottom,
+      var(--border) 1px,
+      transparent 1px
+    );
+
+  background-size: 120px 120px;
+
+  mask-image: linear-gradient(
+    to bottom,
+    black 0%,
+    black 62%,
+    transparent 100%
+  );
+
+  -webkit-mask-image: linear-gradient(
+    to bottom,
+    black 0%,
+    black 62%,
+    transparent 100%
+  );
+}
+
+/* Soft green atmosphere behind the visual */
+.home-hero::after {
+  content: "";
+
+  position: absolute;
+
+  top: 10%;
+  right: 8%;
+
+  width: 560px;
+  height: 560px;
+
+  border-radius: var(--radius-pill);
+
+  pointer-events: none;
+
+  background:
+    radial-gradient(
+      circle,
+      var(--brand-soft) 0%,
+      transparent 68%
+    );
+
+  filter: blur(8px);
+
+  opacity: 0.9;
+
+  z-index: -1;
+}
+
+
+/* =========================================================
+   HERO GRID
+   ========================================================= */
+
+.hero-grid {
+  position: relative;
+  z-index: 2;
+
+  display: grid;
+
+  grid-template-columns:
+    minmax(0, 0.98fr)
+    minmax(0, 1.02fr);
+
+  gap: 42px;
+
+  align-items: start;
+
+  min-width: 0;
+}
+
+
+/* =========================================================
+   HERO CONTENT
+   ========================================================= */
+
+.hero-content {
+  position: relative;
+  z-index: 5;
+
+  width: 100%;
+  max-width: 650px;
+  min-width: 0;
+
+  padding-left: 18px;
+}
+
+.hero-eyebrow {
+  display: inline-flex;
+  align-items: center;
+
+  gap: 9px;
+
+  margin: 0 0 24px;
+
+  color: var(--brand);
+
+  font-family: var(--font-mono);
+
+  font-size: 10px;
+  font-weight: 500;
+
+  line-height: 1.4;
+
+  letter-spacing: 0.13em;
+  text-transform: none;
+}
+
+.hero-eyebrow-dot {
+  width: 7px;
+  height: 7px;
+
+  flex: 0 0 auto;
+
+  border-radius: var(--radius-pill);
+
+  background: var(--brand);
+
+  box-shadow:
+    0 0 0 4px var(--brand-soft);
+}
+
+.hero-title {
+  max-width: 590px;
+
+  margin: 0;
+
+  color: var(--foreground);
+
+  font-family: var(--font-ui);
+
+  font-size: clamp(
+    48px,
+    4.25vw,
+    62px
+  );
+
+  font-weight: 650;
+
+  line-height: 1.25;
+
+  letter-spacing: -0.055em;
+
+  text-wrap: balance;
+}
+
+.hero-title span {
+  color: var(--brand);
+}
+
+.hero-description {
+  max-width: 510px;
+
+  margin-top: 24px;
+
+  color: var(--text-secondary);
+
+  font-family: var(--font-ui);
+
+  font-size: 15px;
+
+  line-height: 1.7;
+
+  text-wrap: pretty;
+}
+
+.hero-actions {
+  display: flex;
+  align-items: center;
+
+  flex-wrap: wrap;
+
+  gap: 10px;
+
+  margin-top: 35px;
+}
+
+.hero-primary-button,
+.hero-secondary-button {
+  display: inline-flex;
+
+  align-items: center;
+  justify-content: center;
+
+  gap: 8px;
+
+  min-height: 47px;
+
+  padding: 0 18px;
+
+  border-radius: var(--radius-sm);
+
+  font-family: var(--font-ui);
+
+  font-size: 13px;
+  font-weight: 650;
+
+  line-height: 1;
+
+  transition:
+    transform 0.18s ease,
+    background-color 0.18s ease,
+    border-color 0.18s ease,
+    box-shadow 0.18s ease;
+}
+
+.hero-primary-button {
+  background: var(--brand);
+
+  color: var(--foreground);
+
+  box-shadow:
+    0 8px 22px
+    color-mix(
+      in srgb,
+      var(--brand) 18%,
+      transparent
+    );
+}
+
+.hero-primary-button:hover {
+  background: var(--brand-hover);
+
+  transform: translateY(-2px);
+
+  box-shadow:
+    0 12px 28px
+    color-mix(
+      in srgb,
+      var(--brand) 24%,
+      transparent
+    );
+}
+
+.hero-primary-button span:last-child,
+.hero-secondary-button span:last-child {
+  font-size: 15px;
+}
+
+.hero-secondary-button {
+  border: 1px solid var(--border);
+
+  background: var(--surface-elevated);
+
+  color: var(--foreground);
+}
+
+.hero-secondary-button:hover {
+  border-color: var(--border-strong);
+
+  background: var(--surface);
+
+  transform: translateY(-2px);
+}
+
+
+/* =========================================================
+   HERO VISUAL
+   ========================================================= */
+
+.hero-visual {
+  position: relative;
+
+  width: 100%;
+
+  min-width: 0;
+
+  min-height: 590px;
+
+  isolation: isolate;
+}
+
+.hero-visual-grid {
+  position: absolute;
+
+  inset: 4% 0 0;
+
+  pointer-events: none;
+
+  opacity: 0.45;
+
+  background-image:
+    radial-gradient(
+      circle,
+      color-mix(
+        in srgb,
+        var(--brand) 35%,
+        transparent
+      ) 1px,
+      transparent 1.5px
+    );
+
+  background-size: 26px 26px;
+
+  mask-image:
+    radial-gradient(
+      ellipse at center,
+      black 0%,
+      transparent 72%
+    );
+
+  -webkit-mask-image:
+    radial-gradient(
+      ellipse at center,
+      black 0%,
+      transparent 72%
+    );
+
+  z-index: 0;
+}
+
+.hero-visual-glow {
+  position: absolute;
+
+  top: 50%;
+  left: 55%;
+
+  width: 520px;
+  height: 520px;
+
+  transform: translate(-50%, -50%);
+
+  border-radius: var(--radius-pill);
+
+  pointer-events: none;
+
+  background:
+    radial-gradient(
+      circle,
+      color-mix(
+        in srgb,
+        var(--brand) 18%,
+        transparent
+      ) 0%,
+      color-mix(
+        in srgb,
+        var(--brand) 7%,
+        transparent
+      ) 36%,
+      transparent 72%
+    );
+
+  filter: blur(12px);
+
+  z-index: 0;
+}
+
+
+/* =========================================================
+   ORBIT RINGS
+   ========================================================= */
+
+.hero-orbit {
+  position: absolute;
+
+  top: 50%;
+  left: 55%;
+
+  border: 1px solid
+    color-mix(
+      in srgb,
+      var(--brand) 35%,
+      transparent
+    );
+
+  border-radius: var(--radius-pill);
+
+  pointer-events: none;
+
+  z-index: 1;
+}
+
+.hero-orbit-one {
+  width: 540px;
+  height: 310px;
+
+  transform:
+    translate(-50%, -50%)
+    rotate(-17deg);
+}
+
+.hero-orbit-two {
+  width: 460px;
+  height: 460px;
+
+  transform:
+    translate(-50%, -50%)
+    rotate(28deg);
+
+  border-color:
+    color-mix(
+      in srgb,
+      var(--brand) 18%,
+      transparent
+    );
+}
+
+
+/* =========================================================
+   MAIN HERO IMAGE
+   ========================================================= */
+
+.hero-orb {
+  position: absolute;
+
+  top: 50%;
+  left: 55%;
+
+  width: min(560px, 90%);
+
+  aspect-ratio: 1 / 1;
+
+  transform: translate(-50%, -50%);
+
+  overflow: hidden;
+
+  border-radius: var(--radius-pill);
+
+  z-index: 2;
+
+  background:
+    radial-gradient(
+      circle,
+      var(--brand-soft),
+      transparent 70%
+    );
+}
+
+.hero-orb::after {
+  content: "";
+
+  position: absolute;
+
+  inset: 0;
+
+  pointer-events: none;
+
+  border-radius: inherit;
+
+  background:
+    radial-gradient(
+      circle at 50% 48%,
+      transparent 34%,
+      color-mix(
+        in srgb,
+        var(--brand) 7%,
+        transparent
+      ) 58%,
+      transparent 75%
+    );
+
+  mix-blend-mode: screen;
+}
+
+.hero-orb-image {
+  display: block;
+
+  width: 100%;
+  height: 100%;
+
+  object-fit: cover;
+
+  object-position: center;
+
+  filter: saturate(0.9);
+
+  transform: scale(1.03);
+}
+
+/* =========================================================
+   ALLOYPRESS — CODE ONLY HERO ORBIT
+   ========================================================= */
+
+.hero-visual {
+  position: relative;
+  min-height: 640px;
+  isolation: isolate;
+  overflow: visible;
+}
+
+
+/* =========================================================
+   ORBIT STAGE
+   ========================================================= */
+
+.hero-orbit-stage {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  pointer-events: none;
+  z-index: 1;
+}
+
+
+/* =========================================================
+   AMBIENT GLOW
+   ========================================================= */
+
+.orbit-ambient-glow {
+  position: absolute;
+  width: 420px;
+  height: 420px;
+  border-radius: var(--radius-pill);
+
+  background:
+    radial-gradient(
+      circle,
+      color-mix(in srgb, var(--brand) 24%, transparent) 0%,
+      color-mix(in srgb, var(--brand) 12%, transparent) 30%,
+      color-mix(in srgb, var(--brand) 4%, transparent) 55%,
+      transparent 74%
+    );
+
+  filter: blur(18px);
+
+  animation:
+    orbit-breathe 5s ease-in-out infinite;
+
+  z-index: 0;
+}
+
+
+/* =========================================================
+   SVG
+   ========================================================= */
+
+.hero-orbit-svg {
+  position: absolute;
+
+  width: min(
+    760px,
+    82vw
+  );
+
+  height: min(
+    760px,
+    82vw
+  );
+
+  max-width: none;
+
+  overflow: visible;
+
+  transform:
+    translate3d(0, 0, 0);
+
+  z-index: 2;
+}
+
+
+/* =========================================================
+   OUTER ORBIT ROTATION
+   ========================================================= */
+
+.orbit-spin-slow {
+  transform-origin: 380px 380px;
+
+  animation:
+    orbit-rotate-clockwise 32s linear infinite;
+}
+
+.orbit-spin-reverse {
+  transform-origin: 380px 380px;
+
+  animation:
+    orbit-rotate-reverse 24s linear infinite;
+}
+
+
+/* =========================================================
+   ELLIPTICAL ORBIT MOVEMENT
+   ========================================================= */
+
+.orbit-ellipse {
+  transform-box: fill-box;
+  transform-origin: center;
+}
+
+.orbit-ellipse-one {
+  animation:
+    orbit-ellipse-rotate-one 18s linear infinite;
+}
+
+.orbit-ellipse-two {
+  animation:
+    orbit-ellipse-rotate-two 25s linear infinite reverse;
+}
+
+.orbit-ellipse-three {
+  animation:
+    orbit-ellipse-rotate-three 15s linear infinite;
+}
+
+.orbit-ellipse-four {
+  animation:
+    orbit-ellipse-rotate-four 20s linear infinite reverse;
+}
+
+
+/* =========================================================
+   MOVING NODES
+   ========================================================= */
+
+.orbit-moving-node {
+  transform-box: fill-box;
+  transform-origin: center;
+
+  animation:
+    orbit-node-pulse 2.4s ease-in-out infinite;
+}
+
+.orbit-node-a {
+  animation:
+    orbit-node-a 12s linear infinite,
+    orbit-node-pulse 2.2s ease-in-out infinite;
+}
+
+.orbit-node-b {
+  animation:
+    orbit-node-b 16s linear infinite,
+    orbit-node-pulse 2.5s ease-in-out infinite;
+}
+
+.orbit-node-c {
+  animation:
+    orbit-node-c 19s linear infinite reverse,
+    orbit-node-pulse 2.8s ease-in-out infinite;
+}
+
+.orbit-node-d {
+  animation:
+    orbit-node-d 14s linear infinite reverse,
+    orbit-node-pulse 2.1s ease-in-out infinite;
+}
+
+
+/* =========================================================
+   EXTRA ORBIT MARKERS
+   ========================================================= */
+
+.orbit-marker {
+  position: absolute;
+
+  width: 10px;
+  height: 10px;
+
+  border-radius: var(--radius-pill);
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  background: var(--brand);
+
+  box-shadow:
+    0 0 0 6px color-mix(in srgb, var(--brand) 8%, transparent),
+    0 0 22px color-mix(in srgb, var(--brand) 45%, transparent);
+
+  z-index: 5;
+}
+
+.orbit-marker span {
+  width: 4px;
+  height: 4px;
+  border-radius: var(--radius-pill);
+  background: var(--surface-elevated);
+}
+
+
+/* Different positions */
+
+.orbit-marker-one {
+  top: 19%;
+  right: 22%;
+
+  animation:
+    orbit-marker-float-one 7s ease-in-out infinite;
+}
+
+.orbit-marker-two {
+  bottom: 19%;
+  left: 25%;
+
+  animation:
+    orbit-marker-float-two 8s ease-in-out infinite;
+}
+
+.orbit-marker-three {
+  top: 34%;
+  left: 16%;
+
+  animation:
+    orbit-marker-float-three 6s ease-in-out infinite;
+}
+
+
+/* =========================================================
+   PAYLOAD FLOATING CARDS
+   ========================================================= */
+
+.hero-floating-card {
+  position: absolute;
+
+  width: 260px;
+  min-height: 120px;
+
+  padding: 18px;
+
+  display: grid;
+  grid-template-columns: 38px 1fr auto;
+  gap: 12px;
+
+  align-items: start;
+
+  border-radius: var(--radius-lg);
+
+  text-decoration: none;
+
+  background:
+    rgba(255, 255, 255, 0.82);
+
+  border:
+    1px solid rgba(16, 32, 45, 0.10);
+
+  box-shadow:
+    0 18px 45px rgba(12, 31, 24, 0.10),
+    0 3px 12px rgba(12, 31, 24, 0.05);
+
+  backdrop-filter:
+    blur(18px);
+
+  -webkit-backdrop-filter:
+    blur(18px);
+
+  transition:
+    transform 300ms ease,
+    box-shadow 300ms ease,
+    border-color 300ms ease;
+
+  z-index: 10;
+}
+
+.hero-floating-card:hover {
+  transform: translateY(-5px);
+
+  border-color:
+    color-mix(in srgb, var(--brand) 32%, transparent);
+
+  box-shadow:
+    0 25px 60px rgba(12, 31, 24, 0.14),
+    0 5px 20px color-mix(in srgb, var(--brand) 8%, transparent);
+}
+
+
+/* =========================================================
+   CARD POSITIONS
+   ========================================================= */
+
+.hero-card-review {
+  top: 8%;
+  right: 18%;
+
+  animation:
+    hero-card-float-one 6s ease-in-out infinite;
+}
+
+.hero-card-news {
+  left: 5%;
+  bottom: 16%;
+
+  animation:
+    hero-card-float-two 7s ease-in-out infinite;
+}
+
+.hero-card-comparison {
+  right: 1%;
+  bottom: 7%;
+
+  animation:
+    hero-card-float-three 8s ease-in-out infinite;
+}
+
+
+/* =========================================================
+   CARD ICON
+   ========================================================= */
+
+.hero-floating-icon {
+  width: 36px;
+  height: 36px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  border-radius: var(--radius-sm);
+
+  background:
+    color-mix(in srgb, var(--brand) 10%, transparent);
+
+  color:
+    var(--brand);
+
+  font-size: 15px;
+  font-weight: 700;
+
+  border:
+    1px solid color-mix(in srgb, var(--brand) 12%, transparent);
+}
+
+
+/* =========================================================
+   CARD CONTENT
+   ========================================================= */
+
+.hero-floating-content {
+  min-width: 0;
+}
+
+.hero-floating-label {
+  display: block;
+
+  margin-bottom: 7px;
+
+  font-family:
+    var(--font-mono);
+
+  font-size: 9px;
+
+  line-height: 1.2;
+
+  font-weight: 700;
+
+  letter-spacing: 0.08em;
+
+  text-transform: uppercase;
+
+  color:
+    var(--brand);
+}
+
+.hero-floating-content h2 {
+  margin: 0;
+
+  font-family:
+    var(--font-ui);
+
+  font-size: 13px;
+
+  line-height: 1.45;
+
+  font-weight: 650;
+
+  color:
+    var(--foreground);
+
+  display:
+    -webkit-box;
+
+  -webkit-line-clamp: 3;
+
+  -webkit-box-orient: vertical;
+
+  overflow: hidden;
+}
+
+.hero-floating-meta {
+  display: block;
+
+  margin-top: 8px;
+
+  font-family:
+    var(--font-mono);
+
+  font-size: 12px;
+
+  color:
+    var(--text-muted);
+}
+
+.hero-floating-arrow {
+  align-self: end;
+
+  color:
+    var(--brand);
+
+  font-size: 14px;
+
+  transition:
+    transform 200ms ease;
+}
+
+.hero-floating-card:hover
+.hero-floating-arrow {
+  transform:
+    translate(2px, -2px);
+}
+
+
+/* =========================================================
+   ORBIT BREATHING
+   ========================================================= */
+
+@keyframes orbit-breathe {
+  0%,
+  100% {
+    transform:
+      scale(0.94);
+    opacity: 0.72;
+  }
+
+  50% {
+    transform:
+      scale(1.08);
+    opacity: 1;
+  }
+}
+
+
+/* =========================================================
+   CIRCULAR ROTATIONS
+   ========================================================= */
+
+@keyframes orbit-rotate-clockwise {
+  from {
+    transform:
+      rotate(0deg);
+  }
+
+  to {
+    transform:
+      rotate(360deg);
+  }
+}
+
+@keyframes orbit-rotate-reverse {
+  from {
+    transform:
+      rotate(360deg);
+  }
+
+  to {
+    transform:
+      rotate(0deg);
+  }
+}
+
+
+/* =========================================================
+   ELLIPSE ROTATIONS
+   ========================================================= */
+
+@keyframes orbit-ellipse-rotate-one {
+  0% {
+    transform:
+      rotate(-25deg)
+      scaleY(1);
+  }
+
+  50% {
+    transform:
+      rotate(25deg)
+      scaleY(0.92);
+  }
+
+  100% {
+    transform:
+      rotate(-25deg)
+      scaleY(1);
+  }
+}
+
+@keyframes orbit-ellipse-rotate-two {
+  0% {
+    transform:
+      rotate(25deg)
+      scaleY(1);
+  }
+
+  50% {
+    transform:
+      rotate(-25deg)
+      scaleY(0.88);
+  }
+
+  100% {
+    transform:
+      rotate(25deg)
+      scaleY(1);
+  }
+}
+
+@keyframes orbit-ellipse-rotate-three {
+  0% {
+    transform:
+      rotate(-15deg)
+      scaleY(1);
+  }
+
+  50% {
+    transform:
+      rotate(35deg)
+      scaleY(0.90);
+  }
+
+  100% {
+    transform:
+      rotate(-15deg)
+      scaleY(1);
+  }
+}
+
+@keyframes orbit-ellipse-rotate-four {
+  0% {
+    transform:
+      rotate(30deg)
+      scaleY(1);
+  }
+
+  50% {
+    transform:
+      rotate(-20deg)
+      scaleY(0.86);
+  }
+
+  100% {
+    transform:
+      rotate(30deg)
+      scaleY(1);
+  }
+}
+
+
+/* =========================================================
+   NODE MOVEMENT
+   ========================================================= */
+
+@keyframes orbit-node-a {
+  0% {
+    transform:
+      rotate(0deg)
+      translateX(0);
+  }
+
+  25% {
+    transform:
+      rotate(90deg)
+      translateX(30px);
+  }
+
+  50% {
+    transform:
+      rotate(180deg)
+      translateX(0);
+  }
+
+  75% {
+    transform:
+      rotate(270deg)
+      translateX(-30px);
+  }
+
+  100% {
+    transform:
+      rotate(360deg)
+      translateX(0);
+  }
+}
+
+@keyframes orbit-node-b {
+  0% {
+    transform:
+      translate(0, 0);
+  }
+
+  25% {
+    transform:
+      translate(-25px, -18px);
+  }
+
+  50% {
+    transform:
+      translate(0, -35px);
+  }
+
+  75% {
+    transform:
+      translate(25px, -18px);
+  }
+
+  100% {
+    transform:
+      translate(0, 0);
+  }
+}
+
+@keyframes orbit-node-c {
+  0% {
+    transform:
+      translate(0, 0);
+  }
+
+  50% {
+    transform:
+      translate(-35px, 20px);
+  }
+
+  100% {
+    transform:
+      translate(0, 0);
+  }
+}
+
+@keyframes orbit-node-d {
+  0% {
+    transform:
+      translate(0, 0);
+  }
+
+  50% {
+    transform:
+      translate(30px, -25px);
+  }
+
+  100% {
+    transform:
+      translate(0, 0);
+  }
+}
+
+@keyframes orbit-node-pulse {
+  0%,
+  100% {
+    opacity: 0.55;
+  }
+
+  50% {
+    opacity: 1;
+  }
+}
+
+
+/* =========================================================
+   SMALL MARKER FLOAT
+   ========================================================= */
+
+@keyframes orbit-marker-float-one {
+  0%,
+  100% {
+    transform:
+      translate3d(0, 0, 0);
+  }
+
+  50% {
+    transform:
+      translate3d(-10px, 12px, 0);
+  }
+}
+
+@keyframes orbit-marker-float-two {
+  0%,
+  100% {
+    transform:
+      translate3d(0, 0, 0);
+  }
+
+  50% {
+    transform:
+      translate3d(12px, -10px, 0);
+  }
+}
+
+@keyframes orbit-marker-float-three {
+  0%,
+  100% {
+    transform:
+      translate3d(0, 0, 0);
+  }
+
+  50% {
+    transform:
+      translate3d(10px, 8px, 0);
+  }
+}
+
+
+/* =========================================================
+   CARD FLOAT ANIMATIONS
+   ========================================================= */
+
+@keyframes hero-card-float-one {
+  0%,
+  100% {
+    transform:
+      translate3d(0, 0, 0);
+  }
+
+  50% {
+    transform:
+      translate3d(0, -8px, 0);
+  }
+}
+
+@keyframes hero-card-float-two {
+  0%,
+  100% {
+    transform:
+      translate3d(0, 0, 0);
+  }
+
+  50% {
+    transform:
+      translate3d(7px, -7px, 0);
+  }
+}
+
+@keyframes hero-card-float-three {
+  0%,
+  100% {
+    transform:
+      translate3d(0, 0, 0);
+  }
+
+  50% {
+    transform:
+      translate3d(-7px, -9px, 0);
+  }
+}
+
+
+/* =========================================================
+   DARK THEME
+   ========================================================= */
+
+[data-theme="dark"] .hero-floating-card,
+.dark .hero-floating-card {
+  background:
+    rgba(13, 22, 27, 0.76);
+
+  border-color:
+    rgba(255, 255, 255, 0.09);
+
+  box-shadow:
+    0 20px 55px rgba(0, 0, 0, 0.28);
+}
+
+[data-theme="dark"] .hero-floating-content h2,
+.dark .hero-floating-content h2 {
+  color:
+    var(--foreground);
+}
+
+[data-theme="dark"] .hero-floating-meta,
+.dark .hero-floating-meta {
+  color:
+    var(--text-muted);
+}
+
+
+/* =========================================================
+   REDUCED MOTION
+   ========================================================= */
+
+@media (prefers-reduced-motion: reduce) {
+
+  .orbit-spin-slow,
+  .orbit-spin-reverse,
+  .orbit-ellipse,
+  .orbit-moving-node,
+  .orbit-marker,
+  .orbit-ambient-glow,
+  .hero-floating-card {
+    animation: none !important;
+  }
+}
+
+
+/* =========================================================
+   TABLET
+   ========================================================= */
+
+@media (max-width: 1100px) {
+
+  .hero-visual {
+    min-height: 570px;
+  }
+
+  .hero-orbit-svg {
+    width: 650px;
+    height: 650px;
+  }
+
+  .hero-floating-card {
+    width: 235px;
+    padding: 15px;
+  }
+
+  .hero-card-review {
+    right: 8%;
+  }
+
+  .hero-card-news {
+    left: 0;
+  }
+
+  .hero-card-comparison {
+    right: -3%;
+  }
+}
+
+
+/* =========================================================
+   MOBILE
+   ========================================================= */
+
+@media (max-width: 768px) {
+
+  .hero-visual {
+    min-height: 520px;
+    margin-top: 15px;
+  }
+
+  .hero-orbit-svg {
+    width: 570px;
+    height: 570px;
+  }
+
+  .orbit-ambient-glow {
+    width: 330px;
+    height: 330px;
+  }
+
+  .hero-floating-card {
+    width: 205px;
+    min-height: 100px;
+
+    padding: 12px;
+
+    grid-template-columns:
+      30px
+      1fr
+      auto;
+
+    gap: 9px;
+
+    border-radius: var(--radius-md);
+  }
+
+  .hero-floating-icon {
+    width: 30px;
+    height: 30px;
+
+    border-radius: var(--radius-sm);
+
+    font-size: 12px;
+  }
+
+  .hero-floating-label {
+    font-size: 7px;
+  }
+
+  .hero-floating-content h2 {
+    font-size: 11px;
+    line-height: 1.35;
+  }
+
+  .hero-floating-meta {
+    font-size: 7px;
+  }
+
+  .hero-floating-arrow {
+    font-size: 11px;
+  }
+
+  .hero-card-review {
+    top: 3%;
+    right: 0;
+  }
+
+  .hero-card-news {
+    left: -2%;
+    bottom: 15%;
+  }
+
+  .hero-card-comparison {
+    right: -2%;
+    bottom: 3%;
+  }
+}
+
+
+/* =========================================================
+   SMALL MOBILE
+   ========================================================= */
+
+@media (max-width: 520px) {
+
+  .hero-visual {
+    min-height: 430px;
+  }
+
+  .hero-orbit-svg {
+    width: 470px;
+    height: 470px;
+  }
+
+  .orbit-ambient-glow {
+    width: 280px;
+    height: 280px;
+  }
+
+  .hero-floating-card {
+    width: 175px;
+    padding: 10px;
+  }
+
+  .hero-card-review {
+    top: 2%;
+    right: -5%;
+  }
+
+  .hero-card-news {
+    left: -6%;
+    bottom: 16%;
+  }
+
+  .hero-card-comparison {
+    right: -7%;
+    bottom: 2%;
+  }
+
+  .hero-floating-content h2 {
+    font-size: 12px;
+  }
+}
+
+
+/* =========================================================
+   FLOATING CMS CARDS
+   ========================================================= */
+
+.hero-floating-card {
+  position: absolute;
+
+  display: flex;
+  align-items: flex-start;
+
+  gap: 11px;
+
+  z-index: 5;
+
+  padding: 14px 16px;
+
+  border: 1px solid
+    color-mix(
+      in srgb,
+      var(--border) 90%,
+      transparent
+    );
+
+  border-radius: var(--radius-md);
+
+  background:
+    color-mix(
+      in srgb,
+      var(--surface-elevated) 92%,
+      transparent
+    );
+
+  color: var(--foreground);
+
+  box-shadow:
+    0 16px 45px
+    color-mix(
+      in srgb,
+      var(--foreground) 9%,
+      transparent
+    );
+
+  text-decoration: none;
+
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+
+  transition:
+    transform 0.18s ease,
+    border-color 0.18s ease,
+    box-shadow 0.18s ease;
+}
+
+.hero-floating-card:hover {
+  border-color: var(--brand);
+
+  transform: translateY(-4px);
+
+  box-shadow:
+    0 20px 50px
+    color-mix(
+      in srgb,
+      var(--brand) 13%,
+      transparent
+    );
+}
+
+.hero-floating-content {
+  min-width: 0;
+
+  padding-right: 10px;
+}
+
+.hero-floating-label {
+  display: block;
+
+  color: var(--brand);
+
+  font-family: var(--font-mono);
+
+  font-size: 12px;
+  font-weight: 600;
+
+  line-height: 1.35;
+
+  letter-spacing: 0.08em;
+
+  text-transform: uppercase;
+}
+
+.hero-floating-content h2 {
+  display: -webkit-box;
+
+  margin: 7px 0 0;
+
+  overflow: hidden;
+
+  color: var(--foreground);
+
+  font-family: var(--font-ui);
+
+  font-size: 12px;
+  font-weight: 600;
+
+  line-height: 1.45;
+
+  letter-spacing: -0.01em;
+
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+}
+
+.hero-floating-meta {
+  display: block;
+
+  margin-top: 6px;
+
+  color: var(--text-muted);
+
+  font-family: var(--font-mono);
+
+  font-size: 7px;
+
+  line-height: 1.3;
+
+  letter-spacing: 0.05em;
+
+  text-transform: uppercase;
+}
+
+.hero-floating-icon {
+  display: grid;
+
+  place-items: center;
+
+  width: 31px;
+  height: 31px;
+
+  flex: 0 0 auto;
+
+  border: 1px solid var(--border);
+
+  border-radius: var(--radius-sm);
+
+  background: var(--brand-soft);
+
+  color: var(--brand);
+
+  font-family: var(--font-mono);
+
+  font-size: 12px;
+}
+
+.hero-floating-arrow {
+  position: absolute;
+
+  right: 10px;
+  bottom: 9px;
+
+  color: var(--text-muted);
+
+  font-size: 12px;
+
+  transition:
+    color 0.18s ease,
+    transform 0.18s ease;
+}
+
+.hero-floating-card:hover .hero-floating-arrow {
+  color: var(--brand);
+
+  transform: translate(2px, -2px);
+}
+
+.hero-card-review {
+  top: 7%;
+  right: 0;
+
+  width: 166px;
+}
+
+.hero-card-news {
+  left: 1%;
+  bottom: 21%;
+
+  width: 166px;
+}
+
+.hero-card-comparison {
+  right: 3%;
+  bottom: 2%;
+
+  width: 194px;
+}
+
+
+/* =========================================================
+   MINI VISUAL ICONS
+   ========================================================= */
+
+.hero-mini-icon {
+  position: absolute;
+
+  display: grid;
+
+  place-items: center;
+
+  width: 40px;
+  height: 40px;
+
+  border: 1px solid var(--border);
+
+  border-radius: var(--radius-sm);
+
+  background:
+    color-mix(
+      in srgb,
+      var(--surface-elevated) 90%,
+      transparent
+    );
+
+  color: var(--brand);
+
+  font-family: var(--font-mono);
+
+  font-size: 10px;
+
+  box-shadow: var(--shadow-sm);
+
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+
+  z-index: 4;
+}
+
+.hero-mini-chart {
+  top: 21%;
+  left: 9%;
+}
+
+.hero-mini-doc {
+  left: 27%;
+  bottom: 8%;
+}
+
+.hero-mini-ai {
+  top: 13%;
+  right: 5%;
+}
+
+
+/* =========================================================
+   DATA NODES
+   ========================================================= */
+
+.hero-node {
+  position: absolute;
+
+  width: 7px;
+  height: 7px;
+
+  border-radius: var(--radius-pill);
+
+  background: var(--brand);
+
+  box-shadow:
+    0 0 0 5px var(--brand-soft);
+
+  z-index: 3;
+}
+
+.hero-node-one {
+  top: 8%;
+  left: 40%;
+}
+
+.hero-node-two {
+  top: 36%;
+  right: 1%;
+}
+
+.hero-node-three {
+  right: 18%;
+  bottom: 17%;
+}
+
+.hero-node-four {
+  left: 33%;
+  bottom: 4%;
+}
+
+
+/* =========================================================
+   HERO STATS
+   ========================================================= */
+
+.hero-stats {
+  position: relative;
+
+  z-index: 6;
+
+  display: grid;
+
+  grid-template-columns: repeat(4, 1fr);
+
+  margin-top: 30px;
+
+  overflow: hidden;
+
+  border: 1px solid var(--border);
+
+  border-radius: var(--radius-xl);
+
+  background:
+    color-mix(
+      in srgb,
+      var(--surface-elevated) 94%,
+      transparent
+    );
+
+  box-shadow:
+    0 12px 36px
+    color-mix(
+      in srgb,
+      var(--foreground) 5%,
+      transparent
+    );
+
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+}
+
+.hero-stat {
+  display: flex;
+
+  align-items: center;
+
+  gap: 14px;
+
+  min-width: 0;
+
+  min-height: 108px;
+
+  padding: 18px 24px;
+
+  border-right: 1px solid var(--border);
+}
+
+.hero-stat:last-child {
+  border-right: 0;
+}
+
+.hero-stat-icon {
+  display: grid;
+
+  place-items: center;
+
+  width: 50px;
+  height: 50px;
+
+  flex: 0 0 auto;
+
+  border-radius: var(--radius-pill);
+
+  background: var(--brand-soft);
+
+  color: var(--brand);
+
+  font-family: var(--font-mono);
+
+  font-size: 18px;
+}
+
+.hero-stat > div:last-child {
+  min-width: 0;
+}
+
+.hero-stat strong {
+  display: block;
+
+  color: var(--foreground);
+
+  font-family: var(--font-ui);
+
+  font-size: 27px;
+
+  font-weight: 650;
+
+  line-height: 1.05;
+
+  letter-spacing: -0.045em;
+}
+
+.hero-stat > div:last-child > span {
+  display: block;
+
+  margin-top: 6px;
+
+  color: var(--text-muted);
+
+  font-family: var(--font-ui);
+
+  font-size: 10px;
+
+  line-height: 1.4;
+}
+
+.hero-stat-small {
+  margin-left: 2px;
+
+  color: var(--text-muted);
+
+  font-size: 11px;
+
+  font-weight: 500;
+
+  letter-spacing: 0;
+}
+
+/* =========================================================
+   ALLOYPRESS HERO ORBIT
+========================================================= */
+
+.hero-visual {
+  position: relative;
+  min-height: 620px;
+  overflow: hidden;
+  isolation: isolate;
+}
+
+.hero-orbit-stage {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  pointer-events: none;
+}
+
+.hero-orbit-svg {
+  position: absolute;
+  width: min(760px, 100%);
+  height: auto;
+  overflow: visible;
+  transform-origin: center;
+}
+
+/* =========================================================
+   ORBIT ROTATION
+========================================================= */
+
+.orbit-spin-slow {
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: orbitRotate 24s linear infinite;
+}
+
+.orbit-spin-reverse {
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: orbitRotateReverse 32s linear infinite;
+}
+
+.orbit-ellipse {
+  transform-box: fill-box;
+  transform-origin: center;
+}
+
+.orbit-ellipse-one {
+  animation: ellipseRotate 18s linear infinite;
+}
+
+.orbit-ellipse-two {
+  animation: ellipseRotateReverse 25s linear infinite;
+}
+
+.orbit-ellipse-three {
+  animation: ellipseRotate 31s linear infinite;
+}
+
+.orbit-ellipse-four {
+  animation: ellipseRotateReverse 38s linear infinite;
+}
+
+
+/* =========================================================
+   MOVING NODES
+========================================================= */
+
+.orbit-moving-node {
+  transform-box: fill-box;
+  transform-origin: center;
+}
+
+.orbit-node-a {
+  animation: nodeOrbitA 10s linear infinite;
+}
+
+.orbit-node-b {
+  animation: nodeOrbitB 14s linear infinite;
+}
+
+.orbit-node-c {
+  animation: nodeOrbitC 18s linear infinite;
+}
+
+.orbit-node-d {
+  animation: nodeOrbitD 12s linear infinite;
+}
+
+
+/* =========================================================
+   ORBIT MARKERS
+========================================================= */
+
+.orbit-marker {
+  position: absolute;
+  width: 10px;
+  height: 10px;
+  border-radius: var(--radius-pill);
+  background: var(--brand);
+  box-shadow:
+    0 0 8px color-mix(in srgb, var(--brand) 80%, transparent),
+    0 0 22px color-mix(in srgb, var(--brand) 35%, transparent);
+}
+
+.orbit-marker-one {
+  top: 18%;
+  left: 48%;
+  animation: markerFloatOne 7s ease-in-out infinite;
+}
+
+.orbit-marker-two {
+  right: 13%;
+  top: 48%;
+  animation: markerFloatTwo 9s ease-in-out infinite;
+}
+
+.orbit-marker-three {
+  bottom: 18%;
+  left: 30%;
+  animation: markerFloatThree 8s ease-in-out infinite;
+}
+
+
+/* =========================================================
+   AMBIENT GLOW
+========================================================= */
+
+.orbit-ambient-glow {
+  position: absolute;
+  width: 360px;
+  height: 360px;
+  border-radius: var(--radius-pill);
+  background: radial-gradient(
+    circle,
+    color-mix(in srgb, var(--brand) 22%, transparent) 0%,
+    color-mix(in srgb, var(--brand) 10%, transparent) 32%,
+    color-mix(in srgb, var(--brand) 3%, transparent) 60%,
+    transparent 72%
+  );
+
+  filter: blur(12px);
+
+  animation:
+    corePulse 5s ease-in-out infinite;
+}
+
+
+/* =========================================================
+   KEYFRAMES
+========================================================= */
+
+@keyframes orbitRotate {
+  from {
+    transform: rotate(0deg);
+  }
+
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes orbitRotateReverse {
+  from {
+    transform: rotate(360deg);
+  }
+
+  to {
+    transform: rotate(0deg);
+  }
+}
+
+@keyframes ellipseRotate {
+  from {
+    transform: rotate(0deg);
+  }
+
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes ellipseRotateReverse {
+  from {
+    transform: rotate(360deg);
+  }
+
+  to {
+    transform: rotate(0deg);
+  }
+}
+
+
+/* =========================================================
+   NODE ORBITS
+========================================================= */
+
+@keyframes nodeOrbitA {
+  from {
+    transform: rotate(0deg) translateX(0);
+  }
+
+  to {
+    transform: rotate(360deg) translateX(0);
+  }
+}
+
+@keyframes nodeOrbitB {
+  from {
+    transform: rotate(0deg) translateX(0);
+  }
+
+  to {
+    transform: rotate(-360deg) translateX(0);
+  }
+}
+
+@keyframes nodeOrbitC {
+  from {
+    transform: rotate(0deg) translateX(0);
+  }
+
+  to {
+    transform: rotate(360deg) translateX(0);
+  }
+}
+
+@keyframes nodeOrbitD {
+  from {
+    transform: rotate(360deg) translateX(0);
+  }
+
+  to {
+    transform: rotate(0deg) translateX(0);
+  }
+}
+
+
+/* =========================================================
+   FLOATING MARKERS
+========================================================= */
+
+@keyframes markerFloatOne {
+  0%,
+  100% {
+    transform: translate3d(0, 0, 0);
+    opacity: .55;
+  }
+
+  50% {
+    transform: translate3d(12px, -18px, 0);
+    opacity: 1;
+  }
+}
+
+@keyframes markerFloatTwo {
+  0%,
+  100% {
+    transform: translate3d(0, 0, 0);
+    opacity: .45;
+  }
+
+  50% {
+    transform: translate3d(-15px, 10px, 0);
+    opacity: 1;
+  }
+}
+
+@keyframes markerFloatThree {
+  0%,
+  100% {
+    transform: translate3d(0, 0, 0);
+    opacity: .5;
+  }
+
+  50% {
+    transform: translate3d(10px, 15px, 0);
+    opacity: 1;
+  }
+}
+
+
+/* =========================================================
+   CORE PULSE
+========================================================= */
+
+@keyframes corePulse {
+  0%,
+  100% {
+    transform: scale(.92);
+    opacity: .65;
+  }
+
+  50% {
+    transform: scale(1.08);
+    opacity: 1;
+  }
+}
+
+
+/* =========================================================
+   ACCESSIBILITY
+========================================================= */
+
+@media (prefers-reduced-motion: reduce) {
+  .orbit-spin-slow,
+  .orbit-spin-reverse,
+  .orbit-ellipse,
+  .orbit-moving-node,
+  .orbit-marker,
+  .orbit-ambient-glow {
+    animation: none !important;
+  }
+}
+
+
+/* =========================================================
+   HERO RESPONSIVE
+   ========================================================= */
+
+@media (max-width: 1100px) {
+  .hero-content {
+    padding-left: 0;
+  }
+
+  .hero-grid {
+    gap: 28px;
+  }
+
+  .hero-title {
+    font-size: clamp(
+      46px,
+      5.3vw,
+      58px
+    );
+  }
+
+  .hero-visual {
+    min-height: 540px;
+  }
+
+  .hero-orb {
+    width: 500px;
+  }
+
+  .hero-orbit-one {
+    width: 480px;
+    height: 280px;
+  }
+
+  .hero-orbit-two {
+    width: 420px;
+    height: 420px;
+  }
+
+  .hero-card-review {
+    right: 0;
+  }
+
+  .hero-card-news {
+    left: 0;
+  }
+
+  .hero-card-comparison {
+    right: 0;
+  }
+
+  .hero-stat {
+    padding-inline: 18px;
+  }
+}
+
+@media (max-width: 900px) {
+  .hero-grid {
+    grid-template-columns: 1fr;
+
+    gap: 34px;
+  }
+
+  .hero-content {
+    max-width: 680px;
+  }
+
+  .hero-visual {
+    min-height: 560px;
+
+    max-width: 760px;
+
+    margin-inline: auto;
+  }
+
+  .hero-orb {
+    left: 50%;
+
+    width: min(560px, 82vw);
+  }
+
+  .hero-orbit {
+    left: 50%;
+  }
+
+  .hero-visual-glow {
+    left: 50%;
+  }
+
+  .hero-mini-chart {
+    left: 8%;
+  }
+
+  .hero-card-review {
+    right: 3%;
+  }
+
+  .hero-card-news {
+    left: 3%;
+  }
+
+  .hero-card-comparison {
+    right: 5%;
+  }
+}
+
+@media (max-width: 768px) {
+  .home-hero {
+    padding: 48px 0 42px;
+  }
+
+  .hero-grid {
+    gap: 34px;
+  }
+
+  .hero-content {
+    width: 100%;
+    max-width: 100%;
+    padding-left: 0;
+  }
+
+  .hero-eyebrow {
+    margin-bottom: 20px;
+
+    font-size: 12px;
+  }
+
+  .hero-title {
+    width: 100%;
+    max-width: 100%;
+    min-width: 0;
+
+    font-size: clamp(
+      38px,
+      10.5vw,
+      50px
+    );
+
+    line-height: 1.06;
+
+    letter-spacing: -0.055em;
+
+    overflow-wrap: normal;
+    word-break: normal;
+
+    text-wrap: balance;
+  }
+
+  .hero-description {
+    max-width: 560px;
+
+    margin-top: 22px;
+
+    font-size: 15px;
+
+    line-height: 1.65;
+  }
+
+  .hero-actions {
+    margin-top: 25px;
+  }
+
+  .hero-visual {
+    min-height: 500px;
+
+    width: 100%;
+  }
+
+  .hero-orb {
+    left: 50%;
+
+    width: min(470px, 82vw);
+  }
+
+  .hero-orbit {
+    left: 50%;
+  }
+
+  .hero-visual-glow {
+    left: 50%;
+
+    width: 430px;
+    height: 430px;
+  }
+
+  .hero-orbit-one {
+    width: 430px;
+    height: 245px;
+  }
+
+  .hero-orbit-two {
+    width: 360px;
+    height: 360px;
+  }
+
+  .hero-floating-card {
+    gap: 9px;
+
+    padding: 12px;
+  }
+
+  .hero-floating-content {
+    min-width: 0;
+
+    padding-right: 8px;
+  }
+
+  .hero-floating-content h2 {
+    font-size: 12px;
+
+    line-height: 1.4;
+
+    -webkit-line-clamp: 3;
+  }
+
+  .hero-floating-label {
+    font-size: 7px;
+  }
+
+  .hero-floating-meta {
+    font-size: 6px;
+  }
+
+  .hero-floating-icon {
+    width: 27px;
+    height: 27px;
+
+    font-size: 12px;
+  }
+
+  .hero-card-review {
+    top: 4%;
+    right: 1%;
+
+    width: 155px;
+  }
+
+  .hero-card-news {
+    left: 1%;
+    bottom: 21%;
+
+    width: 155px;
+  }
+
+  .hero-card-comparison {
+    right: 2%;
+    bottom: 1%;
+
+    width: 180px;
+  }
+
+  .hero-mini-icon {
+    width: 34px;
+    height: 34px;
+
+    font-size: 9px;
+  }
+
+  .hero-mini-chart {
+    top: 22%;
+    left: 5%;
+  }
+
+  .hero-mini-doc {
+    left: 26%;
+    bottom: 8%;
+  }
+
+  .hero-mini-ai {
+    top: 11%;
+    right: 4%;
+  }
+
+  .hero-stats {
+    grid-template-columns: repeat(2, 1fr);
+
+    margin-top: 24px;
+
+    border-radius: var(--radius-lg);
+  }
+
+  .hero-stat {
+    min-height: 92px;
+
+    padding: 15px;
+
+    border-right: 1px solid var(--border);
+    border-bottom: 1px solid var(--border);
+  }
+
+  .hero-stat:nth-child(2n) {
+    border-right: 0;
+  }
+
+  .hero-stat:nth-child(n + 3) {
+    border-bottom: 0;
+  }
+
+  .hero-stat-icon {
+    width: 42px;
+    height: 42px;
+
+    font-size: 15px;
+  }
+
+  .hero-stat strong {
+    font-size: 22px;
+  }
+
+  .hero-stat > div:last-child > span {
+    font-size: 9px;
+  }
+}
+
+@media (max-width: 480px) {
+  .home-hero {
+    padding: 42px 0 34px;
+  }
+
+  .hero-title {
+    font-size: 40px;
+
+    letter-spacing: -0.055em;
+  }
+
+  .hero-description {
+    font-size: 14px;
+  }
+
+  .hero-actions {
+    align-items: stretch;
+
+    flex-direction: column;
+
+    width: 100%;
+  }
+
+  .hero-primary-button,
+  .hero-secondary-button {
+    width: 100%;
+  }
+
+  .hero-visual {
+    min-height: 420px;
+  }
+
+  .hero-orb {
+    width: min(390px, 92vw);
+  }
+
+  .hero-visual-glow {
+    width: 360px;
+    height: 360px;
+  }
+
+  .hero-orbit-one {
+    width: 350px;
+    height: 205px;
+  }
+
+  .hero-orbit-two {
+    width: 300px;
+    height: 300px;
+  }
+
+  .hero-card-review {
+    top: 2%;
+
+    width: 130px;
+  }
+
+  .hero-card-news {
+    left: 0;
+    bottom: 22%;
+
+    width: 130px;
+  }
+
+  .hero-card-comparison {
+    right: 0;
+    bottom: 0;
+
+    width: 155px;
+  }
+
+  .hero-floating-content h2 {
+    font-size: 12px;
+  }
+
+  .hero-floating-label {
+    font-size: 6.5px;
+  }
+
+  .hero-floating-meta {
+    font-size: 5.5px;
+  }
+
+  .hero-floating-icon {
+    width: 24px;
+    height: 24px;
+
+    font-size: 12px;
+  }
+
+  .hero-floating-arrow {
+    right: 7px;
+    bottom: 7px;
+
+    font-size: 12px;
+  }
+
+  .hero-mini-chart {
+    left: 2%;
+  }
+
+  .hero-mini-doc {
+    left: 21%;
+  }
+
+  .hero-mini-ai {
+    right: 1%;
+  }
+
+  .hero-stats {
+    grid-template-columns: 1fr;
+
+    border-radius: 14px;
+  }
+
+  .hero-stat,
+  .hero-stat:nth-child(2n),
+  .hero-stat:nth-child(n + 3) {
+    min-height: 78px;
+
+    border-right: 0;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .hero-stat:last-child {
+    border-bottom: 0;
+  }
+}

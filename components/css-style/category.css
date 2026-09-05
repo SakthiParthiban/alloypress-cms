@@ -1,0 +1,898 @@
+/* =========================================================
+   ALLOYPRESS CATEGORY SECTION
+   ========================================================= */
+
+.category-section {
+  position: relative;
+
+  padding:
+    105px 0
+    60px;
+
+  background: transparent;
+
+  overflow: hidden;
+}
+
+
+/* =========================================================
+   BACKGROUND GRID
+   ========================================================= */
+
+.category-section::before {
+  content: "";
+
+  position: absolute;
+
+  inset: 0;
+
+  pointer-events: none;
+
+  background-image:
+    linear-gradient(
+      to right,
+      rgba(20, 35, 45, 0.028) 1px,
+      transparent 1px
+    ),
+    linear-gradient(
+      to bottom,
+      rgba(20, 35, 45, 0.028) 1px,
+      transparent 1px
+    );
+
+  background-size:
+    120px 120px;
+
+  mask-image:
+    linear-gradient(
+      to bottom,
+      transparent,
+      black 12%,
+      black 88%,
+      transparent
+    );
+}
+
+
+/* =========================================================
+   HEADER
+   ========================================================= */
+
+.category-header {
+  position: relative;
+
+  z-index: 2;
+
+  display: grid;
+
+  grid-template-columns:
+    minmax(0, 1fr)
+    minmax(300px, 440px);
+
+  align-items: end;
+
+  gap: 70px;
+
+  margin-bottom: 55px;
+}
+
+
+/* =========================================================
+   EYEBROW
+   ========================================================= */
+
+.category-eyebrow {
+  display: flex;
+
+  align-items: center;
+
+  gap: 9px;
+
+  margin-bottom: 17px;
+
+  font-family:
+    var(--font-mono);
+
+  font-size: 10px;
+
+  font-weight: 600;
+
+  line-height: 1;
+
+  letter-spacing: 0.11em;
+
+  text-transform: uppercase;
+
+  color:
+    var(--brand);
+}
+
+.category-eyebrow > span {
+  width: 7px;
+  height: 7px;
+
+  flex: 0 0 auto;
+
+  border-radius: 50%;
+
+  background:
+    var(--accent-neon);
+
+  box-shadow:
+    0 0 0 5px
+    rgba(25, 204, 117, 0.08);
+}
+
+
+/* =========================================================
+   HEADER TITLE
+   ========================================================= */
+
+.category-header h2 {
+  margin: 0;
+
+  font-family:
+    var(--font-ui);
+
+  font-size:
+    clamp(38px, 4.5vw, 58px);
+
+  line-height: 1.02;
+
+  letter-spacing: -0.06em;
+
+  font-weight: 700;
+
+  color:
+    var(--foreground);
+}
+
+
+/* =========================================================
+   HEADER DESCRIPTION
+   ========================================================= */
+
+.category-header > p {
+  margin: 0;
+
+  max-width: 430px;
+
+  font-family:
+    var(--font-body);
+
+  font-size: 15px;
+
+  line-height: 1.7;
+
+  color:
+    var(--text-muted);
+}
+
+
+/* =========================================================
+   CATEGORY GRID — straight 5-column row (no stagger)
+   ========================================================= */
+
+.category-grid {
+  position: relative;
+
+  z-index: 2;
+
+  display: grid;
+
+  grid-template-columns:
+    repeat(5, minmax(0, 1fr));
+
+  gap: 20px;
+
+  border: 0;
+
+  background: transparent;
+
+  overflow: visible;
+}
+
+
+/* =========================================================
+   DESKTOP LAYOUT — all 5 cards sit in one straight row
+   (staggered nth-child spans removed; every card is
+   forced to auto-placement so the grid stays a clean row)
+   ========================================================= */
+
+.category-card:nth-child(1),
+.category-card:nth-child(2),
+.category-card:nth-child(3),
+.category-card:nth-child(4),
+.category-card:nth-child(5) {
+  grid-column: auto;
+}
+
+
+/* =========================================================
+   CATEGORY CARD — base (light theme / default)
+   Dark theme values live ONLY in the
+   [data-theme="dark"] block further below.
+   ========================================================= */
+
+.category-card {
+  position: relative;
+
+  isolation: isolate;
+
+  min-height: 245px;
+
+  display: flex;
+  flex-direction: column;
+
+  padding: 24px;
+
+  border: 1px solid var(--border);
+  border-radius: var(--radius-xl);
+
+  background: var(--card);
+
+  box-shadow:
+    0 10px 30px rgba(0, 0, 0, 0.06);
+
+  text-decoration: none;
+  color: inherit;
+
+  overflow: hidden;
+
+  transition:
+    transform 350ms cubic-bezier(.22, 1, .36, 1),
+    box-shadow 350ms ease,
+    border-color 350ms ease,
+    background 350ms ease;
+}
+
+
+/* =========================================================
+   CARD HOVER — base (light theme / default)
+   ========================================================= */
+
+.category-card:hover {
+  transform: translateY(-5px);
+
+  border-color: rgba(0, 180, 90, 0.35);
+
+  background:
+    linear-gradient(
+      145deg,
+      rgba(0, 180, 90, 0.06) 0%,
+      var(--card) 60%,
+      var(--card-elevated) 100%
+    );
+
+  box-shadow:
+    0 18px 42px rgba(0, 0, 0, 0.08),
+    0 0 20px rgba(0, 216, 74, 0.06);
+}
+
+
+/* =========================================================
+   SOFT GREEN LIGHT
+   ========================================================= */
+
+.category-card::before {
+  content: "";
+
+  position: absolute;
+
+  width: 180px;
+  height: 180px;
+
+  top: -100px;
+  right: -80px;
+
+  border-radius: 50%;
+
+  background:
+    radial-gradient(
+      circle,
+      rgba(0, 216, 74, 0.10),
+      transparent 68%
+    );
+
+  opacity: 0;
+
+  transition:
+    opacity 400ms ease,
+    transform 500ms ease;
+}
+
+.category-card:hover::before {
+  opacity: 1;
+
+  transform:
+    translate(-15px, 15px);
+}
+
+
+/* =========================================================
+   CARD TOP
+   ========================================================= */
+
+.category-card-top {
+  position: relative;
+
+  z-index: 3;
+
+  display: grid;
+
+  grid-template-columns:
+    auto 1fr auto;
+
+  align-items: start;
+
+  gap: 12px;
+}
+
+
+/* =========================================================
+   NUMBER
+   ========================================================= */
+
+.category-number {
+  padding-top: 7px;
+
+  font-family:
+    var(--font-mono);
+
+  font-size: 9px;
+
+  font-weight: 500;
+
+  letter-spacing: 0.08em;
+
+  color:
+    var(--text-muted);
+
+  opacity: 0.65;
+}
+
+
+/* =========================================================
+   ICON
+   ========================================================= */
+
+.category-icon {
+  width: 50px;
+  height: 50px;
+
+  display: flex;
+
+  align-items: center;
+  justify-content: center;
+
+  border-radius: var(--radius-lg);
+
+  color:
+    var(--brand);
+
+  background:
+    rgba(24, 201, 116, 0.075);
+
+  border:
+    1px solid
+    rgba(0, 216, 74, 0.10);
+
+  transition:
+    transform 350ms cubic-bezier(.22, 1, .36, 1),
+    background 350ms ease,
+    box-shadow 350ms ease;
+}
+
+.category-card:hover .category-icon {
+  transform:
+    translateY(-3px)
+    scale(1.06);
+
+  background:
+    rgba(0, 216, 74, 0.13);
+
+  box-shadow:
+    0 8px 20px
+    rgba(0, 216, 74, 0.10);
+}
+
+
+/* =========================================================
+   ARROW
+   ========================================================= */
+
+.category-arrow {
+  width: 34px;
+  height: 34px;
+
+  display: flex;
+
+  align-items: center;
+  justify-content: center;
+
+  border:
+    1px solid
+    var(--border);
+
+  border-radius: 50%;
+
+  font-size: 13px;
+
+  color:
+    var(--text-muted);
+
+  transition:
+    transform 300ms ease,
+    border-color 300ms ease,
+    color 300ms ease,
+    background 300ms ease;
+}
+
+.category-card:hover .category-arrow {
+  transform:
+    translate(2px, -2px);
+
+  color:
+    var(--brand);
+
+  border-color:
+    rgba(24, 201, 116, 0.25);
+
+  background:
+    rgba(0, 216, 74, 0.06);
+}
+
+
+/* =========================================================
+   CARD CONTENT
+   ========================================================= */
+
+.category-card-content {
+  position: relative;
+
+  z-index: 2;
+
+  margin-top: 48px;
+
+  padding-top: 0;
+}
+
+
+/* =========================================================
+   CARD TITLE
+   ========================================================= */
+
+.category-card-content h3 {
+  margin:
+    0 0 10px;
+
+  font-family:
+    var(--font-ui);
+
+  font-size: 19px;
+
+  line-height: 1.2;
+
+  letter-spacing: -0.035em;
+
+  font-weight: 650;
+
+  color:
+    var(--foreground);
+
+  transition:
+    color 250ms ease;
+}
+
+.category-card:hover
+.category-card-content h3 {
+  color:
+    var(--brand);
+}
+
+
+/* =========================================================
+   CARD DESCRIPTION
+   ========================================================= */
+
+.category-card-content p {
+  margin: 0;
+
+  max-width: 245px;
+
+  font-family:
+    var(--font-body);
+
+  font-size: 13px;
+
+  line-height: 1.6;
+
+  color:
+    var(--text-muted);
+}
+
+
+/* =========================================================
+   BOTTOM LINE
+   ========================================================= */
+
+.category-card-line {
+  position: absolute;
+
+  left: 24px;
+  right: 24px;
+  bottom: 20px;
+
+  height: 1px;
+
+  background:
+    rgba(255, 255, 255, 0.06);
+
+  overflow: hidden;
+}
+
+.category-card-line::after {
+  content: "";
+
+  position: absolute;
+
+  left: 0;
+  top: 0;
+
+  width: 0;
+  height: 100%;
+
+  background:
+    var(--brand);
+
+  transition:
+    width 450ms
+    cubic-bezier(.22, 1, .36, 1);
+}
+
+.category-card:hover
+.category-card-line::after {
+  width: 100%;
+}
+
+
+/* =========================================================
+   RIGHT-TOP DATA VISUAL
+   ========================================================= */
+
+.category-card::after {
+  content: "";
+
+  position: absolute;
+
+  top: 54px;
+  right: 35px;
+
+  width: 105px;
+  height: 65px;
+
+  pointer-events: none;
+
+  z-index: 1;
+
+  opacity: 0.5;
+
+  background:
+    linear-gradient(
+      28deg,
+      transparent 47%,
+      rgba(0, 216, 74, 0.14) 48%,
+      rgba(0, 216, 74, 0.14) 49%,
+      transparent 50%
+    );
+
+  transform:
+    translate(0, 0)
+    rotate(0deg);
+
+  transition:
+    transform 500ms
+      cubic-bezier(.22, 1, .36, 1),
+    opacity 350ms ease;
+}
+
+
+/* =========================================================
+   DATA NODES
+   ========================================================= */
+
+.category-card::before {
+  content: "";
+
+  position: absolute;
+
+  top: 55px;
+  right: 47px;
+
+  width: 5px;
+  height: 5px;
+
+  border-radius: 50%;
+
+  background:
+    var(--brand);
+
+  box-shadow:
+    32px 18px 0
+      rgba(0, 216, 74, 0.72),
+
+    65px -9px 0
+      rgba(0, 216, 74, 0.48),
+
+    87px 27px 0
+      rgba(0, 216, 74, 0.28);
+
+  pointer-events: none;
+
+  z-index: 2;
+
+  opacity: 0.72;
+
+  transition:
+    transform 500ms
+      cubic-bezier(.22, 1, .36, 1),
+    opacity 350ms ease;
+}
+
+
+/* =========================================================
+   SMALL DATA LINE
+   ========================================================= */
+
+.category-card-top::after {
+  content: "";
+
+  position: absolute;
+
+  top: 68px;
+  right: 4px;
+
+  width: 70px;
+  height: 1px;
+
+  background:
+    linear-gradient(
+      90deg,
+      transparent,
+      rgba(0, 216, 74, 0.22),
+      transparent
+    );
+
+  transform:
+    rotate(-18deg);
+
+  transform-origin:
+    right center;
+
+  opacity: 0.5;
+
+  pointer-events: none;
+
+  transition:
+    width 400ms ease,
+    opacity 350ms ease,
+    transform 400ms ease;
+}
+
+
+/* =========================================================
+   DARK MODE — dark gradient values ONLY live here now
+   ========================================================= */
+
+[data-theme="dark"] .category-card,
+.dark .category-card {
+  background:
+    linear-gradient(
+      145deg,
+      rgba(0, 61, 13, 0.12) 0%,
+      var(--card) 42%,
+      #050807 100%
+    );
+
+  border-color: var(--border);
+
+  box-shadow:
+    0 10px 30px rgba(0, 0, 0, 0.28);
+}
+
+[data-theme="dark"] .category-card:hover,
+.dark .category-card:hover {
+  transform: translateY(-5px);
+
+  background:
+    linear-gradient(
+      145deg,
+      rgba(0, 107, 22, 0.18) 0%,
+      var(--card-elevated) 45%,
+      #050807 100%
+    );
+
+  border-color: rgba(0, 216, 74, 0.42);
+
+  box-shadow:
+    0 18px 42px rgba(0, 0, 0, 0.40),
+    0 0 28px rgba(0, 216, 74, 0.06);
+}
+
+/* Keep the background grid extremely subtle. */
+[data-theme="dark"] .category-section::before,
+.dark .category-section::before {
+  background-image:
+    linear-gradient(
+      to right,
+      rgba(0, 216, 74, 0.025) 1px,
+      transparent 1px
+    ),
+    linear-gradient(
+      to bottom,
+      rgba(0, 216, 74, 0.025) 1px,
+      transparent 1px
+    );
+}
+
+/* =========================================================
+   TABLET
+   ========================================================= */
+
+@media (max-width: 1100px) {
+  .category-section {
+    padding:
+      90px 0
+      100px;
+  }
+
+  .category-header {
+    grid-template-columns:
+      1fr 1fr;
+
+    gap: 40px;
+
+    margin-bottom: 50px;
+  }
+
+  .category-grid {
+    grid-template-columns:
+      repeat(4, minmax(0, 1fr));
+
+    gap: 18px;
+  }
+
+  .category-card:nth-child(1),
+  .category-card:nth-child(2),
+  .category-card:nth-child(3),
+  .category-card:nth-child(4),
+  .category-card:nth-child(5) {
+    grid-column: auto;
+  }
+
+  .category-card {
+    min-height: 245px;
+
+    padding: 20px;
+  }
+
+  .category-card-content {
+    margin-top: 42px;
+
+    padding-top: 0;
+  }
+
+  .category-card-line {
+    left: 20px;
+    right: 20px;
+  }
+}
+
+
+/* =========================================================
+   MOBILE
+   ========================================================= */
+
+@media (max-width: 768px) {
+  .category-section {
+    padding:
+      75px 0
+      85px;
+  }
+
+  .category-header {
+    display: block;
+
+    margin-bottom: 38px;
+  }
+
+  .category-header h2 {
+    font-size:
+      clamp(34px, 10vw, 46px);
+  }
+
+  .category-header > p {
+    margin-top: 18px;
+
+    font-size: 14px;
+  }
+
+  .category-grid {
+    grid-template-columns:
+      repeat(2, minmax(0, 1fr));
+
+    gap: 14px;
+  }
+
+  .category-card:nth-child(1),
+  .category-card:nth-child(2),
+  .category-card:nth-child(3),
+  .category-card:nth-child(4),
+  .category-card:nth-child(5) {
+    grid-column: auto;
+  }
+
+  .category-card {
+    min-height: 225px;
+
+    padding: 17px;
+
+    border-radius: var(--radius-lg);
+  }
+
+  .category-icon {
+    width: 43px;
+    height: 43px;
+
+    border-radius: var(--radius-md);
+  }
+
+  .category-arrow {
+    width: 29px;
+    height: 29px;
+
+    font-size: 11px;
+  }
+
+  .category-card-content {
+    margin-top: 34px;
+
+    padding-top: 0;
+  }
+
+  .category-card-content h3 {
+    font-size: 16px;
+  }
+
+  .category-card-content p {
+    font-size: 11px;
+
+    line-height: 1.55;
+  }
+
+  .category-card-line {
+    left: 17px;
+    right: 17px;
+    bottom: 16px;
+  }
+}
+
+
+/* =========================================================
+   SMALL MOBILE
+   ========================================================= */
+
+@media (max-width: 520px) {
+  .category-grid {
+    grid-template-columns:
+      1fr;
+  }
+
+  .category-card {
+    min-height: 205px;
+  }
+
+  .category-card-content {
+    margin-top: 30px;
+  }
+}

@@ -301,12 +301,6 @@ export default async function CategorySection() {
 
           </div>
 
-
-          <p>
-            Reviews, research, alternatives and comparisons —
-            everything you need to make smarter AI decisions.
-          </p>
-
         </div>
 
 

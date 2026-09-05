@@ -3,6 +3,19 @@ import { Sora, Lora, DM_Mono } from "next/font/google";
 
 import "./globals.css";
 
+import "@/components/css-style/navbar.css";
+import "@/components/css-style/hero.css";
+import "@/components/css-style/latest.css";
+import "@/components/css-style/category.css";
+import "@/components/css-style/alloy-pick.css";
+import "@/components/css-style/learn-ai.css";
+import "@/components/css-style/recent-ai-news.css";
+import "@/components/css-style/ai-tool-reviews.css";
+import "@/components/css-style/footer.css";
+import "@/components/css-style/popular.css";
+import "@/components/css-style/news-letter.css";
+import "@/components/css-style/tool-submit.css";
+
 import Navbar from "@/components/layout/Navbar";
 import Footer from "@/components/layout/Footer";
 import ThemeScript from "@/components/ThemeScript";
