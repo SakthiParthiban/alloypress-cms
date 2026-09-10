@@ -26,6 +26,10 @@ type PayloadResponse = {
   docs?: Post[];
 };
 
+type CategoryResponse = {
+  docs?: Category[];
+};
+
 function getMediaUrl(media: Post["featuredImage"]): string | null {
   if (!media || typeof media === "number") {
     return null;
@@ -82,7 +86,7 @@ function formatDate(date?: string | null): string {
 }
 
 function isValidPost(post: Post): boolean {
-  if (!post.title || !post.slug) {
+  if (!post.id || !post.title || !post.slug || !post.publishedAt) {
     return false;
   }
 
@@ -105,9 +109,10 @@ function isValidPost(post: Post): boolean {
 
 async function getLatestPosts(): Promise<Post[]> {
   try {
-    const data =
-      await payloadFetch<PayloadResponse>(
-        "/posts?where[workflowStatus][equals]=published&sort=-publishedAt&limit=30&depth=1",
+    // 1. Get the Reviews category
+    const categoryData =
+      await payloadFetch<CategoryResponse>(
+        "/categories?where[slug][equals]=reviews&limit=1",
         {
           next: {
             revalidate: 60,
@@ -115,11 +120,35 @@ async function getLatestPosts(): Promise<Post[]> {
         }
       );
 
-    if (!data?.docs) {
+    const reviewsCategory = categoryData?.docs?.[0];
+
+    if (!reviewsCategory?.id) {
+      console.error(
+        "Latest Updates: Reviews category not found."
+      );
+
       return [];
     }
 
-    return data.docs
+    // 2. Fetch only published posts from Reviews category
+    const postsData =
+      await payloadFetch<PayloadResponse>(
+        `/posts?where[workflowStatus][equals]=published&where[category][equals]=${encodeURIComponent(
+          String(reviewsCategory.id)
+        )}&sort=-publishedAt&limit=30&depth=1`,
+        {
+          next: {
+            revalidate: 60,
+          },
+        }
+      );
+
+    if (!postsData?.docs) {
+      return [];
+    }
+
+    // 3. Remove invalid / placeholder posts and take latest 4
+    return postsData.docs
       .filter(isValidPost)
       .slice(0, 4);
   } catch (error) {
@@ -147,11 +176,11 @@ export default async function LatestUpdates() {
       <div className="container">
         <div className="latest-updates-header">
           <h2 id="latest-updates-title">
-            Latest Updates
+            Detailed AI tools review by Alloypress
           </h2>
 
           <Link
-            href="/blogs"
+            href="/reviews"
             className="latest-updates-view-all"
           >
             <span>View all</span>

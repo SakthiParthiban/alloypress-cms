@@ -1,5 +1,11 @@
 import Link from "next/link";
 import Image from "next/image";
+import {
+  FaYoutube,
+  FaInstagram,
+  FaFacebookF,
+  FaXTwitter,
+} from "react-icons/fa6";
 
 const navigateLinks = [
   { label: "Home", href: "/" },
@@ -13,7 +19,10 @@ const navigateLinks = [
 const resourceLinks = [
   { label: "AI Image Generators", href: "/resources/ai-image-generators" },
   { label: "Best AI Chatbots", href: "/resources/ai-chatbots" },
-  { label: "AI Background Removers", href: "/resources/ai-background-removers" },
+  {
+    label: "AI Background Removers",
+    href: "/resources/ai-background-removers",
+  },
   { label: "AI Detectors", href: "/resources/ai-detectors" },
   { label: "AI Blog Writers", href: "/resources/ai-blog-writers" },
   {
@@ -28,8 +37,11 @@ const companyLinks = [
   { label: "Contact", href: "/contact" },
   { label: "Submit a Tool", href: "/inclusion" },
   { label: "Advertise", href: "/advertise" },
-  // External careers page as requested.
-  { label: "Careers", href: "https://nvdigital.in/careers/", external: true },
+  {
+    label: "Careers",
+    href: "https://nvdigital.in/careers/",
+    external: true,
+  },
 ];
 
 const learnLinks = [
@@ -71,16 +83,19 @@ const popularLinks = [
 function SocialIcon({
   children,
   label,
+  href = "#",
 }: {
   children: React.ReactNode;
   label: string;
+  href?: string;
 }) {
   return (
     <a
-      href="#"
+      href={href}
       className="footer-social"
       aria-label={label}
-      rel="nofollow"
+      rel={href === "#" ? "nofollow" : "noopener noreferrer"}
+      target={href === "#" ? undefined : "_blank"}
     >
       {children}
     </a>
@@ -114,6 +129,7 @@ function FooterColumn({
                   rel="noopener noreferrer"
                 >
                   {link.label}
+
                   {link.popular && (
                     <span className="footer-popular">Popular</span>
                   )}
@@ -121,6 +137,7 @@ function FooterColumn({
               ) : (
                 <Link href={link.href}>
                   {link.label}
+
                   {link.popular && (
                     <span className="footer-popular">Popular</span>
                   )}
@@ -156,16 +173,33 @@ export default function Footer() {
               </p>
 
               <div className="footer-socials">
-                <SocialIcon label="YouTube">▶</SocialIcon>
-                <SocialIcon label="Threads">◈</SocialIcon>
-                <SocialIcon label="Facebook">f</SocialIcon>
-                <SocialIcon label="X">𝕏</SocialIcon>
+                <SocialIcon label="YouTube">
+                  <FaYoutube aria-hidden="true" />
+                </SocialIcon>
+
+                <SocialIcon label="Instagram">
+                  < FaInstagram aria-hidden="true" />
+                </SocialIcon>
+
+                <SocialIcon label="Facebook">
+                  <FaFacebookF aria-hidden="true" />
+                </SocialIcon>
+
+                <SocialIcon label="X">
+                  <FaXTwitter aria-hidden="true" />
+                </SocialIcon>
               </div>
             </div>
 
-            <FooterColumn title="Navigate" links={navigateLinks} />
+            <FooterColumn
+              title="Navigate"
+              links={navigateLinks}
+            />
 
-            <FooterColumn title="Top Resources" links={resourceLinks} />
+            <FooterColumn
+              title="Top Resources"
+              links={resourceLinks}
+            />
 
             <FooterColumn
               title="Company"
@@ -182,7 +216,10 @@ export default function Footer() {
               ]}
             />
 
-            <FooterColumn title="Learn" links={learnLinks} />
+            <FooterColumn
+              title="Learn"
+              links={learnLinks}
+            />
           </div>
         </div>
       </div>
@@ -206,23 +243,44 @@ export default function Footer() {
 
       <div className="footer-source">
         <div className="container">
-          <Link href="/about" className="footer-source-link">
+          <Link
+            href="/about"
+            className="footer-source-link"
+          >
             Set AlloyPress as the preferred source for AI on Google
           </Link>
         </div>
       </div>
 
+      <div
+        className="footer-brand-wordmark"
+        aria-hidden="true"
+      >
+        ALLOYPRESS
+      </div>
+
       <div className="footer-bottom">
         <div className="container footer-bottom-inner">
-          <nav className="footer-legal" aria-label="Legal">
-            <Link href="/privacy-policy">Privacy Policy</Link>
-            <Link href="/terms">Terms and Conditions</Link>
-            <Link href="/do-not-sell">Do Not Sell My Info</Link>
+          <nav
+            className="footer-legal"
+            aria-label="Legal"
+          >
+            <Link href="/privacy-policy">
+              Privacy Policy
+            </Link>
+
+            <Link href="/terms">
+              Terms and Conditions
+            </Link>
+
+            <Link href="/do-not-sell">
+              Do Not Sell My Info
+            </Link>
           </nav>
 
           <p>
-            Copyright © {new Date().getFullYear()} AlloyPress. All rights
-            reserved.
+            Copyright © {new Date().getFullYear()} AlloyPress.
+            All rights reserved.
           </p>
         </div>
       </div>

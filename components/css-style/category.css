@@ -20,37 +20,7 @@
    ========================================================= */
 
 .category-section::before {
-  content: "";
-
-  position: absolute;
-
-  inset: 0;
-
-  pointer-events: none;
-
-  background-image:
-    linear-gradient(
-      to right,
-      rgba(20, 35, 45, 0.028) 1px,
-      transparent 1px
-    ),
-    linear-gradient(
-      to bottom,
-      rgba(20, 35, 45, 0.028) 1px,
-      transparent 1px
-    );
-
-  background-size:
-    120px 120px;
-
-  mask-image:
-    linear-gradient(
-      to bottom,
-      transparent,
-      black 12%,
-      black 88%,
-      transparent
-    );
+  content: none;
 }
 
 
@@ -93,7 +63,7 @@
   font-family:
     var(--font-mono);
 
-  font-size: 10px;
+  font-size: var(--text-xs);
 
   font-weight: 600;
 
@@ -135,7 +105,7 @@
     var(--font-ui);
 
   font-size:
-    clamp(38px, 4.5vw, 58px);
+    var(--text-4xl);
 
   line-height: 1.02;
 
@@ -160,7 +130,7 @@
   font-family:
     var(--font-body);
 
-  font-size: 15px;
+  font-size: var(--text-md);
 
   line-height: 1.7;
 
@@ -227,7 +197,7 @@
   padding: 24px;
 
   border: 1px solid var(--border);
-  border-radius: var(--radius-xl);
+  border-radius: var(--radius-lg);
 
   background: var(--card);
 
@@ -339,7 +309,7 @@
   font-family:
     var(--font-mono);
 
-  font-size: 9px;
+  font-size: var(--text-xs);
 
   font-weight: 500;
 
@@ -416,7 +386,7 @@
 
   border-radius: 50%;
 
-  font-size: 13px;
+  font-size: var(--text-sm);
 
   color:
     var(--text-muted);
@@ -469,7 +439,7 @@
   font-family:
     var(--font-ui);
 
-  font-size: 19px;
+  font-size: var(--text-lg);
 
   line-height: 1.2;
 
@@ -503,7 +473,7 @@
   font-family:
     var(--font-body);
 
-  font-size: 13px;
+  font-size: var(--text-sm);
 
   line-height: 1.6;
 
@@ -722,17 +692,7 @@
 /* Keep the background grid extremely subtle. */
 [data-theme="dark"] .category-section::before,
 .dark .category-section::before {
-  background-image:
-    linear-gradient(
-      to right,
-      rgba(0, 216, 74, 0.025) 1px,
-      transparent 1px
-    ),
-    linear-gradient(
-      to bottom,
-      rgba(0, 216, 74, 0.025) 1px,
-      transparent 1px
-    );
+  content: none;
 }
 
 /* =========================================================
@@ -808,13 +768,13 @@
 
   .category-header h2 {
     font-size:
-      clamp(34px, 10vw, 46px);
+      var(--text-3xl);
   }
 
   .category-header > p {
     margin-top: 18px;
 
-    font-size: 14px;
+    font-size: var(--text-sm);
   }
 
   .category-grid {
@@ -851,7 +811,7 @@
     width: 29px;
     height: 29px;
 
-    font-size: 11px;
+    font-size: var(--text-xs);
   }
 
   .category-card-content {
@@ -861,11 +821,11 @@
   }
 
   .category-card-content h3 {
-    font-size: 16px;
+    font-size: var(--text-md);
   }
 
   .category-card-content p {
-    font-size: 11px;
+    font-size: var(--text-xs);
 
     line-height: 1.55;
   }
@@ -894,5 +854,50 @@
 
   .category-card-content {
     margin-top: 30px;
+  }
+}
+
+/* Final category card content rules */
+.category-number,
+.category-card-content p,
+.category-card-line,
+.category-arrow,
+.category-card::after,
+.category-card-top::after {
+  display: none !important;
+}
+
+.category-card {
+  min-height: 210px;
+}
+
+.category-card-content {
+  margin-top: 42px;
+}
+
+.category-card-content h3 {
+  margin: 0;
+  font-size: var(--text-lg);
+  line-height: 1.35;
+}
+
+@media (max-width: 768px) {
+  .category-card {
+    min-height: 190px;
+    padding: 17px;
+  }
+
+  .category-card-content {
+    margin-top: 30px;
+  }
+
+  .category-card-content h3 {
+    font-size: var(--text-md);
+  }
+}
+
+@media (max-width: 520px) {
+  .category-card {
+    min-height: 180px;
   }
 }

@@ -1,15 +1,6 @@
 @import "tailwindcss";
 
-/* =========================================================
-   ALLOYPRESS — GLOBAL DESIGN SYSTEM
-   Premium Dark Editorial AI-Tech
-   Black + Deep Green + Neon Green
-   ========================================================= */
-
 :root {
-  /* =======================================================
-     BRAND
-     ======================================================= */
 
   --brand: #00d84a;
   --brand-hover: #12ed5a;
@@ -19,11 +10,6 @@
   --brand-subtle: rgba(0, 216, 74, 0.16);
   --brand-glow: rgba(0, 216, 74, 0.24);
 
-
-  /* =======================================================
-     BACKGROUND
-     ======================================================= */
-
   --background: #000000;
 
   --background-base: #050a07;
@@ -32,22 +18,12 @@
   --background-green-mid: #003d0d;
   --background-green-strong: #006b16;
 
-
-  /* =======================================================
-     SURFACES
-     ======================================================= */
-
   --surface: #080d0a;
   --surface-2: #0a110d;
   --surface-elevated: #0d1510;
 
   --card: #080f0b;
   --card-elevated: #0d1510;
-
-
-  /* =======================================================
-     TEXT
-     ======================================================= */
 
   --foreground: #f0f3ee;
 
@@ -56,38 +32,18 @@
   --text-muted: #737d76;
   --text-subtle: #4f5952;
 
-
-  /* =======================================================
-     BORDERS
-     ======================================================= */
-
   --border: #12351f;
   --border-strong: #1b5a2c;
 
   --border-soft: rgba(18, 53, 31, 0.65);
-
-
-  /* =======================================================
-     STATUS
-     ======================================================= */
 
   --success: #00d84a;
   --warning: #f5b942;
   --error: #ff4d4d;
   --info: #65a8ff;
 
-
-  /* =======================================================
-     LAYOUT
-     ======================================================= */
-
   --container: 1200px;
   --article-width: 720px;
-
-
-  /* =======================================================
-     TYPE SCALE
-     ======================================================= */
 
   --text-xs: 12px;
   --text-sm: 13px;
@@ -100,21 +56,11 @@
 
   --text-display: clamp(48px, 5vw, 72px);
 
-
-  /* =======================================================
-     RADIUS
-     ======================================================= */
-
   --radius-sm: 8px;
   --radius-md: 12px;
   --radius-lg: 16px;
   --radius-xl: 20px;
   --radius-pill: 999px;
-
-
-  /* =======================================================
-     SHADOWS
-     ======================================================= */
 
   --shadow-sm:
     0 2px 8px rgba(0, 0, 0, 0.28);
@@ -131,20 +77,10 @@
   --shadow-neon:
     0 0 28px rgba(57, 255, 20, 0.20);
 
-
-  /* =======================================================
-     TYPOGRAPHY
-     ======================================================= */
-
   --font-ui: var(--font-sora);
   --font-body: var(--font-lora);
   --font-mono: var(--font-dm-mono);
 }
-
-
-/* =========================================================
-   DARK THEME
-   ========================================================= */
 
 html[data-theme="dark"] {
   color-scheme: dark;
@@ -194,11 +130,6 @@ html[data-theme="dark"] {
     0 20px 60px rgba(0, 0, 0, 0.52);
 }
 
-
-/* =========================================================
-   LIGHT THEME
-   ========================================================= */
-
 html[data-theme="light"] {
   color-scheme: light;
 
@@ -243,11 +174,6 @@ html[data-theme="light"] {
     0 20px 60px rgba(16, 32, 24, 0.10);
 }
 
-
-/* =========================================================
-   SYSTEM DARK FALLBACK
-   ========================================================= */
-
 @media (prefers-color-scheme: dark) {
   html:not([data-theme]) {
     color-scheme: dark;
@@ -286,13 +212,6 @@ html[data-theme="light"] {
   }
 }
 
-
-/* =========================================================
-   GLOBAL DARK ATMOSPHERE — BLACK + DEEP GREEN
-   No grid texture. Green gradient should remain visible
-   across the entire website without overpowering content.
-   ========================================================= */
-
 html[data-theme="dark"] body,
 html:not([data-theme]) body {
   background:
@@ -319,7 +238,6 @@ html:not([data-theme]) body {
   background-attachment: fixed;
 }
 
-/* Keep page sections transparent so the global atmosphere flows through. */
 html[data-theme="dark"] body :is(
   main,
   section,
@@ -354,7 +272,6 @@ html:not([data-theme]) body :is(
   background-color: transparent;
 }
 
-/* Remove decorative grid-line layers used by section CSS. */
 html[data-theme="dark"] .home-hero::before,
 html[data-theme="dark"] .category-section::before,
 html:not([data-theme]) .home-hero::before,
@@ -362,14 +279,6 @@ html:not([data-theme]) .category-section::before {
   display: none !important;
   background-image: none !important;
 }
-
-/* =========================================================
-   END GLOBAL DARK ATMOSPHERE
-   ========================================================= */
-
-/* =========================================================
-   RESET
-   ========================================================= */
 
 *,
 *::before,
@@ -400,12 +309,6 @@ body {
     background-color 0.25s ease,
     color 0.25s ease;
 }
-
-
-/* =========================================================
-   GLOBAL ATMOSPHERIC BACKGROUND — FULL PAGE
-   Gradient intentionally spills across the entire website.
-   ========================================================= */
 
 html[data-theme="dark"],
 html:not([data-theme]) {
@@ -460,13 +363,11 @@ html:not([data-theme]) body::before {
   background-size: cover;
 }
 
-/* Let the global atmosphere remain visible between sections. */
 html[data-theme="dark"] main,
 html:not([data-theme]) main {
   background: transparent !important;
 }
 
-/* Remove all decorative editorial grid backgrounds. */
 .home-hero::before,
 .category-section::before,
 .home-hero .hero-visual-grid,
@@ -474,7 +375,6 @@ html:not([data-theme]) main {
   background-image: none !important;
 }
 
-/* Keep individual sections transparent so the full-page glow can spill through. */
 .home-hero,
 .trending-section,
 .category-section,
@@ -488,29 +388,15 @@ html:not([data-theme]) main {
   background-color: transparent !important;
 }
 
-/* =========================================================
-   GLOBAL SELECTION
-   ========================================================= */
-
 ::selection {
   background: var(--brand);
   color: #001006;
 }
 
-
-/* =========================================================
-   FOCUS
-   ========================================================= */
-
 :focus-visible {
   outline: 2px solid var(--accent-neon);
   outline-offset: 3px;
 }
-
-
-/* =========================================================
-   TYPOGRAPHY
-   ========================================================= */
 
 h1,
 h2,
@@ -536,11 +422,6 @@ kbd {
   font-family: var(--font-mono);
 }
 
-
-/* =========================================================
-   GLOBAL CONTAINER
-   ========================================================= */
-
 .container {
   width: min(
     calc(100% - 48px),
@@ -559,20 +440,10 @@ kbd {
   }
 }
 
-
-/* =========================================================
-   GLOBAL LINKS
-   ========================================================= */
-
 a {
   color: inherit;
   text-decoration: none;
 }
-
-
-/* =========================================================
-   FORM ELEMENTS
-   ========================================================= */
 
 button,
 input,
@@ -584,13 +455,6 @@ select {
 button {
   cursor: pointer;
 }
-
-
-/* =========================================================
-   GLOBAL BUTTON SYSTEM
-   ========================================================= */
-
-/* Primary CTA */
 
 .btn-primary {
   display: inline-flex;
@@ -636,9 +500,6 @@ button {
     0 12px 32px rgba(0, 216, 74, 0.28);
 }
 
-
-/* Secondary CTA */
-
 .btn-secondary {
   display: inline-flex;
   align-items: center;
@@ -674,9 +535,6 @@ button {
   transform: translateY(-2px);
 }
 
-
-/* Small text CTA */
-
 .btn-ghost {
   display: inline-flex;
   align-items: center;
@@ -706,11 +564,6 @@ button {
   color: var(--accent-neon);
 }
 
-
-/* =========================================================
-   GLOBAL CARD
-   ========================================================= */
-
 .card {
   background: var(--card);
 
@@ -733,11 +586,6 @@ button {
     var(--shadow-md);
 }
 
-
-/* =========================================================
-   GREEN ACCENT LINE
-   ========================================================= */
-
 .accent-line {
   width: 42px;
   height: 2px;
@@ -754,11 +602,6 @@ button {
   box-shadow:
     0 0 14px rgba(57, 255, 20, 0.22);
 }
-
-
-/* =========================================================
-   EYEBROW
-   ========================================================= */
 
 .eyebrow {
   display: inline-flex;
@@ -794,11 +637,6 @@ button {
   box-shadow:
     0 0 10px rgba(57, 255, 20, 0.45);
 }
-
-
-/* =========================================================
-   ARTICLE TYPOGRAPHY
-   ========================================================= */
 
 .article-content {
   max-width: var(--article-width);
@@ -885,20 +723,10 @@ button {
   margin-bottom: 0.5rem;
 }
 
-
-/* =========================================================
-   MEDIA
-   ========================================================= */
-
 img {
   display: block;
   max-width: 100%;
 }
-
-
-/* =========================================================
-   REDUCED MOTION
-   ========================================================= */
 
 @media (prefers-reduced-motion: reduce) {
   html {
@@ -913,10 +741,6 @@ img {
     transition-duration: 0.01ms !important;
   }
 }
-
-/* =========================================================
-   FINAL DARK THEME SAFETY OVERRIDES
-   ========================================================= */
 
 html[data-theme="dark"] {
   --background: #000000;
@@ -955,3 +779,512 @@ html[data-theme="dark"] {
   }
 }
 
+html[data-theme="light"] {
+  background: #ffffff !important;
+}
+
+html[data-theme="light"] body {
+  position: relative;
+  isolation: isolate;
+  min-height: 100vh;
+  background-color: #ffffff !important;
+  background-image:
+    radial-gradient(
+      ellipse 75% 48% at 50% 0%,
+      rgba(0, 184, 61, 0.105) 0%,
+      rgba(0, 184, 61, 0.055) 34%,
+      rgba(0, 184, 61, 0.018) 58%,
+      transparent 78%
+    ),
+    radial-gradient(
+      ellipse 42% 36% at 4% 48%,
+      rgba(0, 184, 61, 0.055) 0%,
+      rgba(0, 184, 61, 0.018) 45%,
+      transparent 76%
+    ),
+    radial-gradient(
+      ellipse 46% 38% at 96% 62%,
+      rgba(0, 184, 61, 0.05) 0%,
+      rgba(0, 184, 61, 0.016) 45%,
+      transparent 76%
+    );
+  background-repeat: no-repeat;
+  background-size: 100% 100%, 100% 100%, 100% 100%;
+  background-attachment: fixed;
+}
+
+html[data-theme="light"] body :is(
+  main,
+  section,
+  .home-hero,
+  .trending-section,
+  .category-section,
+  .alloy-pick-section,
+  .learn-ai-section,
+  .recent-news-section,
+  .tool-reviews-section,
+  .popular-resources,
+  .newsletter-section,
+  .tool-submission-cta
+) {
+  background-color: transparent !important;
+}
+
+html[data-theme="light"] .home-hero::before,
+html[data-theme="light"] .category-section::before,
+html[data-theme="light"] .home-hero .hero-visual-grid,
+html[data-theme="light"] .hero-visual-grid {
+  background-image: none !important;
+}
+
+html[data-theme="light"] :is(
+  .card,
+  .resource-card,
+  .article-card,
+  .category-card,
+  .featured-post,
+  .alloy-featured-card,
+  .alloy-trending-posts,
+  .newsletter-form,
+  .tool-cta,
+  .learn-ai-card
+) {
+  background-color: var(--card) !important;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html[data-theme="light"] body {
+    background-attachment: scroll;
+  }
+}
+
+
+
+/* =========================================================
+   ALLOYPRESS — BACK TO TOP
+   Premium circular scroll progress button
+   ========================================================= */
+
+.back-to-top {
+  position: fixed;
+  right: 15px;
+  bottom: 24px;
+  z-index: 1000;
+
+  width: 50px;
+  height: 50px;
+  padding: 0;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  border: 1px solid
+    color-mix(
+      in srgb,
+      var(--primary, #00d84a) 30%,
+      transparent
+    );
+
+  border-radius: 50%;
+
+  background:
+    color-mix(
+      in srgb,
+      var(--background, #ffffff) 90%,
+      transparent
+    );
+
+  color: var(--primary, #00d84a);
+
+  cursor: pointer;
+
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+
+  transform: translateY(16px) scale(0.88);
+
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+
+  box-shadow:
+    0 8px 28px rgba(0, 0, 0, 0.14),
+    0 0 18px
+      color-mix(
+        in srgb,
+        var(--primary, #00d84a) 10%,
+        transparent
+      );
+
+  transition:
+    opacity 280ms ease,
+    visibility 280ms ease,
+    transform 280ms cubic-bezier(0.22, 1, 0.36, 1),
+    background 220ms ease,
+    border-color 220ms ease,
+    box-shadow 220ms ease;
+}
+
+
+/* =========================================================
+   VISIBLE
+   ========================================================= */
+
+.back-to-top.visible {
+  opacity: 1;
+  visibility: visible;
+  pointer-events: auto;
+
+  transform: translateY(0) scale(1);
+}
+
+
+/* =========================================================
+   PROGRESS RING
+   ========================================================= */
+
+.back-to-top-ring {
+  position: absolute;
+  inset: 0;
+
+  width: 100%;
+  height: 100%;
+
+  transform: rotate(-90deg);
+
+  pointer-events: none;
+}
+
+
+.back-to-top-ring-track,
+.back-to-top-ring-progress {
+  fill: none;
+  stroke-width: 1.7;
+}
+
+
+.back-to-top-ring-track {
+  stroke:
+    color-mix(
+      in srgb,
+      var(--primary, #00d84a) 15%,
+      transparent
+    );
+}
+
+
+.back-to-top-ring-progress {
+  stroke: var(--primary, #00d84a);
+
+  stroke-linecap: round;
+
+  filter:
+    drop-shadow(
+      0 0 3px
+      color-mix(
+        in srgb,
+        var(--primary, #00d84a) 55%,
+        transparent
+      )
+    );
+
+  transition: stroke-dashoffset 100ms linear;
+}
+
+
+/* =========================================================
+   ARROW
+   ========================================================= */
+
+.back-to-top-icon {
+  position: relative;
+  z-index: 2;
+
+  width: 19px;
+  height: 19px;
+
+  color: var(--primary, #00d84a);
+
+  transition:
+    transform 200ms cubic-bezier(0.22, 1, 0.36, 1),
+    color 180ms ease;
+}
+
+
+/* =========================================================
+   HOVER
+   ========================================================= */
+
+.back-to-top:hover {
+  transform: translateY(-3px) scale(1.05);
+
+  border-color:
+    color-mix(
+      in srgb,
+      var(--primary, #00d84a) 55%,
+      transparent
+    );
+
+  background:
+    color-mix(
+      in srgb,
+      var(--primary, #00d84a) 7%,
+      var(--background, #ffffff)
+    );
+
+  box-shadow:
+    0 12px 32px rgba(0, 0, 0, 0.18),
+    0 0 20px
+      color-mix(
+        in srgb,
+        var(--primary, #00d84a) 18%,
+        transparent
+      ),
+    0 0 42px
+      color-mix(
+        in srgb,
+        var(--primary, #00d84a) 8%,
+        transparent
+      );
+}
+
+
+.back-to-top:hover .back-to-top-icon {
+  transform: translateY(-2px);
+}
+
+
+/* =========================================================
+   ACTIVE
+   ========================================================= */
+
+.back-to-top:active {
+  transform: translateY(-1px) scale(0.97);
+}
+
+
+.back-to-top:active .back-to-top-icon {
+  transform: translateY(-1px);
+}
+
+
+/* =========================================================
+   LIGHT THEME — HIGH VISIBILITY
+   ========================================================= */
+
+[data-theme='light'] .back-to-top,
+.light .back-to-top {
+  background: rgba(255, 255, 255, 0.96);
+
+  border: 1.5px solid
+    color-mix(
+      in srgb,
+      var(--primary, #00d84a) 55%,
+      transparent
+    );
+
+  color: var(--primary, #00d84a);
+
+  box-shadow:
+    0 6px 20px rgba(0, 0, 0, 0.12),
+    0 0 0 3px
+      color-mix(
+        in srgb,
+        var(--primary, #00d84a) 7%,
+        transparent
+      ),
+    0 0 20px
+      color-mix(
+        in srgb,
+        var(--primary, #00d84a) 16%,
+        transparent
+      );
+}
+
+
+[data-theme='light'] .back-to-top.visible,
+.light .back-to-top.visible {
+  opacity: 1;
+  visibility: visible;
+  pointer-events: auto;
+}
+
+
+[data-theme='light'] .back-to-top-ring-track,
+.light .back-to-top-ring-track {
+  stroke:
+    color-mix(
+      in srgb,
+      var(--primary, #00d84a) 20%,
+      transparent
+    );
+}
+
+
+[data-theme='light'] .back-to-top-ring-progress,
+.light .back-to-top-ring-progress {
+  stroke: var(--primary, #00d84a);
+
+  filter:
+    drop-shadow(
+      0 0 4px
+      color-mix(
+        in srgb,
+        var(--primary, #00d84a) 65%,
+        transparent
+      )
+    );
+}
+
+
+[data-theme='light'] .back-to-top-icon,
+.light .back-to-top-icon {
+  color: var(--primary, #00d84a);
+
+  filter:
+    drop-shadow(
+      0 0 3px
+      color-mix(
+        in srgb,
+        var(--primary, #00d84a) 30%,
+        transparent
+      )
+    );
+}
+
+
+/* Light theme hover */
+
+[data-theme='light'] .back-to-top:hover,
+.light .back-to-top:hover {
+  background:
+    color-mix(
+      in srgb,
+      var(--primary, #00d84a) 8%,
+      #ffffff
+    );
+
+  border-color:
+    color-mix(
+      in srgb,
+      var(--primary, #00d84a) 85%,
+      transparent
+    );
+
+  box-shadow:
+    0 10px 28px rgba(0, 0, 0, 0.16),
+    0 0 0 4px
+      color-mix(
+        in srgb,
+        var(--primary, #00d84a) 8%,
+        transparent
+      ),
+    0 0 28px
+      color-mix(
+        in srgb,
+        var(--primary, #00d84a) 28%,
+        transparent
+      ),
+    0 0 55px
+      color-mix(
+        in srgb,
+        var(--primary, #00d84a) 12%,
+        transparent
+      );
+}
+
+
+/* =========================================================
+   DARK THEME
+   ========================================================= */
+
+[data-theme='dark'] .back-to-top,
+.dark .back-to-top {
+  background:
+    color-mix(
+      in srgb,
+      var(--background, #050805) 88%,
+      transparent
+    );
+
+  border-color:
+    color-mix(
+      in srgb,
+      var(--primary, #00d84a) 36%,
+      transparent
+    );
+
+  box-shadow:
+    0 8px 28px rgba(0, 0, 0, 0.32),
+    0 0 20px
+      color-mix(
+        in srgb,
+        var(--primary, #00d84a) 13%,
+        transparent
+      );
+}
+
+
+[data-theme='dark'] .back-to-top:hover,
+.dark .back-to-top:hover {
+  background:
+    color-mix(
+      in srgb,
+      var(--primary, #00d84a) 8%,
+      #050805
+    );
+
+  box-shadow:
+    0 12px 34px rgba(0, 0, 0, 0.38),
+    0 0 28px
+      color-mix(
+        in srgb,
+        var(--primary, #00d84a) 22%,
+        transparent
+      ),
+    0 0 55px
+      color-mix(
+        in srgb,
+        var(--primary, #00d84a) 8%,
+        transparent
+      );
+}
+
+
+/* =========================================================
+   MOBILE
+   ========================================================= */
+
+@media (max-width: 640px) {
+  .back-to-top {
+    right: 16px;
+    bottom: 16px;
+
+    width: 44px;
+    height: 44px;
+  }
+
+  .back-to-top-icon {
+    width: 18px;
+    height: 18px;
+  }
+
+  .back-to-top-ring-track,
+  .back-to-top-ring-progress {
+    stroke-width: 1.6;
+  }
+}
+
+
+/* =========================================================
+   ACCESSIBILITY
+   ========================================================= */
+
+@media (prefers-reduced-motion: reduce) {
+  .back-to-top,
+  .back-to-top-icon,
+  .back-to-top-ring-progress {
+    transition: none;
+  }
+}

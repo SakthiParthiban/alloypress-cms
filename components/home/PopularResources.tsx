@@ -26,39 +26,48 @@ type PayloadResponse = {
   docs?: Post[];
 };
 
+type CategoryResponse = {
+  docs?: Category[];
+};
+
 const RESOURCE_DEFINITIONS = [
   {
     number: "01",
-    category: "IMAGE GENERATION",
-    keywords: ["image generator", "ai image", "image generation"],
+    category: "ALTERNATIVES",
+    keywords: [],
     icon: "◈",
   },
   {
     number: "02",
-    category: "AI ASSISTANTS",
-    keywords: ["chatbot", "ai chatbot", "ai assistants"],
+    category: "ALTERNATIVES",
+    keywords: [],
     icon: "◉",
   },
   {
     number: "03",
-    category: "AI DETECTION",
-    keywords: ["ai detector", "ai detection", "detector"],
+    category: "ALTERNATIVES",
+    keywords: [],
     icon: "⌁",
   },
   {
     number: "04",
-    category: "IMAGE TOOLS",
-    keywords: ["background remover", "remove background", "background removal"],
+    category: "ALTERNATIVES",
+    keywords: [],
     icon: "✦",
   },
 ];
 
-function getMediaUrl(media: Post["featuredImage"]): string | null {
+function getMediaUrl(
+  media: Post["featuredImage"]
+): string | null {
   if (!media) {
     return null;
   }
 
-  if (typeof media === "object" && media.url) {
+  if (
+    typeof media === "object" &&
+    media.url
+  ) {
     if (media.url.startsWith("http")) {
       return media.url;
     }
@@ -67,7 +76,10 @@ function getMediaUrl(media: Post["featuredImage"]): string | null {
       process.env.PAYLOAD_API_URL ||
       "http://localhost:3001/api";
 
-    return `${cmsUrl.replace(/\/api$/, "")}${media.url}`;
+    return `${cmsUrl.replace(
+      /\/api$/,
+      ""
+    )}${media.url}`;
   }
 
   if (typeof media === "number") {
@@ -75,18 +87,28 @@ function getMediaUrl(media: Post["featuredImage"]): string | null {
       process.env.PAYLOAD_API_URL ||
       "http://localhost:3001/api";
 
-    return `${cmsUrl.replace(/\/api$/, "")}/api/media/${media}`;
+    return `${cmsUrl.replace(
+      /\/api$/,
+      ""
+    )}/api/media/${media}`;
   }
 
   return null;
 }
 
 function isValidPost(post: Post): boolean {
-  if (!post?.id || !post?.title || !post?.slug || !post?.publishedAt) {
+  if (
+    !post?.id ||
+    !post?.title ||
+    !post?.slug ||
+    !post?.publishedAt
+  ) {
     return false;
   }
 
-  const title = post.title.trim().toLowerCase();
+  const title = post.title
+    .trim()
+    .toLowerCase();
 
   if (
     title.includes("untitled wordpress") ||
@@ -99,13 +121,15 @@ function isValidPost(post: Post): boolean {
   }
 
   const category =
-    post.category && typeof post.category === "object"
+    post.category &&
+    typeof post.category === "object"
       ? post.category
       : null;
 
   if (
     category?.slug === "uncategorized" ||
-    category?.name?.toLowerCase() === "uncategorized"
+    category?.name?.toLowerCase() ===
+      "uncategorized"
   ) {
     return false;
   }
@@ -113,81 +137,101 @@ function isValidPost(post: Post): boolean {
   return true;
 }
 
-async function getPublishedPosts(): Promise<Post[]> {
+async function getLatestPosts(): Promise<Post[]> {
   try {
-    const url = new URL(
-      `${process.env.PAYLOAD_API_URL || "http://localhost:3001/api"}/posts`
-    );
+    /*
+     * Step 1:
+     * Get the Alternatives category.
+     *
+     * We intentionally resolve the category first instead of
+     * relying on category names returned inside individual posts.
+     */
+    const categoryData =
+      await payloadFetch<CategoryResponse>(
+        "/categories?where[slug][equals]=alternatives&limit=1",
+        {
+          next: {
+            revalidate: 60,
+          },
+        }
+      );
 
-    url.searchParams.set("depth", "1");
-    url.searchParams.set("limit", "100");
-    url.searchParams.set("sort", "-publishedAt");
-    url.searchParams.set(
-      "where[workflowStatus][equals]",
-      "published"
-    );
+    const alternativesCategory =
+      categoryData?.docs?.[0];
 
-    const response = await fetch(url.toString(), {
-      next: {
-        revalidate: 60,
-      },
-    });
+    if (!alternativesCategory?.id) {
+      console.error(
+        "Popular Resources: Alternatives category not found."
+      );
 
-    if (!response.ok) {
       return [];
     }
 
-    const data = await response.json();
+    /*
+     * Step 2:
+     * Fetch ONLY published posts belonging to
+     * the Alternatives category.
+     *
+     * - sort=-publishedAt => newest first
+     * - limit=30 => enough candidates after filtering
+     * - depth=1 => featuredImage/category populated
+     */
+    const postsData =
+      await payloadFetch<PayloadResponse>(
+        `/posts?where[workflowStatus][equals]=published&where[category][equals]=${encodeURIComponent(
+          String(alternativesCategory.id)
+        )}&sort=-publishedAt&limit=30&depth=1`,
+        {
+          next: {
+            revalidate: 60,
+          },
+        }
+      );
 
-    return Array.isArray(data?.docs)
-      ? data.docs.filter(isValidPost)
-      : [];
+    if (!postsData?.docs) {
+      return [];
+    }
+
+    /*
+     * Step 3:
+     * Keep valid published Alternatives posts
+     * and take the latest 4.
+     */
+    return postsData.docs
+      .filter(isValidPost)
+      .slice(0, 4);
   } catch (error) {
-    console.error("Popular Resources fetch error:", error);
+    console.error(
+      "Popular Resources fetch error:",
+      error
+    );
+
     return [];
   }
 }
 
-function findResourcePost(
-  posts: Post[],
-  definition: (typeof RESOURCE_DEFINITIONS)[number]
-): Post | null {
-  return (
-    posts.find((post) => {
-      const title = post.title?.toLowerCase() || "";
-
-      return definition.keywords.some((keyword) =>
-        title.includes(keyword)
-      );
-    }) || null
-  );
-}
-
 export default async function PopularResources() {
-  const posts = await getPublishedPosts();
+  const posts = await getLatestPosts();
 
-  const resources = RESOURCE_DEFINITIONS
-    .map((definition) => {
-      const post = findResourcePost(posts, definition);
+  if (!posts.length) {
+    return null;
+  }
 
-      if (!post) {
-        return null;
-      }
+  /*
+   * Use the latest Alternatives posts directly.
+   * No keyword matching is required anymore.
+   */
+  const resources = posts.map(
+    (post, index) => {
+      const definition =
+        RESOURCE_DEFINITIONS[index];
 
       return {
         ...definition,
         post,
       };
-    })
-    .filter(
-      (
-        resource
-      ): resource is NonNullable<typeof resource> => Boolean(resource)
-    );
-
-  if (!resources.length) {
-    return null;
-  }
+    }
+  );
 
   return (
     <section
@@ -197,15 +241,17 @@ export default async function PopularResources() {
       <div className="popular-resources-inner">
         <div className="resources-header">
           <h2 id="popular-resources-title">
-            Popular Resources
+            TOP AI tools alternatives
           </h2>
 
           <Link
-            href="/blogs"
+            href="/alternatives"
             className="resources-view-all"
           >
             View all
-            <span aria-hidden="true">→</span>
+            <span aria-hidden="true">
+              →
+            </span>
           </Link>
         </div>
 
@@ -226,8 +272,12 @@ export default async function PopularResources() {
                     <Image
                       src={image}
                       alt={
-                        typeof resource.post.featuredImage === "object"
-                          ? resource.post.featuredImage?.alt ||
+                        typeof resource.post
+                          .featuredImage ===
+                        "object"
+                          ? resource.post
+                              .featuredImage
+                              ?.alt ||
                             resource.post.title ||
                             "Popular AI resource"
                           : resource.post.title ||
@@ -250,13 +300,21 @@ export default async function PopularResources() {
                 </div>
 
                 <div className="resource-content">
-                  <h3>{resource.post.title}</h3>
+                  <h3>
+                    {resource.post.title}
+                  </h3>
                 </div>
 
                 <div className="resource-footer">
-                  <span>{resource.category}</span>
+                  <span>
+                    {resource.category}
+                  </span>
+
                   <b>
-                    Read now <span aria-hidden="true">→</span>
+                    Read now{" "}
+                    <span aria-hidden="true">
+                      →
+                    </span>
                   </b>
                 </div>
               </Link>

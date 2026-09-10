@@ -1,6 +1,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { payloadFetch } from "@/lib/payload";
+import FeaturedCarousel from "./FeaturedCarousel";
 
 type Media = {
   url?: string | null;
@@ -154,32 +155,24 @@ async function getPublishedPosts(): Promise<Post[]> {
    ALLOY PICK SELECTION
    ========================================================= */
 
-function selectAlloyPick(
-  posts: Post[]
-): Post | null {
+function selectFeaturedPosts(posts: Post[]): Post[] {
   if (!posts.length) {
-    return null;
+    return [];
   }
 
-  // 1. Prefer cornerstone content.
+  // 1. Keep the existing editorial preference:
+  //    cornerstone content gets first priority.
   const cornerstone = posts.find(
     (post) => post.cornerstone === true
   );
 
-  if (cornerstone) {
-    return cornerstone;
-  }
+  // 2. Fill the remaining Featured carousel slots with
+  //    the newest valid published posts, without duplicates.
+  const ordered = cornerstone
+    ? [cornerstone, ...posts.filter((post) => post.id !== cornerstone.id)]
+    : posts;
 
-  // 2. Otherwise choose from the older meaningful portion.
-  const olderStart = Math.floor(
-    posts.length * 0.45
-  );
-
-  return (
-    posts[olderStart] ||
-    posts[posts.length - 1] ||
-    null
-  );
+  return ordered.slice(0, 3);
 }
 
 /* =========================================================
@@ -194,37 +187,32 @@ export default async function AlloyPick() {
     return null;
   }
 
-  const alloyPick =
-    selectAlloyPick(posts);
+  const featuredPosts =
+    selectFeaturedPosts(posts);
 
-  if (!alloyPick) {
+  if (!featuredPosts.length) {
     return null;
   }
 
   /*
-   * NEW HOMEPAGE STRUCTURE
+   * FEATURED + RECENTLY PUBLISHED
    *
-   * Alloy Pick + Trending Articles
+   * Left:
+   *   Three-post automatic Featured carousel.
    *
-   * Recent Posts has been completely removed.
+   * Right:
+   *   Existing Recently Published list is preserved.
    */
+
+  const featuredIds = new Set(
+    featuredPosts.map((post) => post.id)
+  );
 
   const trendingPosts = posts
     .filter(
-      (post) =>
-        post.id !== alloyPick.id
+      (post) => !featuredIds.has(post.id)
     )
     .slice(0, 5);
-
-  const pickImage =
-    getMediaUrl(
-      alloyPick.featuredImage
-    );
-
-  const pickCategory =
-    getCategory(
-      alloyPick.category
-    );
 
   return (
     <section
@@ -247,21 +235,11 @@ export default async function AlloyPick() {
               </span>
 
               <h2 id="alloy-trending-title">
-                Alloy Picks
+                Featured
               </h2>
             </div>
 
           </div>
-
-          <Link
-            href="/blogs"
-            className="learn-ai-view-all"
-          >
-            View all
-            <span aria-hidden="true">
-              →
-            </span>
-          </Link>
 
         </div>
 
@@ -272,90 +250,12 @@ export default async function AlloyPick() {
         <div className="alloy-trending-grid">
 
           {/* =================================================
-              ALLOY PICK
+              FEATURED CAROUSEL
+              Three featured posts. Recent Posts on the right
+              remains a separate, unchanged content list.
           ================================================= */}
 
-          <Link
-            href={`/blogs/${alloyPick.slug}`}
-            className="alloy-featured-card"
-            aria-label={`Read ${alloyPick.title}`}
-          >
-
-            <div className="alloy-featured-image">
-
-              {pickImage ? (
-                <Image
-                  src={pickImage}
-                  alt={
-                    typeof alloyPick.featuredImage ===
-                    "object"
-                      ? alloyPick.featuredImage?.alt ||
-                        alloyPick.title ||
-                        "AlloyPress featured article"
-                      : alloyPick.title ||
-                        "AlloyPress featured article"
-                  }
-                  fill
-                  sizes="(max-width: 900px) 100vw, 58vw"
-                  priority
-                />
-              ) : (
-                <div
-                  className="alloy-image-placeholder"
-                  aria-hidden="true"
-                >
-                  <span>AI</span>
-                </div>
-              )}
-
-            </div>
-
-            <div className="alloy-featured-content">
-
-              <div className="alloy-post-meta-top">
-                <span>
-                  {pickCategory.name}
-                </span>
-
-                <span aria-hidden="true">
-                  •
-                </span>
-
-                <span>
-                  ALLOY PICK
-                </span>
-              </div>
-
-              <h3>
-                {alloyPick.title}
-              </h3>
-
-              <div className="alloy-featured-meta">
-
-                <span>
-                  AlloyPress Team
-                </span>
-
-                <span aria-hidden="true">
-                  •
-                </span>
-
-                <time
-                  dateTime={
-                    alloyPick.publishedAt ||
-                    undefined
-                  }
-                >
-                  {formatDate(
-                    alloyPick.publishedAt
-                  )}
-                </time>
-
-              </div>
-
-            </div>
-
-          </Link>
+          <FeaturedCarousel posts={featuredPosts} />
 
           {/* =================================================
               TRENDING ARTICLES
@@ -363,11 +263,10 @@ export default async function AlloyPick() {
           ================================================= */}
 
           <div className="alloy-trending-posts">
-
             <div className="alloy-trending-posts-heading">
               <span className="trending-live-dot" />
               <span>
-                TRENDING ARTICLES
+                Recently Published
               </span>
             </div>
 

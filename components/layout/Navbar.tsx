@@ -236,7 +236,7 @@ export default function Navbar() {
             href="/contact-us"
             className="header-cta"
           >
-            Submit a Tool
+            Get Reviewed
             <span aria-hidden="true">
               ↗
             </span>

@@ -1,41 +1,90 @@
+import Link from "next/link";
+
 export default function ToolSubmissionCTA() {
   return (
     <section className="tool-cta">
       <div className="tool-cta-inner">
-        <div className="tool-cta-content">
+
+        {/* HEADER */}
+        <div className="tool-cta-header">
           <div className="tool-cta-label">
-            <span />
-            FOR BRANDS AND AGENCIES
+            FOR AI BRANDS AND AGENCIES
           </div>
 
-          <h2>
-            Have an AI tool{" "}
-            <span>worth covering?</span>
-          </h2>
+          <h2>Have an AI tool worth covering?</h2>
 
           <p>
-            Whether you want your tool featured in one of our listicles,
-            reviewed in a standalone article, or are looking for an ongoing
-            editorial partnership — reach out and we will take it from there.
+            Every tool on AlloyPress is tested hands-on before it’s written
+            about. We don’t feature tools based on outreach alone — placement
+            depends entirely on how a tool performs against the others in its
+            category.
           </p>
+        </div>
 
-          <div className="tool-cta-note">
-            <i />
-            We respond within 1–2 business days.
+        {/* REJECTION CRITERIA */}
+        <div className="tool-cta-rejection">
+          <strong>We reject tools that:</strong>
+
+          <p>
+            don’t compete meaningfully in their category, fall below our
+            hands-on testing standards, make misleading or unverifiable
+            claims, or request guaranteed placement or specific ranking
+            positions.
+          </p>
+        </div>
+
+        {/* OPTIONS */}
+        <div className="tool-cta-options">
+
+          <div className="tool-cta-option">
+            <div className="tool-cta-option-label">
+              ARTICLE INCLUSION
+            </div>
+
+            <h3>Get featured in a roundup</h3>
+
+            <p>
+              Tested and evaluated alongside every other tool in the
+              category. Position is based on results, not payment.
+            </p>
+
+            <Link
+              href="/inclusion"
+              className="tool-cta-primary"
+            >
+              See How Inclusion Works
+              <span>↗</span>
+            </Link>
           </div>
+
+          <div className="tool-cta-option">
+            <div className="tool-cta-option-label">
+              DEDICATED REVIEW
+            </div>
+
+            <h3>Get a full standalone review</h3>
+
+            <p>
+              An in-depth article covering every feature, real use cases,
+              and our honest verdict. Ranks independently in search.
+            </p>
+
+            <Link
+              href="/review-tool"
+              className="tool-cta-secondary"
+            >
+              See How Reviews Work
+              <span>→</span>
+            </Link>
+          </div>
+
         </div>
 
-        <div className="tool-cta-actions">
-          <a href="/submit-tool" className="tool-cta-primary">
-            Submit a Tool
-            <span>↗</span>
-          </a>
-
-          <a href="/inclusion" className="tool-cta-secondary">
-            Learn More
-            <span>→</span>
-          </a>
+        {/* FOOTER NOTE */}
+        <div className="tool-cta-footer">
+          We respond within 1–2 business days.
         </div>
+
       </div>
     </section>
   );

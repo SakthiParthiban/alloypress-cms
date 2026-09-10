@@ -8,6 +8,7 @@ import AIToolReviews from "@/components/home/AIToolReviews";
 import PopularResources from "@/components/home/PopularResources";
 import ToolSubmissionCTA from "@/components/home/ToolSubmissionCTA";
 import NewsletterSection from "@/components/home/NewsletterSection";
+import BackToTop from '@/components/BackToTop'
 
 export default function Home() {
   return (
@@ -22,6 +23,7 @@ export default function Home() {
       <AIToolReviews />
       <NewsletterSection />
       <ToolSubmissionCTA />
+      <BackToTop />
     </main>
   );
 }

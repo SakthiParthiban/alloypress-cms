@@ -254,7 +254,6 @@ export default async function CategoryListing({
             <div>
               <h1>
                 {title}
-                <span>.</span>
               </h1>
 
               <p>

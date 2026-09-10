@@ -1,7 +1,25 @@
 "use client";
 
-import { useMemo, useState, type CSSProperties } from "react";
+import { useEffect, useMemo, useState } from "react";
+import {
+  Check,
+  Copy,
+  FileText,
+  Link2,
+  ChevronDown,
+  Share2,
+  Sparkles,
+  X as LucideX,
+} from "lucide-react";
+import {
+  FaXTwitter,
+  FaLinkedinIn,
+  FaFacebookF,
+  FaWhatsapp,
+  FaInstagram,
+} from "react-icons/fa6";
 
+import "./BlogPostView.css";
 type Props = {
   post: any;
   related: any[];
@@ -36,6 +54,8 @@ function getMedia(value: any): any | null {
   if (!value) return null;
 
   if (typeof value === "object") {
+    if (value.media && typeof value.media === "object") return value.media;
+    if (value.value && typeof value.value === "object") return value.value;
     return value;
   }
 
@@ -47,7 +67,15 @@ function mediaUrl(value: any): string | null {
 
   if (!media) return null;
 
-  return media.url || media.src || media.filename || null;
+  return (
+    media.url ||
+    media.src ||
+    media.publicUrl ||
+    media.path ||
+    media.filename ||
+    media.fields?.url ||
+    null
+  );
 }
 
 /*
@@ -137,31 +165,60 @@ function hasVisibleText(node: any): boolean {
   return false;
 }
 
-function collectHeadings(
+function buildHeadingIndex(
   nodes: any[] = []
-): { id: string; text: string; level: number }[] {
-  const result: { id: string; text: string; level: number }[] = [];
+): {
+  headings: { id: string; text: string; level: 2 }[];
+  idsByNode: Map<any, string>;
+} {
+  const headings: { id: string; text: string; level: 2 }[] = [];
+  const idsByNode = new Map<any, string>();
+  const usedIds = new Set<string>();
 
   function walk(items: any[]): void {
     items.forEach((node) => {
-      if (node?.type === "heading") {
+      if (!node || typeof node !== "object") return;
+
+      if (node.type === "heading") {
+        const rawTag = node.tag || "h2";
+        const tag =
+          ["h1", "h2", "h3", "h4", "h5", "h6"].includes(rawTag)
+            ? rawTag
+            : "h2";
+
         const text = textFromNodes(node.children || []).trim();
 
         if (text) {
-          result.push({
-            id: `${slugify(text)}-${result.length}`,
-            text,
-            level:
-              node.tag === "h3"
-                ? 3
-                : node.tag === "h4"
-                  ? 4
-                  : 2,
-          });
+          const baseId = slugify(text) || "section";
+          let id = baseId;
+          let suffix = 2;
+
+          while (usedIds.has(id)) {
+            id = `${baseId}-${suffix}`;
+            suffix += 1;
+          }
+
+          usedIds.add(id);
+          idsByNode.set(node, id);
+
+          // Keep the generated TOC clean: migrated WordPress posts often
+          // contain a literal "Table of Contents" H2 that is only an editor
+          // artefact. The real TOC is rendered by this page.
+          const isGeneratedTocHeading = /^(table\s+of\s+contents|contents)$/i.test(
+            text.replace(/[:：]/g, "").trim()
+          );
+
+          if (tag === "h2" && !isGeneratedTocHeading) {
+            headings.push({
+              id,
+              text,
+              level: 2,
+            });
+          }
         }
       }
 
-      if (Array.isArray(node?.children)) {
+      if (Array.isArray(node.children)) {
         walk(node.children);
       }
     });
@@ -169,7 +226,7 @@ function collectHeadings(
 
   walk(nodes);
 
-  return result;
+  return { headings, idsByNode };
 }
 
 function extractSummary(
@@ -198,6 +255,38 @@ function extractSummary(
   }
 
   return excerpt || "A practical AlloyPress breakdown of this article.";
+}
+
+function cleanEditorialText(value: unknown): string {
+  if (typeof value !== "string") return "";
+
+  let text = value
+    .replace(/<[^>]*>/g, " ")
+    .replace(/&nbsp;/gi, " ")
+    .replace(/&amp;/gi, "&")
+    .replace(/&quot;/gi, '"')
+    .replace(/&#39;/gi, "'")
+    .replace(/&hellip;/gi, "…")
+    .replace(/\s+/g, " ")
+    .trim();
+
+  // Remove migrated WordPress/AI-toolbar UI that was accidentally saved
+  // inside the excerpt. Preserve the real TL;DR content that follows it.
+  text = text.replace(
+    /Ask AI which software may suit your team[\s\S]*?(?=TL;DR\s*:|$)/i,
+    ""
+  );
+
+  text = text.replace(
+    /📋\s*Copied!.*?(?:Copy again\s*[✕×x]?|$)/i,
+    ""
+  );
+
+  text = text.replace(/^TL;DR\s*:\s*/i, "");
+  text = text.replace(/^[-–—•\s]+/, "");
+  text = text.replace(/\s+/g, " ").trim();
+
+  return text;
 }
 
 /* -------------------------------------------------------------------------- */
@@ -279,52 +368,10 @@ function InlineText({ node }: { node: any }) {
     if (format & 64) {
       content = <sup>{content}</sup>;
     }
-
-    const state = node.$ || node.state || {};
-
-    const style: CSSProperties = {};
-
-    if (
-      node.color ||
-      node.textColor ||
-      state.color ||
-      state.textColor
-    ) {
-      style.color =
-        node.color ||
-        node.textColor ||
-        state.color ||
-        state.textColor;
-    }
-
-    if (
-      node.backgroundColor ||
-      state.backgroundColor
-    ) {
-      style.backgroundColor =
-        node.backgroundColor ||
-        state.backgroundColor;
-    }
-
-    if (node.fontSize || state.fontSize) {
-      const size = node.fontSize || state.fontSize;
-
-      style.fontSize =
-        typeof size === "number"
-          ? `${size}px`
-          : size;
-    }
-
-    if (node.fontFamily || state.fontFamily) {
-      style.fontFamily =
-        node.fontFamily || state.fontFamily;
-    }
-
-    return (
-      <span style={style}>
-        {content}
-      </span>
-    );
+    /* Ignore migrated editor presentation styles. The article renderer owns
+     * typography and colors so every WordPress post follows the same AlloyPress
+     * design system. Semantic inline formatting is preserved above. */
+    return <span>{content}</span>;
   }
 
   return null;
@@ -334,12 +381,38 @@ function InlineText({ node }: { node: any }) {
 /* Main Lexical renderer                                                      */
 /* -------------------------------------------------------------------------- */
 
+function isInlineArticleTocList(node: any): boolean {
+  if (!node || node.type !== "list") return false;
+
+  const items = Array.isArray(node.children) ? node.children : [];
+  if (!items.length) return false;
+
+  let linkedItems = 0;
+  let totalItems = 0;
+
+  for (const item of items) {
+    if (!item || !Array.isArray(item.children)) continue;
+    totalItems += 1;
+
+    const hasInternalAnchor = item.children.some((child: any) => {
+      const href = child?.fields?.url || child?.url || "";
+      return child?.type === "link" && typeof href === "string" && href.startsWith("#");
+    });
+
+    if (hasInternalAnchor) linkedItems += 1;
+  }
+
+  return totalItems > 0 && linkedItems === totalItems;
+}
+
 function RenderNode({
   node,
   index,
+  headingIds,
 }: {
   node: any;
   index: number;
+  headingIds?: Map<any, string>;
 }) {
   if (!node) return null;
 
@@ -406,6 +479,7 @@ function RenderNode({
               key={`${index}-${i}`}
               node={child}
               index={i}
+              headingIds={headingIds}
             />
           ))}
         </>
@@ -413,10 +487,11 @@ function RenderNode({
     }
 
     const format = node.format;
+    const isFaqQuestion = node.__faqQuestion === true;
 
     return (
       <p
-        className="post-p"
+        className={`post-p${isFaqQuestion ? " post-faq-question" : ""}`}
         style={
           format && format !== ""
             ? { textAlign: format as any }
@@ -428,6 +503,7 @@ function RenderNode({
             key={`${index}-${i}`}
             node={child}
             index={i}
+              headingIds={headingIds}
           />
         ))}
       </p>
@@ -445,7 +521,10 @@ function RenderNode({
 
     if (!text) return null;
 
-    const id = `${slugify(text)}-${index}`;
+    const id =
+      headingIds?.get(node) ||
+      slugify(text) ||
+      "section";
 
     const tag =
       ["h1", "h2", "h3", "h4", "h5", "h6"].includes(
@@ -471,6 +550,7 @@ function RenderNode({
               key={i}
               node={child}
               index={i}
+              headingIds={headingIds}
             />
           )
         )}
@@ -491,32 +571,10 @@ function RenderNode({
 
     const items = node.children || [];
 
-    /*
-     * Hide old WordPress-generated TOC lists.
-     */
-    const isToc =
-      items.length > 0 &&
-      items.every((item: any) => {
-        const link = (
-          item?.children || []
-        ).find(
-          (x: any) => x?.type === "link"
-        );
-
-        const href =
-          link?.fields?.url ||
-          link?.url ||
-          "";
-
-        return href.startsWith("#");
-      });
-
-    if (isToc) {
-      return null;
-    }
+    const isToc = isInlineArticleTocList(node);
 
     return (
-      <Tag className="post-list">
+      <Tag className={`post-list${isToc ? " post-inline-toc" : ""}`}>
         {items.map(
           (item: any, i: number) => (
             <li key={i}>
@@ -526,6 +584,7 @@ function RenderNode({
                     key={j}
                     node={child}
                     index={j}
+              headingIds={headingIds}
                   />
                 )
               )}
@@ -548,6 +607,7 @@ function RenderNode({
               key={i}
               node={child}
               index={i}
+              headingIds={headingIds}
             />
           )
         )}
@@ -566,7 +626,10 @@ function RenderNode({
     const media = getMedia(
       node.value ||
         node.fields?.media ||
-        node.media
+        node.fields?.value ||
+        node.media ||
+        node.fields?.image ||
+        node.image
     );
 
     const url = mediaUrl(media);
@@ -615,6 +678,7 @@ function RenderNode({
               key={i}
               node={child}
               index={i}
+              headingIds={headingIds}
             />
           )
         )}
@@ -650,28 +714,39 @@ function RenderNode({
   /* ---------------------------------------------------------------------- */
 
   if (type === "table") {
+    const rows = Array.isArray(node.children) ? node.children : [];
+    const columnCount = rows.reduce(
+      (max: number, row: any) =>
+        Math.max(max, Array.isArray(row?.children) ? row.children.length : 0),
+      0
+    );
+
     return (
       <div className="table-scroll">
         <table className="post-table">
+          {columnCount > 0 ? (
+            <colgroup>
+              <col className="table-label-col" />
+              {Array.from({ length: Math.max(columnCount - 1, 0) }).map((_, i) => (
+                <col key={i} />
+              ))}
+            </colgroup>
+          ) : null}
           <tbody>
-            {(node.children || []).map(
+            {rows.map(
               (row: any, r: number) => (
                 <tr key={r}>
                   {(row.children || []).map(
                     (cell: any, c: number) => {
                       const Cell =
-                        cell.headerState
+                        cell.headerState || r === 0
                           ? "th"
                           : "td";
 
                       return (
                         <Cell
                           key={c}
-                          className={
-                            cell.headerState
-                              ? "table-head"
-                              : undefined
-                          }
+                          className={`${cell.headerState ? "table-head" : ""}${c === 0 ? " table-label-cell" : ""}`.trim()}
                         >
                           {(cell.children || []).map(
                             (
@@ -682,6 +757,7 @@ function RenderNode({
                                 key={i}
                                 node={child}
                                 index={i}
+              headingIds={headingIds}
                               />
                             )
                           )}
@@ -909,6 +985,7 @@ function RenderNode({
                 key={i}
                 node={child}
                 index={i}
+              headingIds={headingIds}
               />
             )
           )}
@@ -932,6 +1009,7 @@ function RenderNode({
               key={i}
               node={child}
               index={i}
+              headingIds={headingIds}
             />
           )
         )}
@@ -942,18 +1020,97 @@ function RenderNode({
   return null;
 }
 
+
+function normalizeArticleContent(nodes: any[] = []): any[] {
+  const normalized: any[] = [];
+  let inFaqSection = false;
+
+  nodes.forEach((node: any) => {
+    if (!node || typeof node !== "object") return;
+
+    if (
+      node.type === "paragraph" &&
+      (!Array.isArray(node.children) || node.children.length === 0)
+    ) {
+      return;
+    }
+
+    if (node.type === "paragraph") {
+      const inlineChildren: any[] = [];
+      const paragraphText = textFromNodes(node.children || []).trim();
+      const faqQuestion = inFaqSection && /\?\s*$/.test(paragraphText);
+
+      (node.children || []).forEach((child: any) => {
+        if (isBlockNode(child)) {
+          if (inlineChildren.length) {
+            normalized.push({
+              ...node,
+              ...(faqQuestion ? { __faqQuestion: true } : {}),
+              children: [...inlineChildren],
+            });
+            inlineChildren.length = 0;
+          }
+
+          normalized.push(child);
+        } else {
+          inlineChildren.push(child);
+        }
+      });
+
+      if (inlineChildren.length) {
+        normalized.push({
+          ...node,
+          ...(faqQuestion ? { __faqQuestion: true } : {}),
+          children: inlineChildren,
+        });
+      }
+
+      return;
+    }
+
+    if (node.type === "heading") {
+      const headingText = textFromNodes(node.children || []).trim();
+      const headingTag = node.tag || "h2";
+
+      if (/^h[1-6]$/i.test(headingTag)) {
+        if (/frequently asked questions|^faq$/i.test(headingText)) {
+          inFaqSection = true;
+        } else if (headingTag.toLowerCase() === "h2") {
+          inFaqSection = false;
+        }
+      }
+    }
+
+    if (Array.isArray(node.children)) {
+      normalized.push({
+        ...node,
+        children: node.children.filter(
+          (child: any) => child && typeof child === "object"
+        ),
+      });
+      return;
+    }
+
+    normalized.push(node);
+  });
+
+  return normalized;
+}
+
 /* -------------------------------------------------------------------------- */
 /* Article renderer                                                           */
 /* -------------------------------------------------------------------------- */
 
 function ArticleRenderer({
   content,
+  headingIds,
 }: {
   content: any;
+  headingIds: Map<any, string>;
 }) {
-  const children =
-    content?.root?.children || [];
-
+  const children = normalizeArticleContent(
+    content?.root?.children || []
+  );
   return (
     <div className="post-content">
       {children.map(
@@ -962,6 +1119,7 @@ function ArticleRenderer({
             key={i}
             node={node}
             index={i}
+            headingIds={headingIds}
           />
         )
       )}
@@ -981,24 +1139,47 @@ export default function BlogPostView({
   const [aiOpen, setAiOpen] =
     useState(false);
 
+  const [shareOpen, setShareOpen] =
+    useState(false);
+
   const [copied, setCopied] =
     useState(false);
+
+  useEffect(() => {
+    if (!shareOpen) return;
+
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === "Escape") {
+        setShareOpen(false);
+      }
+    };
+
+    document.addEventListener("keydown", handleKeyDown);
+    return () => document.removeEventListener("keydown", handleKeyDown);
+  }, [shareOpen]);
 
   const nodes =
     post?.content?.root?.children || [];
 
-  const headings = useMemo(
-    () => collectHeadings(nodes),
+  const headingIndex = useMemo(
+    () => buildHeadingIndex(nodes),
     [nodes]
+  );
+
+  const headings = headingIndex.headings;
+  const headingIds = headingIndex.idsByNode;
+
+  const excerpt = useMemo(
+    () => cleanEditorialText(post?.excerpt),
+    [post?.excerpt]
   );
 
   const summary = useMemo(
     () =>
-      extractSummary(
-        nodes,
-        post?.excerpt || ""
+      cleanEditorialText(
+        extractSummary(nodes, excerpt)
       ),
-    [nodes, post?.excerpt]
+    [nodes, excerpt]
   );
 
   const category =
@@ -1020,1111 +1201,280 @@ export default function BlogPostView({
       )
     : "";
 
-  async function sharePost() {
-    const url =
-      window.location.href;
-
-    if (navigator.share) {
-      try {
-        await navigator.share({
-          title:
-            post?.title ||
-            "AlloyPress",
-          text:
-            post?.excerpt ||
-            post?.title ||
-            "",
-          url,
-        });
-
-        return;
-      } catch {
-        /*
-         * User cancelled native share.
-         * Do nothing.
-         */
-      }
-    }
-
+  async function copyArticleLink() {
     try {
-      await navigator.clipboard.writeText(
-        url
-      );
-
+      await navigator.clipboard.writeText(window.location.href);
       setCopied(true);
-
-      window.setTimeout(
-        () => setCopied(false),
-        1800
-      );
+      window.setTimeout(() => setCopied(false), 1800);
+      setShareOpen(false);
     } catch {
       setCopied(false);
     }
   }
 
+  function openShareWindow(url: string) {
+    window.open(url, "_blank", "noopener,noreferrer");
+    setShareOpen(false);
+  }
+
+  function shareOnX() {
+    const url = `https://twitter.com/intent/tweet?url=${encodeURIComponent(
+      window.location.href
+    )}&text=${encodeURIComponent(post?.title || "")}`;
+
+    openShareWindow(url);
+  }
+
+  function shareOnLinkedIn() {
+    const url = `https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(
+      window.location.href
+    )}`;
+
+    openShareWindow(url);
+  }
+
+  function shareOnFacebook() {
+    const url = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(
+      window.location.href
+    )}`;
+
+    openShareWindow(url);
+  }
+
+  function shareOnWhatsApp() {
+    const url = `https://wa.me/?text=${encodeURIComponent(
+      `${post?.title || "AlloyPress article"} ${window.location.href}`
+    )}`;
+
+    openShareWindow(url);
+  }
+
+  async function shareOnInstagram() {
+    try {
+      await navigator.clipboard.writeText(window.location.href);
+      setCopied(true);
+      window.setTimeout(() => setCopied(false), 1800);
+      window.open("https://www.instagram.com/", "_blank", "noopener,noreferrer");
+      setShareOpen(false);
+    } catch {
+      setCopied(false);
+    }
+  }
+
+
   return (
     <>
-      <style>{`
-        .single-post{
-          --green:#18b968;
-          --green-dark:#087a45;
-          --ink:#14202b;
-          --muted:#647384;
-          --line:#dfe7e3;
-          --soft:#f3f7f5;
-          --paper:#fff;
-          min-height:100vh;
-          background:var(--paper);
-          color:var(--ink);
-        }
-
-        .single-post *{
-          box-sizing:border-box;
-        }
-
-        .post-shell{
-          width:min(1320px,calc(100% - 48px));
-          margin:0 auto;
-        }
-
-        .post-hero{
-          padding:54px 0 42px;
-          border-bottom:1px solid var(--line);
-        }
-
-        .post-kicker{
-          display:flex;
-          align-items:center;
-          gap:9px;
-          margin:0 0 17px;
-          color:var(--green);
-          font:800 11px/1 "DM Mono",monospace;
-          letter-spacing:.14em;
-          text-transform:uppercase;
-        }
-
-        .post-kicker i{
-          width:7px;
-          height:7px;
-          flex:0 0 7px;
-          border-radius:50%;
-          background:var(--green);
-          box-shadow:0 0 0 5px rgba(24,185,104,.10);
-        }
-
-        .post-title{
-          max-width:980px;
-          margin:0;
-          font:800 clamp(42px,5.2vw,74px)/.99 "Sora",sans-serif;
-          letter-spacing:-.055em;
-        }
-
-        .post-excerpt{
-          max-width:850px;
-          margin:20px 0 22px;
-          color:#536274;
-          font:400 19px/1.65 "Lora",serif;
-        }
-
-        .post-meta-row{
-          display:flex;
-          align-items:center;
-          justify-content:space-between;
-          gap:20px;
-          flex-wrap:wrap;
-        }
-
-        .post-byline{
-          display:flex;
-          align-items:center;
-          gap:10px;
-          color:#657383;
-          font:600 11px/1.4 "DM Mono",monospace;
-        }
-
-        .author-dot{
-          width:32px;
-          height:32px;
-          display:grid;
-          place-items:center;
-          border-radius:50%;
-          background:#111a21;
-          color:#fff;
-          font:800 9px "Sora",sans-serif;
-        }
-
-        .share-btn{
-          border:1px solid var(--line);
-          background:#fff;
-          color:#17202b;
-          border-radius:9px;
-          padding:10px 14px;
-          font:800 10px "DM Mono",monospace;
-          cursor:pointer;
-        }
-
-        .share-btn:hover{
-          border-color:var(--green);
-          color:var(--green);
-        }
-
-        .hero-image{
-          margin:32px 0 0;
-          border:1px solid var(--line);
-          border-radius:15px;
-          overflow:hidden;
-          background:#eef3f0;
-        }
-
-        .hero-image img{
-          display:block;
-          width:100%;
-          height:auto;
-          max-height:680px;
-          object-fit:cover;
-        }
-
-        .post-layout{
-          display:grid;
-          grid-template-columns:220px minmax(0,720px) 240px;
-          gap:54px;
-          align-items:start;
-          padding:48px 0 80px;
-        }
-
-        .toc,
-        .working{
-          position:sticky;
-          top:94px;
-        }
-
-        .toc{
-          min-width:0;
-        }
-
-        .side-label{
-          margin-bottom:14px;
-          color:var(--green);
-          font:800 10px/1 "DM Mono",monospace;
-          letter-spacing:.13em;
-          text-transform:uppercase;
-        }
-
-        .toc-list{
-          max-height:calc(100vh - 125px);
-          overflow:auto;
-          border-left:1px solid var(--line);
-          padding-left:13px;
-          scrollbar-width:thin;
-        }
-
-        .toc-link{
-          display:block;
-          padding:6px 0;
-          color:#667486;
-          text-decoration:none;
-          font:700 10.5px/1.45 "DM Mono",monospace;
-        }
-
-        .toc-link:hover{
-          color:var(--green);
-        }
-
-        .toc-link.sub{
-          padding-left:10px;
-          color:#8a95a2;
-          font-weight:600;
-        }
-
-        .summary-box{
-          margin:0 0 26px;
-          padding:18px 19px;
-          border:1px solid rgba(24,185,104,.24);
-          border-radius:12px;
-          background:linear-gradient(
-            135deg,
-            rgba(24,185,104,.11),
-            rgba(24,185,104,.035)
-          );
-        }
-
-        .summary-box h3{
-          margin:0 0 8px;
-          color:var(--green-dark);
-          font:800 11px "DM Mono",monospace;
-          letter-spacing:.08em;
-        }
-
-        .summary-box p{
-          margin:0;
-          color:#455568;
-          font:400 14px/1.65 "Lora",serif;
-        }
-
-        .working-card{
-          border:1px solid var(--line);
-          border-radius:13px;
-          padding:18px;
-          background:var(--soft);
-        }
-
-        .working-card h3{
-          margin:0 0 13px;
-          font:800 14px/1.3 "Sora",sans-serif;
-        }
-
-        .trust-item{
-          display:flex;
-          gap:8px;
-          margin:10px 0;
-          color:#536273;
-          font:700 10.5px/1.5 "DM Mono",monospace;
-        }
-
-        .trust-item b{
-          color:var(--green);
-        }
-
-        .post-content{
-          color:#293746;
-          font:400 17px/1.82 "Lora",serif;
-          overflow-wrap:anywhere;
-        }
-
-        .post-content .post-p{
-          margin:0 0 23px;
-        }
-
-        .post-content .post-p:empty{
-          display:none;
-        }
-
-        .post-content .post-p strong{
-          font-weight:700;
-        }
-
-        .post-link{
-          color:#0b9855;
-          text-decoration:underline;
-          text-decoration-color:rgba(11,152,85,.35);
-          text-underline-offset:3px;
-        }
-
-        .post-h2{
-          margin:48px 0 15px;
-          color:#111a23;
-          font:800 30px/1.17 "Sora",sans-serif;
-          letter-spacing:-.035em;
-          scroll-margin-top:105px;
-        }
-
-        .post-h3{
-          margin:35px 0 12px;
-          color:#111a23;
-          font:800 21px/1.25 "Sora",sans-serif;
-          letter-spacing:-.025em;
-          scroll-margin-top:105px;
-        }
-
-        .post-h4,
-        .post-h5,
-        .post-h6{
-          margin:28px 0 10px;
-          color:#18232d;
-          font:800 18px/1.3 "Sora",sans-serif;
-        }
-
-        .post-list{
-          margin:0 0 25px;
-          padding-left:25px;
-        }
-
-        .post-list li{
-          margin:7px 0;
-          padding-left:5px;
-        }
-
-        /*
-         * Block elements are now safely outside paragraph wrappers.
-         */
-        .post-figure{
-          display:block;
-          width:100%;
-          margin:30px 0 34px;
-        }
-
-        .post-image-frame{
-          width:100%;
-          overflow:hidden;
-          border:1px solid var(--line);
-          border-radius:11px;
-          background:#f1f4f3;
-        }
-
-        .post-figure img{
-          display:block;
-          width:100%;
-          height:auto;
-          max-width:100%;
-        }
-
-        .post-figure figcaption,
-        .post-video figcaption,
-        .post-audio figcaption{
-          display:block;
-          margin-top:8px;
-          color:#7b8794;
-          font:500 10px/1.45 "DM Mono",monospace;
-        }
-
-        .styled-box{
-          margin:30px 0;
-          padding:18px 20px;
-          border:1px solid #c5ead5;
-          border-radius:11px;
-          background:#eaf8f0;
-        }
-
-        .styled-box-label{
-          margin-bottom:8px;
-          color:#078b4e;
-          font:800 11px/1.3 "DM Mono",monospace;
-          text-transform:uppercase;
-          letter-spacing:.06em;
-        }
-
-        .styled-box-body{
-          white-space:pre-line;
-          color:#405264;
-          font:400 14px/1.7 "Lora",serif;
-        }
-
-        .cta-wrap{
-          margin:28px 0;
-        }
-
-        .article-cta{
-          display:inline-flex;
-          align-items:center;
-          text-decoration:none!important;
-          background:var(--green);
-          color:#fff!important;
-          border-radius:8px;
-          padding:11px 15px;
-          font:800 11px "DM Mono",monospace;
-        }
-
-        .post-quote{
-          margin:30px 0;
-          padding:17px 20px;
-          border-left:3px solid var(--green);
-          background:var(--soft);
-          border-radius:0 9px 9px 0;
-        }
-
-        .post-rule{
-          border:0;
-          border-top:1px solid var(--line);
-          margin:36px 0;
-        }
-
-        .post-code{
-          margin:28px 0;
-          overflow:auto;
-          border-radius:10px;
-          background:#111820;
-          color:#e9f3ed;
-        }
-
-        .post-code pre{
-          margin:0;
-          padding:18px;
-          font:500 12px/1.65 "DM Mono",monospace;
-        }
-
-        .inline-code{
-          padding:2px 5px;
-          border-radius:5px;
-          background:var(--soft);
-          font:600 .9em "DM Mono",monospace;
-        }
-
-        .table-scroll{
-          width:100%;
-          overflow-x:auto;
-          margin:30px 0;
-          border:1px solid var(--line);
-          border-radius:10px;
-        }
-
-        .post-table{
-          width:100%;
-          min-width:560px;
-          border-collapse:collapse;
-          font:500 12px/1.55 "DM Mono",monospace;
-        }
-
-        .post-table th,
-        .post-table td{
-          padding:11px 12px;
-          border-right:1px solid var(--line);
-          border-bottom:1px solid var(--line);
-          text-align:left;
-          vertical-align:top;
-        }
-
-        .post-table th:last-child,
-        .post-table td:last-child{
-          border-right:0;
-        }
-
-        .post-table tr:last-child td{
-          border-bottom:0;
-        }
-
-        .post-table .table-head{
-          background:#edf7f1;
-          color:#0b8c50;
-          font-weight:800;
-        }
-
-        /*
-         * Images inside table cells should not inherit huge paragraph
-         * spacing.
-         */
-        .post-table .post-p{
-          margin:0 0 8px;
-        }
-
-        .post-table .post-figure{
-          margin:8px 0;
-        }
-
-        .post-table .post-video,
-        .post-table .post-audio{
-          margin:8px 0;
-        }
-
-        .post-video,
-        .post-audio{
-          margin:32px 0 36px;
-        }
-
-        .post-video-frame{
-          position:relative;
-          width:100%;
-          aspect-ratio:16/9;
-          overflow:hidden;
-          border:1px solid var(--line);
-          border-radius:12px;
-          background:#0e151a;
-        }
-
-        .post-video-frame iframe,
-        .post-video-frame video{
-          display:block;
-          width:100%;
-          height:100%;
-          border:0;
-          object-fit:contain;
-          background:#0b1014;
-        }
-
-        .post-audio{
-          padding:17px;
-          border:1px solid var(--line);
-          border-radius:11px;
-          background:var(--soft);
-        }
-
-        .post-audio-title{
-          margin-bottom:10px;
-          font:800 13px "Sora",sans-serif;
-        }
-
-        .post-audio audio{
-          width:100%;
-        }
-
-        .unknown-block{
-          margin:20px 0;
-        }
-
-        .article-end{
-          margin-top:50px;
-          padding-top:25px;
-          border-top:1px solid var(--line);
-        }
-
-        .tag-row{
-          display:flex;
-          flex-wrap:wrap;
-          gap:7px;
-        }
-
-        .tag{
-          padding:6px 9px;
-          border:1px solid var(--line);
-          border-radius:6px;
-          background:var(--soft);
-          color:#617083;
-          font:600 10px "DM Mono",monospace;
-        }
-
-        .related{
-          padding:55px 0 80px;
-          border-top:1px solid var(--line);
-        }
-
-        .section-head{
-          display:flex;
-          align-items:end;
-          justify-content:space-between;
-          margin-bottom:20px;
-        }
-
-        .section-head h2{
-          margin:0;
-          font:800 29px "Sora",sans-serif;
-          letter-spacing:-.035em;
-        }
-
-        .related-grid{
-          display:grid;
-          grid-template-columns:repeat(3,1fr);
-          gap:16px;
-        }
-
-        .related-card{
-          display:block;
-          padding:17px;
-          border:1px solid var(--line);
-          border-radius:12px;
-          background:#fff;
-          text-decoration:none;
-          transition:.2s ease;
-        }
-
-        .related-card:hover{
-          border-color:rgba(24,185,104,.4);
-          transform:translateY(-2px);
-        }
-
-        .related-cat{
-          color:var(--green);
-          font:800 9px "DM Mono",monospace;
-          text-transform:uppercase;
-        }
-
-        .related-card h3{
-          margin:9px 0 8px;
-          color:#17202b;
-          font:800 16px/1.3 "Sora",sans-serif;
-        }
-
-        .related-card p{
-          margin:0;
-          color:#748091;
-          font:400 12px/1.55 "Lora",serif;
-        }
-
-        .ai-fab{
-          position:fixed;
-          right:22px;
-          bottom:22px;
-          z-index:40;
-          border:0;
-          border-radius:999px;
-          background:#10171e;
-          color:#fff;
-          padding:12px 16px;
-          box-shadow:0 12px 35px rgba(0,0,0,.18);
-          font:800 10px "DM Mono",monospace;
-          cursor:pointer;
-        }
-
-        .ai-fab span{
-          color:#18c978;
-        }
-
-        .ai-panel{
-          position:fixed;
-          right:22px;
-          bottom:72px;
-          width:min(370px,calc(100vw - 32px));
-          z-index:39;
-          padding:18px;
-          border:1px solid rgba(255,255,255,.12);
-          border-radius:15px;
-          background:#10171e;
-          color:#fff;
-          box-shadow:0 18px 55px rgba(0,0,0,.25);
-        }
-
-        .ai-panel h3{
-          margin:0 0 7px;
-          font:800 15px "Sora",sans-serif;
-        }
-
-        .ai-panel p{
-          margin:0;
-          color:#aab6bf;
-          font:400 12px/1.6 "Lora",serif;
-        }
-
-        .ai-panel .ai-answer{
-          margin-top:13px;
-          padding:12px;
-          border:1px solid rgba(24,185,104,.18);
-          border-radius:9px;
-          background:rgba(24,185,104,.09);
-          color:#dce9e2;
-          font:400 12px/1.55 "Lora",serif;
-        }
-
-        .ai-close{
-          float:right;
-          border:0;
-          background:none;
-          color:#9ba7b3;
-          cursor:pointer;
-          font-size:20px;
-        }
-
-        /* ---------------------------------------------------------------- */
-        /* Dark theme                                                       */
-        /* ---------------------------------------------------------------- */
-
-        html[data-theme="dark"] .single-post,
-        html.dark .single-post,
-        body.dark .single-post{
-          --ink:#f1f6f3;
-          --muted:#9eaca6;
-          --line:#27342e;
-          --soft:#111a16;
-          --paper:#0b100e;
-          background:var(--paper);
-          color:var(--ink);
-        }
-
-        html[data-theme="dark"] .post-excerpt,
-        html.dark .post-excerpt,
-        body.dark .post-excerpt{
-          color:#aebbb4;
-        }
-
-        html[data-theme="dark"] .post-byline,
-        html.dark .post-byline,
-        body.dark .post-byline{
-          color:#9ca9a3;
-        }
-
-        html[data-theme="dark"] .share-btn,
-        html.dark .share-btn,
-        body.dark .share-btn{
-          background:#101713;
-          color:#e9f0ec;
-          border-color:#2b3932;
-        }
-
-        html[data-theme="dark"] .post-content,
-        html.dark .post-content,
-        body.dark .post-content{
-          color:#d2ddd7;
-        }
-
-        html[data-theme="dark"] .post-h2,
-        html[data-theme="dark"] .post-h3,
-        html[data-theme="dark"] .post-h4,
-        html[data-theme="dark"] .post-h5,
-        html[data-theme="dark"] .post-h6,
-        html.dark .post-h2,
-        html.dark .post-h3,
-        html.dark .post-h4,
-        html.dark .post-h5,
-        html.dark .post-h6,
-        body.dark .post-h2,
-        body.dark .post-h3,
-        body.dark .post-h4,
-        body.dark .post-h5,
-        body.dark .post-h6{
-          color:#f1f6f3;
-        }
-
-        html[data-theme="dark"] .summary-box,
-        html.dark .summary-box,
-        body.dark .summary-box{
-          background:rgba(24,185,104,.08);
-        }
-
-        html[data-theme="dark"] .summary-box p,
-        html.dark .summary-box p,
-        body.dark .summary-box p{
-          color:#bac8c1;
-        }
-
-        html[data-theme="dark"] .working-card,
-        html.dark .working-card,
-        body.dark .working-card{
-          background:#101713;
-        }
-
-        html[data-theme="dark"] .trust-item,
-        html.dark .trust-item,
-        body.dark .trust-item{
-          color:#aebbb4;
-        }
-
-        html[data-theme="dark"] .post-image-frame,
-        html.dark .post-image-frame,
-        body.dark .post-image-frame{
-          background:#121a17;
-        }
-
-        html[data-theme="dark"] .styled-box,
-        html.dark .styled-box,
-        body.dark .styled-box{
-          background:#102019;
-          border-color:#1d4b35;
-        }
-
-        html[data-theme="dark"] .styled-box-body,
-        html.dark .styled-box-body,
-        body.dark .styled-box-body{
-          color:#c2cec7;
-        }
-
-        html[data-theme="dark"] .post-quote,
-        html.dark .post-quote,
-        body.dark .post-quote{
-          background:#101713;
-        }
-
-        html[data-theme="dark"] .post-table .table-head,
-        html.dark .post-table .table-head,
-        body.dark .post-table .table-head{
-          background:#15221b;
-          color:#62d99a;
-        }
-
-        html[data-theme="dark"] .related-card,
-        html.dark .related-card,
-        body.dark .related-card{
-          background:#101713;
-        }
-
-        html[data-theme="dark"] .related-card h3,
-        html.dark .related-card h3,
-        body.dark .related-card h3{
-          color:#edf4f0;
-        }
-
-        html[data-theme="dark"] .related-card p,
-        html.dark .related-card p,
-        body.dark .related-card p{
-          color:#9ca9a3;
-        }
-
-        html[data-theme="dark"] .tag,
-        html.dark .tag,
-        body.dark .tag{
-          background:#101713;
-          color:#aebbb4;
-        }
-
-        html[data-theme="dark"] .toc-link,
-        html.dark .toc-link,
-        body.dark .toc-link{
-          color:#a5b1aa;
-        }
-
-        html[data-theme="dark"] .toc-link.sub,
-        html.dark .toc-link.sub,
-        body.dark .toc-link.sub{
-          color:#7f8d86;
-        }
-
-        html[data-theme="dark"] .post-figure figcaption,
-        html.dark .post-figure figcaption,
-        body.dark .post-figure figcaption{
-          color:#8d9b94;
-        }
-
-        /* ---------------------------------------------------------------- */
-        /* Responsive                                                       */
-        /* ---------------------------------------------------------------- */
-
-        @media(max-width:1160px){
-          .post-layout{
-            grid-template-columns:190px minmax(0,1fr);
-            gap:35px;
-          }
-
-          .working{
-            display:none;
-          }
-        }
-
-        @media(max-width:760px){
-          .post-shell{
-            width:min(100% - 28px,720px);
-          }
-
-          .post-hero{
-            padding:36px 0 28px;
-          }
-
-          .post-title{
-            font-size:42px;
-          }
-
-          .post-excerpt{
-            font-size:16px;
-          }
-
-          .post-layout{
-            display:block;
-            padding:30px 0 58px;
-          }
-
-          .toc{
-            position:static;
-            margin-bottom:28px;
-            padding:15px;
-            border:1px solid var(--line);
-            border-radius:10px;
-            background:var(--soft);
-          }
-
-          .toc-list{
-            max-height:220px;
-          }
-
-          .post-content{
-            font-size:16px;
-            line-height:1.78;
-          }
-
-          .post-h2{
-            font-size:27px;
-            margin-top:40px;
-          }
-
-          .post-h3{
-            font-size:20px;
-          }
-
-          .related-grid{
-            grid-template-columns:1fr;
-          }
-
-          .hero-image{
-            margin-top:24px;
-          }
-
-          .ai-fab{
-            right:14px;
-            bottom:14px;
-          }
-
-          .ai-panel{
-            right:14px;
-            bottom:64px;
-          }
-        }
-      `}</style>
 
       <main className="single-post">
         {/* ---------------------------------------------------------------- */}
-        {/* Hero                                                             */}
+        {/* Editorial hero                                                   */}
         {/* ---------------------------------------------------------------- */}
 
         <header className="post-hero">
           <div className="post-shell">
-            <div className="post-kicker">
-              <i />
-              {category} · AlloyPress Review
-            </div>
-
-            <h1 className="post-title">
-              {post?.title}
-            </h1>
-
-            {post?.excerpt ? (
-              <p className="post-excerpt">
-                {post.excerpt}
-              </p>
-            ) : null}
-
-            <div className="post-meta-row">
-              <div className="post-byline">
-                <span className="author-dot">
-                  AP
-                </span>
-
-                <span>
-                  AlloyPress Editorial Team
-                </span>
-
-                {date ? (
-                  <span>
-                    · {date}
-                  </span>
-                ) : null}
+            <div className="post-hero-inner">
+              <div className="post-kicker">
+                <i />
+                {category} · AlloyPress
               </div>
 
-              <button
-                type="button"
-                className="share-btn"
-                onClick={sharePost}
-              >
-                {copied
-                  ? "LINK COPIED ✓"
-                  : "SHARE ↗"}
-              </button>
-            </div>
+              <h1 className="post-title">
+                {post?.title}
+              </h1>
 
-            {articleImage ? (
-              <figure className="hero-image">
-                <img
-                  src={articleImage}
-                  alt={
-                    post?.featuredImage?.alt ||
-                    post?.title ||
-                    "AlloyPress article image"
-                  }
-                />
-              </figure>
-            ) : null}
+              {excerpt ? (
+                <p className="post-excerpt">
+                  {excerpt}
+                </p>
+              ) : null}
+
+              <div className="post-meta-row">
+                <div className="post-byline">
+                  <span className="author-dot">AP</span>
+                  <span>AlloyPress Editorial Team</span>
+                  {date ? <span>· {date}</span> : null}
+                </div>
+              </div>
+
+              <div className="post-share-row">
+                <button
+                  type="button"
+                  className="share-btn"
+                  onClick={() => setShareOpen(true)}
+                  aria-haspopup="dialog"
+                  aria-expanded={shareOpen}
+                >
+                  <Share2 aria-hidden="true" />
+                  <span>Share article</span>
+                </button>
+              </div>
+
+              {articleImage ? (
+                <figure className="hero-image">
+                  <img
+                    src={articleImage}
+                    alt={
+                      post?.featuredImage?.alt ||
+                      post?.title ||
+                      "AlloyPress article image"
+                    }
+                  />
+                </figure>
+              ) : null}
+            </div>
           </div>
         </header>
 
         {/* ---------------------------------------------------------------- */}
-        {/* Main article layout                                              */}
+        {/* Main three-column reading workspace                               */}
         {/* ---------------------------------------------------------------- */}
 
         <div className="post-shell">
           <div className="post-layout">
-
-            {/* Left TOC */}
+            {/* Left: compact sticky TOC */}
             <aside
               className="toc"
               aria-label="Table of contents"
             >
-              <div className="side-label">
-                On this page
-              </div>
+              <div className="toc-card">
+                <div className="toc-header">
+                  <span>Table of Contents</span>
+                  <ChevronDown aria-hidden="true" />
+                </div>
 
-              <nav className="toc-list">
-                {headings.map(
-                  (item, i) => (
-                    <a
-                      key={`${item.id}-${i}`}
-                      href={`#${item.id}`}
-                      className={`toc-link ${
-                        item.level === 3
-                          ? "sub"
-                          : ""
-                      }`}
-                    >
-                      {String(i + 1).padStart(
-                        2,
-                        "0"
-                      )}{" "}
-                      · {item.text}
-                    </a>
-                  )
+                {headings.length ? (
+                  <nav className="toc-list">
+                    {headings.map((item, i) => (
+                      <a
+                        key={`${item.id}-${i}`}
+                        href={`#${item.id}`}
+                        className="toc-link"
+                      >
+                        <span className="toc-bullet" aria-hidden="true">
+                          •
+                        </span>
+                        <span>{item.text}</span>
+                      </a>
+                    ))}
+                  </nav>
+                ) : (
+                  <div className="toc-empty">
+                    Article sections will appear here.
+                  </div>
                 )}
-              </nav>
+              </div>
             </aside>
 
-            {/* Article */}
-            <article>
+            {/* Center: article */}
+            <article className="article-column">
               <div className="summary-box">
-                <h3>
-                  ALLOYPRESS AI SUMMARY
-                </h3>
-
-                <p>
-                  {summary}
-                </p>
+                <h3>ALLOYPRESS AI SUMMARY</h3>
+                <p>{summary}</p>
               </div>
 
               <ArticleRenderer
                 content={post?.content}
+                headingIds={headingIds}
               />
 
               <div className="article-end">
-                <div className="side-label">
-                  Article tags
-                </div>
+                <div className="side-label">Article tags</div>
 
                 <div className="tag-row">
                   {(post?.tags || [])
                     .slice(0, 8)
-                    .map(
-                      (
-                        tag: any,
-                        i: number
-                      ) => (
-                        <span
-                          className="tag"
-                          key={i}
-                        >
-                          {typeof tag ===
-                          "string"
-                            ? tag
-                            : tag?.name ||
-                              tag?.slug ||
-                              "AI"}
-                        </span>
-                      )
-                    )}
+                    .map((tag: any, i: number) => (
+                      <span className="tag" key={i}>
+                        {typeof tag === "string"
+                          ? tag
+                          : tag?.name ||
+                            tag?.slug ||
+                            "AI"}
+                      </span>
+                    ))}
                 </div>
               </div>
             </article>
 
-            {/* Right trust card */}
-            <aside className="working">
-              <div className="side-label">
-                Working with AlloyPress
+            {/* Right: trust / share / AI tools */}
+            <aside
+              className="article-sidebar"
+              aria-label="Article tools"
+            >
+              <div className="sidebar-card trusted-card">
+                <div className="trusted-badge">
+                  <span className="trusted-badge-mark">✓</span>
+                  Trusted article
+                </div>
+
+                <h3>Why trust AlloyPress?</h3>
+
+                <p className="trusted-copy">
+                  Editorially reviewed with a focus on practical,
+                  useful information.
+                </p>
+
+                <div className="trust-list">
+                  <div className="trust-item">
+                    <b>✓</b>
+                    <span>Hands-on testing where applicable</span>
+                  </div>
+
+                  <div className="trust-item">
+                    <b>✓</b>
+                    <span>Independent editorial evaluation</span>
+                  </div>
+
+                  <div className="trust-item">
+                    <b>✓</b>
+                    <span>Practical pros, cons and use cases</span>
+                  </div>
+
+                  <div className="trust-item">
+                    <b>✓</b>
+                    <span>Updated when information changes</span>
+                  </div>
+                </div>
               </div>
 
-              <div className="working-card">
-                <h3>
-                  Why trust this article?
-                </h3>
+              <div className="sidebar-card">
+                <div className="side-label">Share article</div>
 
-                <div className="trust-item">
-                  <b>✓</b>
-                  <span>
-                    Hands-on testing where
-                    applicable
+                <button
+                  type="button"
+                  className="share-trigger"
+                  aria-haspopup="dialog"
+                  aria-expanded={shareOpen}
+                  onClick={() => setShareOpen(true)}
+                >
+                  <span className="share-trigger-label">
+                    <Share2 aria-hidden="true" />
+                    Share
                   </span>
-                </div>
+                </button>
+              </div>
 
-                <div className="trust-item">
-                  <b>✓</b>
-                  <span>
-                    Independent editorial
-                    evaluation
-                  </span>
-                </div>
+              <div className="sidebar-card">
+                <div className="side-label">AI tools</div>
 
-                <div className="trust-item">
-                  <b>✓</b>
-                  <span>
-                    Practical pros, cons and
-                    use cases
-                  </span>
-                </div>
+                <div className="ai-options">
+                  <button
+                    type="button"
+                    className="ai-option"
+                    onClick={() => setAiOpen(true)}
+                  >
+                    <span>Article summary</span>
+                    <FileText aria-hidden="true" />
+                  </button>
 
-                <div className="trust-item">
-                  <b>✓</b>
-                  <span>
-                    Content updated when
-                    information changes
-                  </span>
+                  <button
+                    type="button"
+                    className="ai-option"
+                    onClick={() => setAiOpen(true)}
+                  >
+                    <span>Ask Alloy AI</span>
+                    <Sparkles aria-hidden="true" />
+                  </button>
                 </div>
               </div>
             </aside>
@@ -2140,112 +1490,194 @@ export default function BlogPostView({
             <div className="post-shell">
               <div className="section-head">
                 <div>
-                  <div className="side-label">
-                    Keep exploring
-                  </div>
-
-                  <h2>
-                    Related articles
-                  </h2>
+                  <div className="side-label">Keep exploring</div>
+                  <h2>Related articles</h2>
                 </div>
 
                 <a
                   href="/blogs"
-                  className="toc-link"
+                  className="related-view-all"
                 >
                   View all →
                 </a>
               </div>
 
               <div className="related-grid">
-                {related.map(
-                  (item: any) => (
+                {related.map((item: any) => {
+                  const relatedImage =
+                    mediaUrl(item.featuredImage);
+
+                  return (
                     <a
                       className="related-card"
                       href={`/blogs/${item.slug}`}
                       key={item.id}
                     >
-                      <div className="related-cat">
-                        {typeof item.category ===
-                        "object"
-                          ? item.category?.name
-                          : category}
-                      </div>
-
-                      <h3>
-                        {item.title}
-                      </h3>
-
-                      {item.excerpt ? (
-                        <p>
-                          {item.excerpt.slice(
-                            0,
-                            150
-                          )}
-                          …
-                        </p>
+                      {relatedImage ? (
+                        <div className="related-image">
+                          <img
+                            src={relatedImage}
+                            alt={item.title || "Related article"}
+                            loading="lazy"
+                            decoding="async"
+                          />
+                        </div>
                       ) : null}
+
+                      <div className="related-body">
+                        <div className="related-cat">
+                          {typeof item.category === "object"
+                            ? item.category?.name || category
+                            : category}
+                        </div>
+
+                        <h3>{item.title}</h3>
+                      </div>
                     </a>
-                  )
-                )}
+                  );
+                })}
               </div>
             </div>
           </section>
         ) : null}
 
         {/* ---------------------------------------------------------------- */}
-        {/* Ask Alloy AI                                                     */}
+        {/* Share dialog                                                     */}
+        {/* ---------------------------------------------------------------- */}
+
+        {shareOpen ? (
+          <div
+            className="share-modal-backdrop"
+            role="presentation"
+            onMouseDown={(event) => {
+              if (event.currentTarget === event.target) {
+                setShareOpen(false);
+              }
+            }}
+          >
+            <div
+              className="share-modal"
+              role="dialog"
+              aria-modal="true"
+              aria-labelledby="share-modal-title"
+            >
+              <div className="share-modal-header">
+                <div>
+                  <div className="share-modal-kicker">AlloyPress</div>
+                  <h3 id="share-modal-title">Share this article</h3>
+                </div>
+
+                <button
+                  type="button"
+                  className="share-modal-close"
+                  aria-label="Close share dialog"
+                  onClick={() => setShareOpen(false)}
+                >
+                  <LucideX aria-hidden="true" />
+                </button>
+              </div>
+
+              <div className="share-modal-options">
+                <button
+                  type="button"
+                  className="share-option share-option-primary"
+                  onClick={shareOnX}
+                >
+                  <FaXTwitter aria-hidden="true" />
+                  <span>Share on X</span>
+                </button>
+
+                <button
+                  type="button"
+                  className="share-option"
+                  onClick={shareOnLinkedIn}
+                >
+                  <FaLinkedinIn aria-hidden="true" />
+                  <span>LinkedIn</span>
+                </button>
+
+                <button
+                  type="button"
+                  className="share-option"
+                  onClick={shareOnFacebook}
+                >
+                  <FaFacebookF aria-hidden="true" />
+                  <span>Facebook</span>
+                </button>
+
+                <button
+                  type="button"
+                  className="share-option"
+                  onClick={shareOnWhatsApp}
+                >
+                  <FaWhatsapp aria-hidden="true" />
+                  <span>WhatsApp</span>
+                </button>
+
+                <button
+                  type="button"
+                  className="share-option"
+                  onClick={shareOnInstagram}
+                >
+                  <FaInstagram aria-hidden="true" />
+                  <span>Instagram</span>
+                </button>
+
+                <button
+                  type="button"
+                  className="share-option"
+                  onClick={copyArticleLink}
+                >
+                  {copied ? (
+                    <Check aria-hidden="true" />
+                  ) : (
+                    <Copy aria-hidden="true" />
+                  )}
+                  <span>{copied ? "Link copied" : "Copy link"}</span>
+                </button>
+              </div>
+
+              <div className="share-modal-url">
+                <Link2 aria-hidden="true" />
+                <span>{post?.title || "AlloyPress article"}</span>
+              </div>
+            </div>
+          </div>
+        ) : null}
+
+        {/* ---------------------------------------------------------------- */}
+        {/* AI dialog                                                         */}
         {/* ---------------------------------------------------------------- */}
 
         {aiOpen ? (
           <div
             className="ai-panel"
             role="dialog"
+            aria-modal="false"
             aria-label="Ask Alloy AI"
           >
             <button
               type="button"
               className="ai-close"
-              aria-label="Close"
-              onClick={() =>
-                setAiOpen(false)
-              }
+              aria-label="Close AI assistant"
+              onClick={() => setAiOpen(false)}
             >
               ×
             </button>
 
-            <h3>
-              Ask Alloy AI
-            </h3>
+            <h3>Alloy AI</h3>
 
             <p>
-              Quick article assistant. The
-              full AI Q&A backend can be
-              connected next.
+              Quick article assistant. Use the article summary
+              below as the starting point.
             </p>
 
             <div className="ai-answer">
-              <strong>
-                Quick take:
-              </strong>{" "}
+              <strong>Quick take:</strong>{" "}
               {summary}
             </div>
           </div>
         ) : null}
-
-        <button
-          type="button"
-          className="ai-fab"
-          onClick={() =>
-            setAiOpen((value) => !value)
-          }
-          aria-label="Ask Alloy AI"
-        >
-          ✦{" "}
-          <span>
-            Ask Alloy AI
-          </span>
-        </button>
       </main>
     </>
   );

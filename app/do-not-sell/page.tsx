@@ -201,19 +201,9 @@ export default function DoNotSellPage() {
 
 const styles = `
 .dns-page {
-  --dns-bg: #f5f8f7;
-  --dns-surface: #ffffff;
-  --dns-surface-soft: #eef4f2;
-  --dns-text: #0b1420;
-  --dns-muted: #667484;
-  --dns-border: rgba(11,20,32,.11);
-  --dns-green: #18b968;
-  --dns-green-dark: #07934f;
-  --dns-dark: #091018;
-  --dns-dark-soft: #111a22;
-  color: var(--dns-text);
-  background: var(--dns-bg);
-  font-family: "Lora", Georgia, serif;
+  color: var(--text-primary);
+  background: var(--background);
+  font-family: var(--font-body);
 }
 
 .dns-container {
@@ -227,22 +217,16 @@ const styles = `
   min-height: 455px;
   display: flex;
   align-items: center;
-  background:
-    radial-gradient(circle at 75% 35%, rgba(24,185,104,.15), transparent 28%),
-    linear-gradient(135deg, #081018 0%, #0b1219 58%, #091b16 100%);
-  color: #f4f8f6;
-}
 
-.dns-grid {
-  position: absolute;
-  inset: 0;
-  opacity: .28;
-  background-image:
-    linear-gradient(rgba(255,255,255,.045) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(255,255,255,.045) 1px, transparent 1px),
-    radial-gradient(circle, rgba(24,185,104,.28) 1px, transparent 1px);
-  background-size: 72px 72px, 72px 72px, 18px 18px;
-  mask-image: linear-gradient(to bottom, black, transparent 92%);
+  background:
+    radial-gradient(
+      circle at 82% 35%,
+      var(--brand-subtle) 0%,
+      transparent 32%
+    ),
+    var(--background);
+
+  color: var(--text-primary);
 }
 
 .dns-hero-glow {
@@ -251,15 +235,13 @@ const styles = `
   height: 520px;
   right: -170px;
   top: -190px;
-  border-radius: 50%;
-  background: rgba(24,185,104,.10);
-  filter: blur(85px);
-}
 
-.dns-hero-inner {
-  position: relative;
-  z-index: 1;
-  padding: 72px 0 68px;
+  border-radius: 50%;
+  background: var(--brand-subtle);
+
+  filter: blur(110px);
+  opacity: 0.7;
+  pointer-events: none;
 }
 
 .dns-eyebrow,
@@ -267,8 +249,8 @@ const styles = `
   display: flex;
   align-items: center;
   gap: 8px;
-  color: var(--dns-green);
-  font: 700 11px/1 "DM Mono", monospace;
+  color: var(--brand);
+  font: 700 var(--text-xs)/1 var(--font-mono);
   letter-spacing: .12em;
   text-transform: uppercase;
 }
@@ -279,27 +261,27 @@ const styles = `
   height: 7px;
   flex: 0 0 7px;
   border-radius: 50%;
-  background: var(--dns-green);
-  box-shadow: 0 0 0 4px rgba(24,185,104,.10);
+  background: var(--brand);
+  box-shadow: 0 0 0 4px var(--brand-soft);
 }
 
 .dns-hero h1 {
   max-width: 900px;
   margin: 20px 0 18px;
-  color: #f7faf9;
-  font: 700 clamp(42px, 5.7vw, 78px)/.98 "Sora", sans-serif;
+  color: var(--text-primary);
+  font: 700 clamp(42px, 5.7vw, 78px)/.98 var(--font-ui);
   letter-spacing: -.055em;
 }
 
 .dns-hero h1 span {
-  color: #21d57b;
+  color: var(--brand);
 }
 
 .dns-hero > .dns-container > p {
   max-width: 700px;
   margin: 0;
-  color: rgba(236,243,240,.78);
-  font: 400 17px/1.7 "Lora", Georgia, serif;
+  color: var(--text-secondary);
+  font: 400 var(--text-lg)/1.7 var(--font-body);
 }
 
 .dns-meta {
@@ -308,19 +290,19 @@ const styles = `
   gap: 14px;
   margin-top: 30px;
   padding-top: 18px;
-  border-top: 1px solid rgba(255,255,255,.12);
+  border-top: 1px solid var(--border-soft);
   width: min(700px, 100%);
 }
 
 .dns-meta span {
-  color: rgba(255,255,255,.45);
-  font: 700 10px/1 "DM Mono", monospace;
+  color: var(--text-muted);
+  font: 700 var(--text-xs)/1 var(--font-mono);
   letter-spacing: .12em;
 }
 
 .dns-meta strong {
-  color: #e9f1ed;
-  font: 600 12px/1 "DM Mono", monospace;
+  color: var(--text-primary);
+  font: 600 var(--text-sm)/1 var(--font-mono);
 }
 
 .dns-content {
@@ -335,11 +317,11 @@ const styles = `
 }
 
 .dns-document {
-  background: var(--dns-surface);
-  border: 1px solid var(--dns-border);
-  border-radius: 16px;
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
   padding: clamp(30px, 4vw, 52px);
-  box-shadow: 0 18px 50px rgba(10,25,20,.06);
+  box-shadow: 0 18px 50px var(--shadow-sm);
 }
 
 .dns-document-head {
@@ -348,7 +330,7 @@ const styles = `
   align-items: flex-start;
   padding-bottom: 28px;
   margin-bottom: 28px;
-  border-bottom: 1px solid var(--dns-border);
+  border-bottom: 1px solid var(--border);
 }
 
 .dns-doc-number {
@@ -357,22 +339,22 @@ const styles = `
   width: 38px;
   height: 38px;
   flex: 0 0 38px;
-  border-radius: 9px;
-  background: rgba(24,185,104,.09);
-  color: var(--dns-green-dark);
-  font: 700 10px/1 "DM Mono", monospace;
+  border-radius: var(--radius-sm);
+  background: var(--brand-soft);
+  color: var(--brand-hover);
+  font: 700 var(--text-xs)/1 var(--font-mono);
 }
 
 .dns-document h2 {
   margin: 8px 0 0;
-  font: 700 clamp(25px, 3vw, 36px)/1.15 "Sora", sans-serif;
+  font: 700 clamp(25px, 3vw, 36px)/1.15 var(--font-ui);
   letter-spacing: -.035em;
 }
 
 .dns-document > p,
 .dns-document li p {
-  color: var(--dns-muted);
-  font: 400 16px/1.82 "Lora", Georgia, serif;
+  color: var(--text-secondary);
+  font: 400 var(--text-md)/1.82 var(--font-body);
 }
 
 .dns-document > p {
@@ -381,8 +363,8 @@ const styles = `
 
 .dns-document h3 {
   margin: 34px 0 12px;
-  color: var(--dns-text);
-  font: 700 20px/1.3 "Sora", sans-serif;
+  color: var(--text-primary);
+  font: 700 var(--text-xl)/1.3 var(--font-ui);
   letter-spacing: -.025em;
 }
 
@@ -391,10 +373,10 @@ const styles = `
   gap: 16px;
   margin: 30px 0;
   padding: 20px 22px;
-  border: 1px solid rgba(24,185,104,.24);
-  border-left: 3px solid var(--dns-green);
-  border-radius: 12px;
-  background: rgba(24,185,104,.055);
+  border: 1px solid var(--brand-soft);
+  border-left: 3px solid var(--brand);
+  border-radius: var(--radius-lg);
+  background: var(--brand-subtle);
 }
 
 .dns-callout-icon {
@@ -403,23 +385,23 @@ const styles = `
   width: 30px;
   height: 30px;
   flex: 0 0 30px;
-  border-radius: 8px;
-  background: rgba(24,185,104,.12);
-  color: var(--dns-green-dark);
-  font: 700 14px/1 "DM Mono", monospace;
+  border-radius: var(--radius-sm);
+  background: var(--brand-soft);
+  color: var(--brand-hover);
+  font: 700 14px/1 var(--font-mono);
 }
 
 .dns-callout strong {
   display: block;
   margin: 2px 0 7px;
-  color: var(--dns-text);
-  font: 700 15px/1.35 "Sora", sans-serif;
+  color: var(--text-primary);
+  font: 700 15px/1.35 var(--font-ui);
 }
 
 .dns-callout p {
   margin: 0;
-  color: var(--dns-muted);
-  font: 400 14px/1.65 "Lora", Georgia, serif;
+  color: var(--text-secondary);
+  font: 400 var(--text-md)/1.65 var(--font-body);
 }
 
 .dns-rights {
@@ -428,8 +410,8 @@ const styles = `
   margin: 16px 0 30px;
   padding: 0;
   list-style: none;
-  border: 1px solid var(--dns-border);
-  border-radius: 12px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
   overflow: hidden;
 }
 
@@ -439,7 +421,7 @@ const styles = `
   align-items: center;
   gap: 14px;
   padding: 15px 18px;
-  border-bottom: 1px solid var(--dns-border);
+  border-bottom: 1px solid var(--border);
 }
 
 .dns-rights li:last-child {
@@ -451,16 +433,16 @@ const styles = `
   place-items: center;
   width: 30px;
   height: 30px;
-  border-radius: 8px;
-  background: var(--dns-surface-soft);
-  color: var(--dns-green-dark);
-  font: 700 9px/1 "DM Mono", monospace;
+  border-radius: var(--radius-sm);
+  background: var(--surface-2);
+  color: var(--brand-hover);
+  font: 700 9px/1 var(--font-mono);
 }
 
 .dns-rights p {
   margin: 0 !important;
-  color: var(--dns-text) !important;
-  font-family: "Sora", sans-serif !important;
+  color: var(--text-primary) !important;
+  font-family: var(--font-ui) !important;
   font-size: 13px !important;
   line-height: 1.5 !important;
   font-weight: 600 !important;
@@ -469,8 +451,8 @@ const styles = `
 .dns-request {
   margin: 38px 0;
   padding: 28px;
-  border-radius: 14px;
-  background: var(--dns-dark);
+  border-radius: var(--radius-md);
+  background: var(--background);
   color: #fff;
 }
 
@@ -480,19 +462,19 @@ const styles = `
 
 .dns-request h3 {
   margin: 0 0 10px;
-  color: #f4f8f6;
+  color: var(--text-primary);
   font-size: 23px;
 }
 
 .dns-request p {
   margin: 0 0 16px;
-  color: rgba(232,241,237,.72);
-  font: 400 14px/1.7 "Lora", Georgia, serif;
+  color: var(--text-secondary);
+  font: 400 var(--text-md)/1.7 var(--font-body);
 }
 
 .dns-request a,
 .dns-document a {
-  color: var(--dns-green);
+  color: var(--brand);
   font-weight: 700;
   text-decoration: none;
 }
@@ -501,13 +483,13 @@ const styles = `
   display: inline-flex;
   align-items: center;
   gap: 8px;
-  font: 700 13px/1 "DM Mono", monospace;
+  font: 700 13px/1 var(--font-mono);
 }
 
 .dns-request .dns-small {
   margin-top: 18px;
   margin-bottom: 0;
-  color: rgba(232,241,237,.48);
+  color: var(--text-muted);
   font-size: 12px;
 }
 
@@ -520,14 +502,14 @@ const styles = `
 
 .dns-side-card {
   padding: 24px;
-  border: 1px solid var(--dns-border);
-  border-radius: 14px;
-  background: var(--dns-surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  background: var(--card);
 }
 
 .dns-side-primary {
-  border-color: rgba(24,185,104,.24);
-  box-shadow: 0 12px 35px rgba(10,25,20,.05);
+  border-color: var(--brand-soft);
+  box-shadow: 0 12px 35px var(--shadow-sm);
 }
 
 .dns-side-dot {
@@ -537,15 +519,15 @@ const styles = `
 
 .dns-side-card h2 {
   margin: 10px 0 9px;
-  color: var(--dns-text);
-  font: 700 21px/1.2 "Sora", sans-serif;
+  color: var(--text-primary);
+  font: 700 var(--text-xl)/1.2 var(--font-ui);
   letter-spacing: -.03em;
 }
 
 .dns-side-card p {
   margin: 0;
-  color: var(--dns-muted);
-  font: 400 13px/1.7 "Lora", Georgia, serif;
+  color: var(--text-secondary);
+  font: 400 13px/1.7 var(--font-body);
 }
 
 .dns-side-primary > a {
@@ -554,18 +536,18 @@ const styles = `
   gap: 7px;
   margin-top: 20px;
   padding: 11px 14px;
-  border-radius: 8px;
-  background: var(--dns-green);
-  color: #07150e;
-  font: 700 10px/1 "DM Mono", monospace;
+  border-radius: var(--radius-sm);
+  background: var(--brand);
+  color: var(--background);
+  font: 700 var(--text-xs)/1 var(--font-mono);
   text-decoration: none;
 }
 
 .dns-side-index {
   display: block;
   margin-bottom: 12px;
-  color: var(--dns-green-dark);
-  font: 700 9px/1 "DM Mono", monospace;
+  color: var(--brand-hover);
+  font: 700 9px/1 var(--font-mono);
   letter-spacing: .08em;
 }
 
@@ -579,8 +561,8 @@ const styles = `
   overflow: hidden;
   padding: 52px 0;
   background:
-    radial-gradient(circle at 75% 50%, rgba(24,185,104,.12), transparent 30%),
-    var(--dns-dark);
+    radial-gradient(circle at 75% 50%, var(--brand-soft), transparent 30%),
+    var(--background);
   color: #fff;
 }
 
@@ -594,8 +576,8 @@ const styles = `
 .dns-bottom h2 {
   max-width: 650px;
   margin: 10px 0 0;
-  color: #f5f8f7;
-  font: 700 clamp(25px, 3.5vw, 42px)/1.1 "Sora", sans-serif;
+  color: var(--text-primary);
+  font: 700 clamp(25px, 3.5vw, 42px)/1.1 var(--font-ui);
   letter-spacing: -.04em;
 }
 
@@ -605,17 +587,17 @@ const styles = `
   gap: 9px;
   flex: 0 0 auto;
   padding: 14px 18px;
-  border-radius: 9px;
-  background: var(--dns-green);
-  color: #06130c;
-  font: 700 10px/1 "DM Mono", monospace;
+  border-radius: var(--radius-sm);
+  background: var(--brand);
+  color: var(--background);
+  font: 700 var(--text-xs)/1 var(--font-mono);
   text-decoration: none;
   transition: transform .2s ease, background .2s ease;
 }
 
 .dns-bottom-inner > a:hover {
   transform: translateY(-2px);
-  background: #2ddd85;
+  background: var(--brand-hover);
 }
 
 @media (max-width: 900px) {
@@ -667,7 +649,7 @@ const styles = `
 
   .dns-document {
     padding: 24px 20px;
-    border-radius: 12px;
+    border-radius: var(--radius-lg);
   }
 
   .dns-document-head {
@@ -708,36 +690,110 @@ const styles = `
   }
 }
 
-[data-theme="dark"] .dns-page {
-  --dns-bg: #090f14;
-  --dns-surface: #101820;
-  --dns-surface-soft: #172229;
-  --dns-text: #eef5f2;
-  --dns-muted: #aebcb6;
-  --dns-border: rgba(255,255,255,.10);
-}
-
-[data-theme="dark"] .dns-content {
-  background:
-    radial-gradient(circle at 15% 15%, rgba(24,185,104,.055), transparent 25%),
-    var(--dns-bg);
-}
-
-[data-theme="dark"] .dns-document {
-  box-shadow: none;
-}
-
-[data-theme="dark"] .dns-rights p {
-  color: #e8f0ed !important;
-}
-
-[data-theme="dark"] .dns-side-card {
-  box-shadow: none;
-}
-
 @media (prefers-reduced-motion: reduce) {
   .dns-bottom-inner > a {
     transition: none;
   }
+}
+.dns-side-primary > a,
+.dns-bottom-inner > a {
+  min-height: 46px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--text-xs);
+  padding: 0 var(--text-xl);
+  border: 1px solid var(--brand);
+  border-radius: var(--radius-sm);
+  background: var(--brand);
+  color: #fff;
+  text-decoration: none;
+  font: 600 var(--text-sm)/1 var(--font-ui);
+  box-shadow: none;
+  transition:
+    background .2s ease,
+    border-color .2s ease,
+    transform .2s ease,
+    box-shadow .2s ease;
+}
+
+.dns-side-primary > a:hover,
+.dns-bottom-inner > a:hover {
+  background: var(--brand-hover);
+  border-color: var(--brand-hover);
+  color: #fff;
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-green);
+}
+
+.dns-side-primary > a:focus-visible,
+.dns-bottom-inner > a:focus-visible {
+  outline: 2px solid var(--brand);
+  outline-offset: 3px;
+}
+
+.dns-side-primary > a:active,
+.dns-bottom-inner > a:active {
+  transform: translateY(0);
+}
+
+.dns-page .dns-hero h1,
+.dns-page .dns-document h2,
+.dns-page .dns-document h3,
+.dns-page .dns-side-card h2,
+.dns-page .dns-bottom h2 {
+  color: var(--text-primary);
+}
+
+.dns-page .dns-hero > .dns-container > p,
+.dns-page .dns-document > p,
+.dns-page .dns-document li p,
+.dns-page .dns-callout p,
+.dns-page .dns-side-card p,
+.dns-page .dns-request p {
+  color: var(--text-secondary);
+  opacity: 1;
+}
+
+.dns-page .dns-document,
+.dns-page .dns-side-card {
+  background: var(--card);
+  border-color: var(--border);
+}
+
+.dns-page .dns-document {
+  box-shadow: var(--shadow-sm);
+}
+
+.dns-page .dns-content {
+  background:
+    radial-gradient(circle at 90% 5%, var(--brand-subtle), transparent 26%),
+    var(--background-base);
+}
+
+.dns-page .dns-request,
+.dns-page .dns-bottom {
+  background:
+    radial-gradient(circle at 75% 50%, var(--brand-soft), transparent 30%),
+    var(--background);
+  color: var(--text-primary);
+}
+
+.dns-page .dns-request h3 {
+  color: var(--text-primary);
+}
+
+.dns-page .dns-request p {
+  color: var(--text-secondary);
+}
+
+.dns-page .dns-document a,
+.dns-page .dns-request a {
+  color: var(--brand);
+}
+
+.dns-page .dns-document a:hover,
+.dns-page .dns-request a:hover {
+  color: var(--brand-hover);
 }
 `;

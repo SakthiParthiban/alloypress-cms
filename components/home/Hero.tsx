@@ -144,21 +144,12 @@ export default async function Hero() {
             </div>
 
 
-            <h1
-              id="hero-title"
-              className="hero-title"
-            >
-              The place where
-              <br />
-
-              AI gets{" "}
-              <span>tested</span>,
-              <br />
-
-              explained and
-              <br />
-
-              simplified.
+            <h1 id="hero-title" className="hero-title">
+              <span className="hero-line">Every AI tool</span>
+              <span className="hero-line">
+                <span className="hero-highlight">tested,</span> before we
+              </span>
+              <span className="hero-line">write about it.</span>
             </h1>
 
 
@@ -843,8 +834,8 @@ export default async function Hero() {
             </div>
 
             <div>
-              <strong>10K+</strong>
-              <span>Articles Published</span>
+              <strong>100%</strong>
+              <span>Hands on Testing</span>
             </div>
 
           </div>
@@ -860,7 +851,7 @@ export default async function Hero() {
             </div>
 
             <div>
-              <strong>500+</strong>
+              <strong>250+</strong>
               <span>AI Tools Tested</span>
             </div>
 
@@ -877,8 +868,8 @@ export default async function Hero() {
             </div>
 
             <div>
-              <strong>50K+</strong>
-              <span>Monthly Readers</span>
+              <strong>57%+</strong>
+              <span>Organic Search Traffic</span>
             </div>
 
           </div>
@@ -896,13 +887,10 @@ export default async function Hero() {
             <div>
 
               <strong>
-                4.9
-                <span className="hero-stat-small">
-                  /5
-                </span>
+                4+ AI
               </strong>
 
-              <span>Reader Rating</span>
+              <span>Cited by GPT, Gemini, Claude, Perplexity and more</span>
 
             </div>
 

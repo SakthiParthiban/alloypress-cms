@@ -150,7 +150,7 @@ export default async function AIToolReviews() {
       <div className="container">
         <div className="ai-tool-reviews-header">
           <h2 id="ai-tool-reviews-heading">
-            AI Tool Reviews
+            Best AI tools list by hands on testing
           </h2>
 
           <a

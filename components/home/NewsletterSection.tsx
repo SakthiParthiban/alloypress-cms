@@ -7,31 +7,44 @@ export default function NewsletterSection() {
         <div className="newsletter-content">
 
           <div className="newsletter-eyebrow">
-            <span />
-            STAY IN THE LOOP
+            EVERY FRIDAY MORNING
           </div>
 
           <h2>
-            Get the latest AI updates
+            The AI tools worth your
             <br />
-            <span>straight to your inbox.</span>
+            attention, tested and
+            <br />
+            curated.
           </h2>
 
           <p>
-            No spam. No hype. Just the AI news, tool reviews,
-            and practical insights that actually matter —
-            delivered when something worth reading happens.
+            One email a week. No filler, no hype. Just the
+            <br />
+            tools we’ve actually tested, the updates worth
+            <br />
+            knowing, and the occasional deal worth taking.
           </p>
 
+          <div className="newsletter-benefits">
+            <div className="newsletter-benefit">
+              <span className="benefit-check">✓</span>
+              <strong>No spam</strong>
+            </div>
+
+            <span className="benefit-divider">|</span>
+
+            <div className="newsletter-benefit">
+              <span className="benefit-check">✓</span>
+              <strong>Unsubscribe anytime</strong>
+            </div>
+          </div>
+
           <div className="newsletter-meta">
-            <span className="meta-dot" />
             Curated by AlloyPress
-            <span className="meta-separator">·</span>
-            Read when it matters
           </div>
 
         </div>
-
 
         {/* RIGHT FORM */}
         <div className="newsletter-form-wrap">
@@ -52,24 +65,14 @@ export default function NewsletterSection() {
               required
             />
 
-            <button type="button">
-              Subscribe
-              <span>→</span>
+            <button type="submit">
+              Join Free
             </button>
           </form>
 
           <p className="newsletter-note">
             Join readers who stay ahead of AI without the noise.
-            Unsubscribe anytime.
           </p>
-
-          <div className="newsletter-trust">
-            <span>NO SPAM</span>
-            <i />
-            <span>NO NOISE</span>
-            <i />
-            <span>JUST AI</span>
-          </div>
 
         </div>
 
