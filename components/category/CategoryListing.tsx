@@ -1,5 +1,5 @@
 import "./CategoryListing.css";
-
+import ArticleGrid from "./ArticleGrid";
 import Link from "next/link";
 
 type CategoryListingProps = {
@@ -44,10 +44,6 @@ type PayloadResponse<T> = {
 const PAYLOAD_URL =
   process.env.PAYLOAD_API_URL?.replace(/\/$/, "") ||
   "http://localhost:3000/api";
-
-const SITE_URL =
-  process.env.NEXT_PUBLIC_SITE_URL?.replace(/\/$/, "") ||
-  "http://localhost:3001";
 
 const NAV_CATEGORIES = [
   {
@@ -234,35 +230,25 @@ export default async function CategoryListing({
 
   return (
     <main className="category-page">
-
-      {/* =========================================================
-          HERO
-      ========================================================= */}
-
       <section className="category-hero">
         <div className="category-hero-grid" />
 
         <div className="category-hero-inner">
-
           <div className="category-hero-label">
             <span />
             ALLOYPRESS / {slug.toUpperCase()}
           </div>
 
           <div className="category-hero-main">
-
             <div>
-              <h1>
-                {title}
-              </h1>
+              <h1>{title}</h1>
 
-              <p>
-                {description}
-              </p>
+              <p>{description}</p>
             </div>
 
             <div className="category-hero-index">
               <span>SECTION</span>
+
               <strong>
                 {String(
                   NAV_CATEGORIES.findIndex(
@@ -271,10 +257,7 @@ export default async function CategoryListing({
                 ).padStart(2, "0")}
               </strong>
             </div>
-
           </div>
-
-          {/* CATEGORY NAV */}
 
           <nav
             className="category-filter"
@@ -291,28 +274,18 @@ export default async function CategoryListing({
                 }
               >
                 {item.label}
+
                 {item.slug === slug && (
                   <span>•</span>
                 )}
               </Link>
             ))}
           </nav>
-
         </div>
       </section>
 
-
-      {/* =========================================================
-          CONTENT
-      ========================================================= */}
-
       <section className="category-content">
         <div className="category-content-inner">
-
-          {/* =====================================================
-              FEATURED
-          ===================================================== */}
-
           {featuredPost ? (
             <>
               <div className="category-section-heading">
@@ -321,9 +294,7 @@ export default async function CategoryListing({
                     01
                   </span>
 
-                  <h2>
-                    Featured
-                  </h2>
+                  <h2>Featured</h2>
                 </div>
 
                 <span className="section-rule" />
@@ -333,7 +304,6 @@ export default async function CategoryListing({
                 href={`/${slug}/${featuredPost.slug}`}
                 className="featured-post"
               >
-
                 <div className="featured-image">
                   <img
                     src={getImageUrl(
@@ -343,7 +313,7 @@ export default async function CategoryListing({
                     alt={
                       typeof featuredPost.featuredImage ===
                         "object" &&
-                        featuredPost.featuredImage?.alt
+                      featuredPost.featuredImage?.alt
                         ? featuredPost.featuredImage.alt
                         : cleanTitle(featuredPost.title)
                     }
@@ -363,11 +333,8 @@ export default async function CategoryListing({
                 </div>
 
                 <div className="featured-info">
-
                   <div className="featured-meta">
-                    <span>
-                      FEATURED ARTICLE
-                    </span>
+                    <span>FEATURED ARTICLE</span>
 
                     <i />
 
@@ -389,7 +356,6 @@ export default async function CategoryListing({
                   </p>
 
                   <div className="featured-footer">
-
                     <span>
                       By {getAuthor(featuredPost)}
                     </span>
@@ -397,20 +363,19 @@ export default async function CategoryListing({
                     <strong>
                       Read article →
                     </strong>
-
                   </div>
-
                 </div>
-
               </Link>
             </>
           ) : (
             <div className="empty-state">
               <span>NO ARTICLES YET</span>
+
               <h2>
                 New {title.toLowerCase()} content
                 is on the way.
               </h2>
+
               <p>
                 Check back soon for new AlloyPress
                 articles and insights.
@@ -418,14 +383,8 @@ export default async function CategoryListing({
             </div>
           )}
 
-
-          {/* =====================================================
-              LATEST ARTICLES
-          ===================================================== */}
-
           {remainingPosts.length > 0 && (
             <section className="latest-section">
-
               <div className="category-section-heading">
                 <div>
                   <span className="section-number">
@@ -442,9 +401,7 @@ export default async function CategoryListing({
                 </span>
               </div>
 
-
-              <div className="article-grid">
-
+              <ArticleGrid>
                 {remainingPosts.map(
                   (post, index) => (
                     <Link
@@ -452,9 +409,7 @@ export default async function CategoryListing({
                       href={`/${slug}/${post.slug}`}
                       className="article-card"
                     >
-
                       <div className="article-card-image">
-
                         <img
                           src={getImageUrl(
                             post.featuredImage,
@@ -463,7 +418,7 @@ export default async function CategoryListing({
                           alt={
                             typeof post.featuredImage ===
                               "object" &&
-                              post.featuredImage?.alt
+                            post.featuredImage?.alt
                               ? post.featuredImage.alt
                               : cleanTitle(post.title)
                           }
@@ -481,12 +436,9 @@ export default async function CategoryListing({
                         <span className="article-card-arrow">
                           ↗
                         </span>
-
                       </div>
 
-
                       <div className="article-card-body">
-
                         <div className="article-card-meta">
                           <span>
                             {title.toUpperCase()}
@@ -502,9 +454,7 @@ export default async function CategoryListing({
                         </div>
 
                         <h3>
-                          {cleanTitle(
-                            post.title
-                          )}
+                          {cleanTitle(post.title)}
                         </h3>
 
                         <p>
@@ -520,25 +470,15 @@ export default async function CategoryListing({
                             Read →
                           </strong>
                         </div>
-
                       </div>
-
                     </Link>
                   )
                 )}
-
-              </div>
-
+              </ArticleGrid>
             </section>
           )}
 
-
-          {/* =====================================================
-              BOTTOM CTA
-          ===================================================== */}
-
           <div className="category-bottom-cta">
-
             <div>
               <span>
                 ALLOYPRESS / EDITORIAL
@@ -562,12 +502,9 @@ export default async function CategoryListing({
               Explore AlloyPress
               <span>→</span>
             </Link>
-
           </div>
-
         </div>
       </section>
     </main>
   );
 }
-

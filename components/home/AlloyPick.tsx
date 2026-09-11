@@ -212,7 +212,7 @@ export default async function AlloyPick() {
     .filter(
       (post) => !featuredIds.has(post.id)
     )
-    .slice(0, 5);
+    .slice(0, 4);
 
   return (
     <section

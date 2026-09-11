@@ -22,6 +22,7 @@
 .resources-header h2 {
   display: flex;
   align-items: center;
+  min-width: 0;
   min-height: 32px;
   margin: 0;
   padding-left: 12px;
@@ -39,6 +40,9 @@
   align-items: center;
   justify-content: center;
   gap: 8px;
+  flex: 0 0 auto;
+  flex-shrink: 0;
+  min-width: max-content;
   min-height: 44px;
   padding: 0 13px;
   border: 1px solid var(--border-strong);
@@ -50,7 +54,11 @@
   line-height: 1;
   color: var(--brand);
   text-decoration: none;
-  transition: background .2s ease, border-color .2s ease, transform .2s ease;
+  white-space: nowrap;
+  transition:
+    background .2s ease,
+    border-color .2s ease,
+    transform .2s ease;
 }
 
 .resources-view-all:hover {
@@ -78,7 +86,10 @@
   color: inherit;
   text-decoration: none;
   box-shadow: var(--shadow-sm);
-  transition: transform .25s ease, border-color .25s ease, box-shadow .25s ease;
+  transition:
+    transform .25s ease,
+    border-color .25s ease,
+    box-shadow .25s ease;
 }
 
 .resource-card::after {
@@ -88,14 +99,20 @@
   bottom: 0;
   width: 0;
   height: 2px;
-  background: linear-gradient(90deg, var(--brand), var(--accent-neon));
+  background: linear-gradient(
+    90deg,
+    var(--brand),
+    var(--accent-neon)
+  );
   transition: width .3s ease;
 }
 
 .resource-card:hover {
   transform: translateY(-4px);
   border-color: var(--border-strong);
-  box-shadow: var(--shadow-md), 0 0 28px rgba(0,216,74,.06);
+  box-shadow:
+    var(--shadow-md),
+    0 0 28px rgba(0,216,74,.06);
 }
 
 .resource-card:hover::after {
@@ -115,7 +132,8 @@
   width: 100%;
   height: 100%;
   object-fit: cover;
-  transition: transform .5s cubic-bezier(.22,1,.36,1);
+  transition:
+    transform .5s cubic-bezier(.22,1,.36,1);
 }
 
 .resource-card:hover .resource-image img {
@@ -150,7 +168,10 @@
   font-family: var(--font-ui);
   font-size: var(--text-xl);
   font-weight: 700;
-  transition: transform .25s ease, border-color .25s ease, box-shadow .25s ease;
+  transition:
+    transform .25s ease,
+    border-color .25s ease,
+    box-shadow .25s ease;
 }
 
 .resource-card:hover .resource-icon {
@@ -217,10 +238,17 @@
   }
 
   .resources-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    width: 100%;
+    gap: 12px;
     margin-bottom: 22px;
   }
 
   .resources-header h2 {
+    flex: 1 1 auto;
+    min-width: 0;
     min-height: 28px;
     padding-left: 10px;
     border-left-width: 3px;
@@ -228,8 +256,12 @@
   }
 
   .resources-view-all {
-    min-height: 44px;
-    padding: 0 11px;
+    flex: 0 0 auto;
+    flex-shrink: 0;
+    min-width: max-content;
+    min-height: 42px;
+    padding: 0 12px;
+    white-space: nowrap;
   }
 
   .resources-grid {
@@ -243,6 +275,26 @@
 
   .resource-image {
     height: 155px;
+  }
+}
+
+@media (max-width: 420px) {
+  .popular-resources-inner {
+    width: min(100% - 24px, 520px);
+  }
+
+  .resources-header {
+    gap: 8px;
+  }
+
+  .resources-header h2 {
+    font-size: var(--text-lg);
+  }
+
+  .resources-view-all {
+    min-height: 40px;
+    padding: 0 10px;
+    font-size: 10px;
   }
 }
 

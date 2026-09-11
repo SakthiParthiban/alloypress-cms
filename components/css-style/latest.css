@@ -23,7 +23,7 @@
 .latest-updates-header h2 {
   display: flex;
   align-items: center;
-  min-height: 32px;
+  min-width: 0;
   margin: 0;
   padding-left: 12px;
   border-left: 4px solid var(--brand);
@@ -40,6 +40,9 @@
   align-items: center;
   justify-content: center;
   gap: 8px;
+  flex: 0 0 auto;
+  flex-shrink: 0;
+  min-width: max-content;
   min-height: 44px;
   padding: 0 13px;
   border: 1px solid var(--border-strong);
@@ -51,7 +54,11 @@
   line-height: 1;
   color: var(--brand);
   text-decoration: none;
-  transition: background .2s ease, border-color .2s ease, transform .2s ease;
+  white-space: nowrap;
+  transition:
+    background .2s ease,
+    border-color .2s ease,
+    transform .2s ease;
 }
 
 .latest-updates-view-all:hover {
@@ -77,12 +84,14 @@
   border-bottom: 1px solid var(--border);
   text-decoration: none;
   color: inherit;
-  transition: background .2s ease, padding-left .2s ease;
+  transition:
+    background .2s ease,
+    padding-left .2s ease;
 }
 
 .latest-update-item:hover {
   padding-left: 10px;
-  background: rgba(0,216,74,.035);
+  background: rgba(0, 216, 74, .035);
 }
 
 .latest-update-number {
@@ -179,7 +188,11 @@
   font-size: var(--text-2xl);
   color: var(--brand);
   background:
-    radial-gradient(circle at 50% 45%, rgba(0,216,74,.2), transparent 45%),
+    radial-gradient(
+      circle at 50% 45%,
+      rgba(0,216,74,.2),
+      transparent 45%
+    ),
     var(--background-green-deep);
 }
 
@@ -189,7 +202,9 @@
   line-height: 1;
   text-align: right;
   color: var(--text-muted);
-  transition: color .2s ease, transform .2s ease;
+  transition:
+    color .2s ease,
+    transform .2s ease;
 }
 
 .latest-update-item:hover .latest-update-arrow {
@@ -223,10 +238,18 @@
   }
 
   .latest-updates-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    width: 100%;
+    min-height: 42px;
+    gap: 12px;
     margin-bottom: 22px;
   }
 
   .latest-updates-header h2 {
+    flex: 1 1 auto;
+    min-width: 0;
     min-height: 28px;
     padding-left: 10px;
     border-left-width: 3px;
@@ -234,8 +257,12 @@
   }
 
   .latest-updates-view-all {
-    min-height: 44px;
-    padding: 0 11px;
+    flex: 0 0 auto;
+    flex-shrink: 0;
+    min-width: max-content;
+    min-height: 42px;
+    padding: 0 12px;
+    white-space: nowrap;
   }
 
   .latest-update-item {
@@ -271,6 +298,20 @@
 @media (max-width: 420px) {
   .latest-updates-section .container {
     width: calc(100% - 24px);
+  }
+
+  .latest-updates-header {
+    gap: 8px;
+  }
+
+  .latest-updates-header h2 {
+    font-size: var(--text-lg);
+  }
+
+  .latest-updates-view-all {
+    min-height: 40px;
+    padding: 0 10px;
+    font-size: 10px;
   }
 
   .latest-update-image {

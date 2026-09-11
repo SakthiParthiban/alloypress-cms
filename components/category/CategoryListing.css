@@ -1,5 +1,3 @@
-/* CATEGORY LISTING — GLOBAL DESIGN SYSTEM */
-
 .category-page {
   min-height: 100vh;
   background: var(--background);
@@ -247,21 +245,14 @@
 
 .featured-post {
   display: grid;
-  grid-template-columns:
-    minmax(0, 1.12fr)
-    minmax(360px, .88fr);
-  min-height: 360px;
+  grid-template-columns: minmax(0, 1.12fr) minmax(0, 0.88fr);
+  align-items: start;
   overflow: hidden;
   border: 1px solid var(--border);
   border-radius: var(--radius-lg);
   background: var(--card);
-  color: inherit;
   text-decoration: none;
-  box-shadow: 0 12px 35px rgba(20,40,30,.045);
-  transition:
-    transform .25s ease,
-    border-color .25s ease,
-    box-shadow .25s ease;
+  color: inherit;
 }
 
 .featured-post:hover {
@@ -272,9 +263,11 @@
 
 .featured-image {
   position: relative;
-  min-height: 360px;
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  min-height: 0;
   overflow: hidden;
-  background: #111916;
+  background: var(--surface);
 }
 
 .featured-image img {
@@ -282,7 +275,9 @@
   width: 100%;
   height: 100%;
   object-fit: cover;
-  transition: transform .6s ease;
+  object-position: center;
+  transition:
+    transform 600ms cubic-bezier(.2, .65, .2, 1);
 }
 
 .featured-post:hover .featured-image img {
@@ -380,6 +375,10 @@
 }
 
 .featured-info p {
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 5;
+  overflow: hidden;
   max-width: 510px;
   margin: 18px 0 0;
   color: var(--text-secondary);
@@ -682,6 +681,43 @@
   transform: translateY(-1px);
 }
 
+
+@media (min-width: 901px) {
+  .featured-post {
+    align-items: stretch;
+  }
+
+  /* FIX v2: contain vachadhula mela/keela gray empty space (letterbox) vandhuchu.
+     adha remove panrathukku object-fit: cover ku thirumba maathirom (image full ah
+     fill aagum, no gaps) - but full uncontrolled crop varama irukka, height ah
+     max-height vachu limit pannirukom, so oru reasonable range ku mேle
+     stretch aagadhu. Right side excerpt-um konjam line-clamp pannirukom
+     (kீழே .featured-info p rule paarunga) - so text height predictable ah irundhu,
+     image side um adha match panni cover aagum, extra empty space varadhu. */
+  .featured-image {
+    align-self: stretch;
+    width: 100%;
+    height: 100%;
+    min-height: 380px;
+    max-height: 560px;
+    aspect-ratio: auto;
+  }
+
+  .featured-image img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    /* FIX v3: chinna set of images la (ex: /alternatives page) left side la
+       bold text/subject design pannirundha, center-crop panradhula andha
+       left edge text konjam veti pogudhu. object-position ah left ku
+       maathirathula crop right side (usually plain background/art) irundhu
+       eduthukum, left side text/subject full ah safe ah irukum. Idhu
+       mobile/tab ah affect pannadhu - andha rule base .featured-image img
+       la already correct ah irukku, idhu desktop-only override. */
+    object-position: left center;
+  }
+}
+
 @media (max-width: 900px) {
   .category-hero-inner,
   .category-content-inner {
@@ -843,12 +879,114 @@
   }
 }
 
+
+.load-more-wrap {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  margin-top: 42px;
+}
+
+/* FIX: neeraiya circle spans/icons irundha (2nd copy) hide pannitu,
+   text ah konjam periya font + strong color kuduthu visible aa panrom. */
+.load-more-button {
+  position: relative;
+  overflow: hidden;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  min-width: 168px;
+  min-height: 48px;
+  padding: 0 22px;
+  border: 1px solid color-mix(in srgb, var(--brand) 48%, var(--border));
+  border-radius: var(--radius-pill);
+  background:
+    linear-gradient(
+      135deg,
+      color-mix(in srgb, var(--brand) 13%, transparent),
+      color-mix(in srgb, var(--brand) 4%, transparent)
+    );
+  color: #22c55e;
+  font:
+    800 var(--text-sm)/1
+    var(--font-mono),
+    monospace;
+  letter-spacing: .04em;
+  white-space: nowrap;
+  cursor: pointer;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, .12);
+  transition:
+    transform .22s ease,
+    border-color .22s ease,
+    background .22s ease,
+    color .22s ease,
+    box-shadow .22s ease;
+}
+
+/* text ku z-index kuduthu, edhavadhu decorative circle/pseudo mela varama iruka */
+.load-more-button > * {
+  position: relative;
+  z-index: 1;
+}
+
+/* text span - plain ah irukanum, circle style venam */
+.load-more-button span:first-of-type {
+  display: inline-flex;
+  align-items: center;
+}
+
+/* arrow span (aria-hidden="true") - idhu mattum circle */
+.load-more-button span[aria-hidden="true"] {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 auto;
+  width: 22px;
+  height: 22px;
+  border: 1px solid color-mix(in srgb, var(--brand) 42%, transparent);
+  border-radius: 50%;
+  color: #22c55e;
+  transition:
+    transform .22s ease,
+    background .22s ease;
+}
+
+.load-more-button:hover span[aria-hidden="true"] {
+  transform: translateY(2px);
+  background: color-mix(in srgb, var(--brand) 8%, transparent);
+}
+
+.load-more-button:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 12px 30px rgba(0, 0, 0, .16);
+}
+
+.load-more-button:active {
+  transform: translateY(0);
+}
+
+@media (max-width: 620px) {
+  .load-more-wrap {
+    margin-top: 30px;
+  }
+
+  .load-more-button {
+    min-width: 155px;
+    min-height: 44px;
+    padding: 0 18px;
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   .featured-post,
   .featured-image img,
   .article-card,
   .article-card-image img,
-  .category-home-link {
+  .category-home-link,
+  .load-more-button,
+  .load-more-button span {
     transition: none !important;
   }
 }

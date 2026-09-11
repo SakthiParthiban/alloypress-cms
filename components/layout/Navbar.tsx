@@ -233,7 +233,7 @@ export default function Navbar() {
 
           {/* CTA */}
           <Link
-            href="/contact-us"
+            href="/review-tool"
             className="header-cta"
           >
             Get Reviewed
