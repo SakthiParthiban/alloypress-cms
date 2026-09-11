@@ -165,7 +165,7 @@
   width: 100%;
   flex: 1 1 auto;
   height: 100%;
-  min-height: 590px;
+  min-height: 0;
   display: grid;
   grid-template: 1fr / 1fr;
   overflow: hidden;
@@ -611,6 +611,15 @@
   .alloy-trending-section {
     padding: 58px 0 68px;
   }
+
+  .alloy-featured-track {
+  height: auto;
+  min-height: 0;
+}
+
+.alloy-featured-card {
+  min-height: 0;
+}
 
   .alloy-trending-section .container {
     width: calc(100% - 32px);

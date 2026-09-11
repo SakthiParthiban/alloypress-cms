@@ -887,7 +887,7 @@ export default async function Hero() {
             <div>
 
               <strong>
-                4+ AI
+                4+ LLMs
               </strong>
 
               <span>Cited by GPT, Gemini, Claude, Perplexity and more</span>
