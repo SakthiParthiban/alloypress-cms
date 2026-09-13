@@ -5,6 +5,11 @@ const PAYLOAD_URL =
   process.env.PAYLOAD_API_URL?.replace(/\/$/, "") ||
   "http://localhost:3000/api";
 
+// Breadcrumb constants — this route only ever serves the "blogs" category,
+// so these are fixed rather than derived from post data.
+const CATEGORY_SLUG = "blogs";
+const CATEGORY_LABEL = "Blogs";
+
 type Params = Promise<{ slug: string }>;
 
 async function fetchJSON(url: string, revalidate = 60) {
@@ -205,11 +210,21 @@ export default async function BlogPostPage({
   const categoryId =
     typeof post.category === "object" ? post.category?.id : post.category;
 
+  const categoryName =
+    typeof post.category === "object" && post.category?.name
+      ? post.category.name
+      : CATEGORY_LABEL;
+
+  const categorySlugValue =
+    typeof post.category === "object" && post.category?.slug
+      ? post.category.slug
+      : CATEGORY_SLUG;
+
   const relatedPromise = categoryId
     ? fetchJSON(
-        `${PAYLOAD_URL}/posts?where[_status][equals]=published&where[category][equals]=${categoryId}&sort=-publishedAt&limit=5&depth=2`,
-        120
-      )
+      `${PAYLOAD_URL}/posts?where[_status][equals]=published&where[category][equals]=${categoryId}&sort=-publishedAt&limit=5&depth=2`,
+      120
+    )
     : Promise.resolve(null);
 
   const [relatedData] = await Promise.all([relatedPromise]);
@@ -253,6 +268,8 @@ export default async function BlogPostPage({
         post={post}
         related={related}
         articleImage={articleImage}
+        category={categorySlugValue}
+        categoryLabel={categoryName}
       />
     </>
   );

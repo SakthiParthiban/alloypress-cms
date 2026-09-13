@@ -24,6 +24,8 @@ type Props = {
   post: any;
   related: any[];
   articleImage: string | null;
+  category?: string;
+  categoryLabel?: string;
 };
 
 /* -------------------------------------------------------------------------- */
@@ -260,6 +262,9 @@ function cleanEditorialText(value: unknown): string {
   );
 
   text = text.replace(/^TL;DR\s*:\s*/i, "");
+  text = text.replace(/\s*\[…\]\s*$/, "");
+  text = text.replace(/\s*\[\.\.\.\]\s*$/, "");
+  text = text.replace(/…\s*$/, "");
   text = text.replace(/^[-–—•\s]+/, "");
   text = text.replace(/\s+/g, " ").trim();
 
@@ -345,9 +350,6 @@ function InlineText({ node }: { node: any }) {
     if (format & 64) {
       content = <sup>{content}</sup>;
     }
-    /* Ignore migrated editor presentation styles. The article renderer owns
-     * typography and colors so every WordPress post follows the same AlloyPress
-     * design system. Semantic inline formatting is preserved above. */
     return <span>{content}</span>;
   }
 
@@ -429,25 +431,6 @@ function RenderNode({
       return null;
     }
 
-    /*
-     * CRITICAL FIX
-     *
-     * If a paragraph contains a block node such as:
-     *
-     * paragraph
-     *   └── upload
-     *        └── figure
-     *
-     * DO NOT return:
-     *
-     * <p>
-     *   <RenderNode upload />
-     * </p>
-     *
-     * because upload returns <figure>.
-     *
-     * Instead return the children directly.
-     */
     if (paragraphContainsBlockNode(children)) {
       return (
         <>
@@ -1112,6 +1095,8 @@ export default function BlogPostView({
   post,
   related,
   articleImage,
+  category = "blogs",
+  categoryLabel = "Blogs"
 }: Props) {
   const [aiOpen, setAiOpen] =
     useState(false);
@@ -1138,6 +1123,26 @@ export default function BlogPostView({
     document.addEventListener("keydown", handleKeyDown);
     return () => document.removeEventListener("keydown", handleKeyDown);
   }, [shareOpen]);
+
+  useEffect(() => {
+    if (!tocOpen) return;
+
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === "Escape") {
+        setTocOpen(false);
+      }
+    };
+
+    const previousOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+
+    document.addEventListener("keydown", handleKeyDown);
+
+    return () => {
+      document.body.style.overflow = previousOverflow;
+      document.removeEventListener("keydown", handleKeyDown);
+    };
+  }, [tocOpen]);
 
   useEffect(() => {
     const mediaQuery = window.matchMedia("(min-width: 821px)");
@@ -1178,24 +1183,39 @@ export default function BlogPostView({
     [nodes, excerpt]
   );
 
-  const category =
+  const categoryName =
     typeof post?.category === "object"
       ? post.category?.name ||
       "Article"
       : "Article";
 
   const date = post?.publishedAt
-    ? new Date(
-      post.publishedAt
-    ).toLocaleDateString(
-      "en-US",
-      {
-        month: "short",
-        day: "numeric",
-        year: "numeric",
-      }
-    )
+    ? new Date(post.publishedAt).toLocaleDateString("en-US", {
+      month: "short",
+      day: "numeric",
+      year: "numeric",
+    })
     : "";
+
+  const rawUpdatedAt =
+    post?.legacy?.wordpressModifiedAt || post?.updatedAt;
+
+  const updatedDate = rawUpdatedAt
+    ? new Date(rawUpdatedAt).toLocaleDateString("en-US", {
+      month: "short",
+      day: "numeric",
+      year: "numeric",
+    })
+    : "";
+
+  // Only show "Updated" if it's meaningfully after publish (avoid showing
+  // "Updated" for the same-day migration/save that created the post).
+  const showUpdatedDate =
+    Boolean(post?.publishedAt) &&
+    Boolean(rawUpdatedAt) &&
+    new Date(rawUpdatedAt).getTime() -
+    new Date(post.publishedAt).getTime() >
+    24 * 60 * 60 * 1000;
 
   async function copyArticleLink() {
     try {
@@ -1281,13 +1301,19 @@ export default function BlogPostView({
         {/* ---------------------------------------------------------------- */}
         {/* Editorial hero                                                   */}
         {/* ---------------------------------------------------------------- */}
-
+        <nav className="post-breadcrumb" aria-label="Breadcrumb">
+          <a href="/">Home</a>
+          <span className="post-breadcrumb-sep">/</span>
+          <a href={`/${category}`}>{categoryLabel}</a>
+          <span className="post-breadcrumb-sep">/</span>
+          <span className="post-breadcrumb-current">{post?.title}</span>
+        </nav>
         <header className="post-hero">
           <div className="post-shell">
             <div className="post-hero-inner">
               <div className="post-kicker">
                 <i />
-                {category} · AlloyPress
+                {categoryName} · AlloyPress
               </div>
 
               <h1 className="post-title">
@@ -1300,12 +1326,9 @@ export default function BlogPostView({
                 </p>
               ) : null}
 
-              <div className="post-meta-row">
-                <div className="post-byline">
-                  <span className="author-dot">AP</span>
-                  <span>AlloyPress Editorial Team</span>
-                  {date ? <span>· {date}</span> : null}
-                </div>
+              <div className="post-byline">
+                <span className="author-dot">AP</span>
+                <span>By AlloyPress Team</span>
               </div>
 
               <div className="post-share-row">
@@ -1333,6 +1356,11 @@ export default function BlogPostView({
                   />
                 </figure>
               ) : null}
+
+              <div className="post-date-row">
+                {date ? <span>Published at : {date}</span> : null}
+                {showUpdatedDate ? <span> Updated at : {updatedDate}</span> : null}
+              </div>
             </div>
           </div>
         </header>
@@ -1343,13 +1371,74 @@ export default function BlogPostView({
 
         <div className="post-shell">
           <div className="post-layout">
+            {tocOpen ? (
+              <div
+                className="mobile-toc-backdrop"
+                role="presentation"
+                onMouseDown={(event) => {
+                  if (event.currentTarget === event.target) {
+                    setTocOpen(false);
+                  }
+                }}
+              >
+                <div
+                  id="mobile-article-toc"
+                  className="mobile-toc-sheet"
+                  role="dialog"
+                  aria-modal="true"
+                  aria-labelledby="mobile-toc-title"
+                >
+                  <div className="mobile-toc-header">
+                    <div>
+                      <div className="mobile-toc-kicker">Article navigation</div>
+                      <h2 id="mobile-toc-title">Table of Contents</h2>
+                    </div>
+
+                    <button
+                      type="button"
+                      className="mobile-toc-close"
+                      aria-label="Close table of contents"
+                      onClick={() => setTocOpen(false)}
+                    >
+                      <LucideX aria-hidden="true" />
+                    </button>
+                  </div>
+
+                  {headings.length ? (
+                    <nav
+                      className="mobile-toc-list"
+                      aria-label="Article sections"
+                    >
+                      {headings.map((item, i) => (
+                        <a
+                          key={`${item.id}-${i}`}
+                          href={`#${item.id}`}
+                          className="mobile-toc-link"
+                          onClick={() => setTocOpen(false)}
+                        >
+                          <span className="mobile-toc-number">
+                            {String(i + 1).padStart(2, "0")}
+                          </span>
+
+                          <span className="mobile-toc-text">
+                            {item.text}
+                          </span>
+                        </a>
+                      ))}
+                    </nav>
+                  ) : (
+                    <div className="mobile-toc-empty">
+                      Article sections will appear here.
+                    </div>
+                  )}
+                </div>
+              </div>
+            ) : null}
             {/* Left: compact sticky TOC */}
             <aside
-              className={`toc${
-                tocOpen ? " mobile-open" : ""
-              }${
-                desktopTocOpen ? "" : " desktop-toc-collapsed"
-              }`}
+              className={`toc${tocOpen ? " mobile-open" : ""
+                }${desktopTocOpen ? "" : " desktop-toc-collapsed"
+                }`}
               data-open={tocOpen}
               aria-label="Table of contents"
             >
@@ -1395,328 +1484,332 @@ export default function BlogPostView({
                       </a>
                     ))}
                   </nav>
-              ) : (
-              <div className="toc-empty">Article sections will appear here.</div>
-    )}
-          </div>
-        </aside>
-        {/* Center: article */}
-        <article className="article-column">
-          <div className="summary-box">
-            <h3>ALLOYPRESS AI SUMMARY</h3>
-            <p>{summary}</p>
-          </div>
-
-          <ArticleRenderer
-            content={post?.content}
-            headingIds={headingIds}
-          />
-
-          <div className="article-end">
-            <div className="side-label">Article tags</div>
-
-            <div className="tag-row">
-              {(post?.tags || [])
-                .slice(0, 8)
-                .map((tag: any, i: number) => (
-                  <span className="tag" key={i}>
-                    {typeof tag === "string"
-                      ? tag
-                      : tag?.name ||
-                      tag?.slug ||
-                      "AI"}
-                  </span>
-                ))}
-            </div>
-          </div>
-        </article>
-
-        {/* Right: trust / share / AI tools */}
-        <aside
-          className="article-sidebar"
-          aria-label="Article tools"
-        >
-          <div className="sidebar-card trusted-card">
-            <div className="trusted-badge">
-              <span className="trusted-badge-mark">✓</span>
-              Work with AlloyPress
-            </div>
-
-            <h3>Get your AI tool reviewed.</h3>
-
-            <div className="trust-list">
-              <div className="trust-item">
-                <b>✓</b>
-                <span>Reach an AI-focused audience</span>
+                ) : (
+                  <div className="toc-empty">Article sections will appear here.</div>
+                )}
+              </div>
+            </aside>
+            {/* Center: article */}
+            <article className="article-column">
+              <div className="summary-box">
+                <h3>ALLOYPRESS AI SUMMARY</h3>
+                <p>{summary}</p>
               </div>
 
-              <div className="trust-item">
-                <b>✓</b>
-                <span>Professional editorial review</span>
+              <ArticleRenderer
+                content={post?.content}
+                headingIds={headingIds}
+              />
+
+              <div className="article-end">
+                <div className="side-label">Article tags</div>
+
+                <div className="tag-row">
+                  {(post?.tags || [])
+                    .slice(0, 8)
+                    .map((tag: any, i: number) => (
+                      <span className="tag" key={i}>
+                        {typeof tag === "string"
+                          ? tag
+                          : tag?.name ||
+                          tag?.slug ||
+                          "AI"}
+                      </span>
+                    ))}
+                </div>
               </div>
-            </div>
+            </article>
 
-            <a
-              href="/review-tool"
-              className="trusted-cta"
+            {/* Right: trust / share / AI tools */}
+            <aside
+              className="article-sidebar"
+              aria-label="Article tools"
             >
-              Get Reviewed
-              <span>↗</span>
-            </a>
-          </div>
+              <div className="sidebar-card trusted-card">
+                <div className="trusted-badge">
+                  <span className="trusted-badge-mark">✓</span>
+                  Work with AlloyPress
+                </div>
 
-          <div className="sidebar-card">
-            <div className="side-label">Share article</div>
+                <h3>Get your AI tool reviewed.</h3>
 
-            <button
-              type="button"
-              className="share-trigger"
-              aria-haspopup="dialog"
-              aria-expanded={shareOpen}
-              onClick={() => setShareOpen(true)}
-            >
-              <span className="share-trigger-label">
-                <Share2 aria-hidden="true" />
-                Share
-              </span>
-            </button>
-          </div>
-
-          <div className="sidebar-card">
-            <div className="side-label">AI tools</div>
-
-            <div className="ai-options">
-              <button
-                type="button"
-                className="ai-option"
-                onClick={() => setAiOpen(true)}
-              >
-                <span>Article summary</span>
-                <FileText aria-hidden="true" />
-              </button>
-
-              <button
-                type="button"
-                className="ai-option"
-                onClick={() => setAiOpen(true)}
-              >
-                <span>Ask Alloy AI</span>
-                <Sparkles aria-hidden="true" />
-              </button>
-            </div>
-          </div>
-        </aside>
-      </div>
-    </div >
-
-      {/* ---------------------------------------------------------------- */ }
-  {/* Related articles                                                 */ }
-  {/* ---------------------------------------------------------------- */ }
-
-  {
-    related?.length ? (
-      <section className="related">
-        <div className="post-shell">
-          <div className="section-head">
-            <div>
-              <div className="side-label">Keep exploring</div>
-              <h2>Related articles</h2>
-            </div>
-
-            <a
-              href="/blogs"
-              className="related-view-all"
-            >
-              View all →
-            </a>
-          </div>
-
-          <div className="related-grid">
-            {related.map((item: any) => {
-              const relatedImage =
-                mediaUrl(item.featuredImage);
-
-              return (
-                <a
-                  className="related-card"
-                  href={`/blogs/${item.slug}`}
-                  key={item.id}
-                >
-                  {relatedImage ? (
-                    <div className="related-image">
-                      <img
-                        src={relatedImage}
-                        alt={item.title || "Related article"}
-                        loading="lazy"
-                        decoding="async"
-                      />
-                    </div>
-                  ) : null}
-
-                  <div className="related-body">
-                    <div className="related-cat">
-                      {typeof item.category === "object"
-                        ? item.category?.name || category
-                        : category}
-                    </div>
-
-                    <h3>{item.title}</h3>
+                <div className="trust-list">
+                  <div className="trust-item">
+                    <b>✓</b>
+                    <span>Reach an AI-focused audience</span>
                   </div>
+
+                  <div className="trust-item">
+                    <b>✓</b>
+                    <span>Professional editorial review</span>
+                  </div>
+                </div>
+
+                <a
+                  href="/review-tool"
+                  className="trusted-cta"
+                >
+                  Get Reviewed
+                  <span>↗</span>
                 </a>
-              );
-            })}
+              </div>
+
+              <div className="sidebar-card">
+                <div className="side-label">Share article</div>
+
+                <button
+                  type="button"
+                  className="share-trigger"
+                  aria-haspopup="dialog"
+                  aria-expanded={shareOpen}
+                  onClick={() => setShareOpen(true)}
+                >
+                  <span className="share-trigger-label">
+                    <Share2 aria-hidden="true" />
+                    Share
+                  </span>
+                </button>
+              </div>
+
+              <div className="sidebar-card">
+                <div className="side-label">AI tools</div>
+
+                <div className="ai-options">
+                  <button
+                    type="button"
+                    className="ai-option"
+                    onClick={() => setAiOpen(true)}
+                  >
+                    <span>Ask AI</span>
+                    <Sparkles aria-hidden="true" />
+                  </button>
+                </div>
+              </div>
+              <div className="sidebar-card mobile-toc-card">
+                <div className="side-label">Article navigation</div>
+
+                <button
+                  type="button"
+                  className="mobile-toc-trigger"
+                  aria-haspopup="dialog"
+                  aria-expanded={tocOpen}
+                  aria-controls="mobile-article-toc"
+                  onClick={() => setTocOpen(true)}
+                >
+                  <span className="mobile-toc-trigger-label">
+                    <FileText aria-hidden="true" />
+                    <span>TOC</span>
+                  </span>
+                </button>
+              </div>
+            </aside>
           </div>
-        </div>
-      </section>
-    ) : null
-  }
+        </div >
 
-  {/* ---------------------------------------------------------------- */ }
-  {/* Share dialog                                                     */ }
-  {/* ---------------------------------------------------------------- */ }
+        {/* ---------------------------------------------------------------- */}
+        {/* Related articles                                                 */}
+        {/* ---------------------------------------------------------------- */}
 
-  {
-    shareOpen ? (
-      <div
-        className="share-modal-backdrop"
-        role="presentation"
-        onMouseDown={(event) => {
-          if (event.currentTarget === event.target) {
-            setShareOpen(false);
-          }
-        }}
-      >
-        <div
-          className="share-modal"
-          role="dialog"
-          aria-modal="true"
-          aria-labelledby="share-modal-title"
-        >
-          <div className="share-modal-header">
-            <div>
-              <div className="share-modal-kicker">AlloyPress</div>
-              <h3 id="share-modal-title">Share this article</h3>
+        {
+          related?.length ? (
+            <section className="related">
+              <div className="post-shell">
+                <div className="section-head">
+                  <div>
+                    <div className="side-label">Keep exploring</div>
+                    <h2>Related articles</h2>
+                  </div>
+
+                  <a
+                    href="/blogs"
+                    className="related-view-all"
+                  >
+                    View all →
+                  </a>
+                </div>
+
+                <div className="related-grid">
+                  {related.map((item: any) => {
+                    const relatedImage =
+                      mediaUrl(item.featuredImage);
+
+                    return (
+                      <a
+                        className="related-card"
+                        href={`/blogs/${item.slug}`}
+                        key={item.id}
+                      >
+                        {relatedImage ? (
+                          <div className="related-image">
+                            <img
+                              src={relatedImage}
+                              alt={item.title || "Related article"}
+                              loading="lazy"
+                              decoding="async"
+                            />
+                          </div>
+                        ) : null}
+
+                        <div className="related-body">
+                          <div className="related-cat">
+                            {typeof item.category === "object"
+                              ? item.category?.name || category
+                              : category}
+                          </div>
+
+                          <h3>{item.title}</h3>
+                        </div>
+                      </a>
+                    );
+                  })}
+                </div>
+              </div>
+            </section>
+          ) : null
+        }
+
+        {/* ---------------------------------------------------------------- */}
+        {/* Share dialog                                                     */}
+        {/* ---------------------------------------------------------------- */}
+
+        {
+          shareOpen ? (
+            <div
+              className="share-modal-backdrop"
+              role="presentation"
+              onMouseDown={(event) => {
+                if (event.currentTarget === event.target) {
+                  setShareOpen(false);
+                }
+              }}
+            >
+              <div
+                className="share-modal"
+                role="dialog"
+                aria-modal="true"
+                aria-labelledby="share-modal-title"
+              >
+                <div className="share-modal-header">
+                  <div>
+                    <div className="share-modal-kicker">AlloyPress</div>
+                    <h3 id="share-modal-title">Share this article</h3>
+                  </div>
+
+                  <button
+                    type="button"
+                    className="share-modal-close"
+                    aria-label="Close share dialog"
+                    onClick={() => setShareOpen(false)}
+                  >
+                    <LucideX aria-hidden="true" />
+                  </button>
+                </div>
+
+                <div className="share-modal-options">
+                  <button
+                    type="button"
+                    className="share-option share-option-primary"
+                    onClick={shareOnX}
+                  >
+                    <FaXTwitter aria-hidden="true" />
+                    <span>Share on X</span>
+                  </button>
+
+                  <button
+                    type="button"
+                    className="share-option"
+                    onClick={shareOnLinkedIn}
+                  >
+                    <FaLinkedinIn aria-hidden="true" />
+                    <span>LinkedIn</span>
+                  </button>
+
+                  <button
+                    type="button"
+                    className="share-option"
+                    onClick={shareOnFacebook}
+                  >
+                    <FaFacebookF aria-hidden="true" />
+                    <span>Facebook</span>
+                  </button>
+
+                  <button
+                    type="button"
+                    className="share-option"
+                    onClick={shareOnWhatsApp}
+                  >
+                    <FaWhatsapp aria-hidden="true" />
+                    <span>WhatsApp</span>
+                  </button>
+
+                  <button
+                    type="button"
+                    className="share-option"
+                    onClick={shareOnInstagram}
+                  >
+                    <FaInstagram aria-hidden="true" />
+                    <span>Instagram</span>
+                  </button>
+
+                  <button
+                    type="button"
+                    className="share-option"
+                    onClick={copyArticleLink}
+                  >
+                    {copied ? (
+                      <Check aria-hidden="true" />
+                    ) : (
+                      <Copy aria-hidden="true" />
+                    )}
+                    <span>{copied ? "Link copied" : "Copy link"}</span>
+                  </button>
+                </div>
+
+                <div className="share-modal-url">
+                  <Link2 aria-hidden="true" />
+                  <span>{post?.title || "AlloyPress article"}</span>
+                </div>
+              </div>
             </div>
+          ) : null
+        }
 
-            <button
-              type="button"
-              className="share-modal-close"
-              aria-label="Close share dialog"
-              onClick={() => setShareOpen(false)}
+        {/* ---------------------------------------------------------------- */}
+        {/* AI dialog                                                         */}
+        {/* ---------------------------------------------------------------- */}
+
+        {
+          aiOpen ? (
+            <div
+              className="ai-panel"
+              role="dialog"
+              aria-modal="false"
+              aria-label="Ask Alloy AI"
             >
-              <LucideX aria-hidden="true" />
-            </button>
-          </div>
+              <button
+                type="button"
+                className="ai-close"
+                aria-label="Close AI assistant"
+                onClick={() => setAiOpen(false)}
+              >
+                ×
+              </button>
 
-          <div className="share-modal-options">
-            <button
-              type="button"
-              className="share-option share-option-primary"
-              onClick={shareOnX}
-            >
-              <FaXTwitter aria-hidden="true" />
-              <span>Share on X</span>
-            </button>
+              <h3>Alloy AI</h3>
 
-            <button
-              type="button"
-              className="share-option"
-              onClick={shareOnLinkedIn}
-            >
-              <FaLinkedinIn aria-hidden="true" />
-              <span>LinkedIn</span>
-            </button>
+              <p>
+                Quick article assistant. Use the article summary
+                below as the starting point.
+              </p>
 
-            <button
-              type="button"
-              className="share-option"
-              onClick={shareOnFacebook}
-            >
-              <FaFacebookF aria-hidden="true" />
-              <span>Facebook</span>
-            </button>
-
-            <button
-              type="button"
-              className="share-option"
-              onClick={shareOnWhatsApp}
-            >
-              <FaWhatsapp aria-hidden="true" />
-              <span>WhatsApp</span>
-            </button>
-
-            <button
-              type="button"
-              className="share-option"
-              onClick={shareOnInstagram}
-            >
-              <FaInstagram aria-hidden="true" />
-              <span>Instagram</span>
-            </button>
-
-            <button
-              type="button"
-              className="share-option"
-              onClick={copyArticleLink}
-            >
-              {copied ? (
-                <Check aria-hidden="true" />
-              ) : (
-                <Copy aria-hidden="true" />
-              )}
-              <span>{copied ? "Link copied" : "Copy link"}</span>
-            </button>
-          </div>
-
-          <div className="share-modal-url">
-            <Link2 aria-hidden="true" />
-            <span>{post?.title || "AlloyPress article"}</span>
-          </div>
-        </div>
-      </div>
-    ) : null
-  }
-
-  {/* ---------------------------------------------------------------- */ }
-  {/* AI dialog                                                         */ }
-  {/* ---------------------------------------------------------------- */ }
-
-  {
-    aiOpen ? (
-      <div
-        className="ai-panel"
-        role="dialog"
-        aria-modal="false"
-        aria-label="Ask Alloy AI"
-      >
-        <button
-          type="button"
-          className="ai-close"
-          aria-label="Close AI assistant"
-          onClick={() => setAiOpen(false)}
-        >
-          ×
-        </button>
-
-        <h3>Alloy AI</h3>
-
-        <p>
-          Quick article assistant. Use the article summary
-          below as the starting point.
-        </p>
-
-        <div className="ai-answer">
-          <strong>Quick take:</strong>{" "}
-          {summary}
-        </div>
-      </div>
-    ) : null
-  }
+              <div className="ai-answer">
+                <strong>Quick take:</strong>{" "}
+                {summary}
+              </div>
+            </div>
+          ) : null
+        }
       </main >
     </>
   );
 }
-
-
-
-

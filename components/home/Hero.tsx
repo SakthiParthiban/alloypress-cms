@@ -840,7 +840,6 @@ export default async function Hero() {
 
           </div>
 
-
           <div className="hero-stat">
 
             <div

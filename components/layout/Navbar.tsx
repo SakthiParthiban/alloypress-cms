@@ -307,11 +307,11 @@ export default function Navbar() {
           <div className="mobile-nav-divider" />
 
           <Link
-            href="/contact-us"
+            href="/review-tool"
             className="mobile-nav-cta"
             onClick={closeMobileMenu}
           >
-            Submit a Tool
+            Get Reviewed
             <span aria-hidden="true">
               ↗
             </span>
