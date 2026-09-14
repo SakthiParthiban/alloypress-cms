@@ -1,5 +1,6 @@
 import Image from "next/image";
 import Link from "next/link";
+import { payloadFetch } from "@/lib/payload";
 
 type Media = {
   id: number | string;
@@ -48,25 +49,16 @@ async function getLearnPosts(): Promise<Post[]> {
      * First resolve the Blogs category.
      * Payload slug for the Blogs category is "blogs".
      */
-    const categoryResponse = await fetch(
-      `${PAYLOAD_URL}/categories?where[slug][equals]=blogs&limit=1`,
-      {
-        next: {
-          revalidate: 60,
-        },
-      }
-    );
-
-    if (!categoryResponse.ok) {
-      console.error(
-        "AI Informative Blogs: Failed to fetch Blogs category."
-      );
-
-      return [];
-    }
-
     const categoryData =
-      (await categoryResponse.json()) as CategoryResponse;
+  await payloadFetch<CategoryResponse>(
+    "/categories?where[slug][equals]=blogs&limit=1",
+    {
+      next: {
+        revalidate: 60,
+        tags: ["category:blogs"],
+      },
+    }
+  );
 
     const blogsCategory = categoryData?.docs?.[0];
 
@@ -84,27 +76,18 @@ async function getLearnPosts(): Promise<Post[]> {
      * Fetch more than 4 so invalid/placeholder posts can
      * be filtered before taking the final 4.
      */
-    const postsResponse = await fetch(
-      `${PAYLOAD_URL}/posts?where[workflowStatus][equals]=published&where[category][equals]=${encodeURIComponent(
-        String(blogsCategory.id)
-      )}&sort=-publishedAt&limit=12&depth=1`,
-      {
-        next: {
-          revalidate: 60,
-        },
-      }
-    );
-
-    if (!postsResponse.ok) {
-      console.error(
-        "AI Informative Blogs: Failed to fetch published Blogs posts."
-      );
-
-      return [];
-    }
-
     const postsData =
-      (await postsResponse.json()) as PostsResponse;
+  await payloadFetch<PostsResponse>(
+    `/posts?where[workflowStatus][equals]=published&where[category][equals]=${encodeURIComponent(
+      String(blogsCategory.id)
+    )}&sort=-publishedAt&limit=12&depth=1`,
+    {
+      next: {
+        revalidate: 60,
+        tags: ["home:latest-blogs"],
+      },
+    }
+  );
 
     if (!Array.isArray(postsData?.docs)) {
       return [];

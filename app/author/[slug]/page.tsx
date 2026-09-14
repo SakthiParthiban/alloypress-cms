@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
+import { payloadFetch } from "@/lib/payload";
 
 const PAYLOAD_URL =
   process.env.PAYLOAD_API_URL?.replace(/\/$/, "") ||
@@ -34,16 +35,16 @@ type Post = {
 
 async function getAuthorPosts(): Promise<Post[]> {
   try {
-    const response = await fetch(
-      `${PAYLOAD_URL}/posts?where[workflowStatus][equals]=published&sort=-publishedAt&limit=18&depth=1`,
+    const data = await payloadFetch<{ docs?: Post[] }>(
+      "/posts?where[workflowStatus][equals]=published&sort=-publishedAt&limit=18&depth=1",
       {
-        next: { revalidate: 60 },
+        next: {
+          revalidate: 60,
+          tags: ["author:alloypress-team"],
+        },
       },
     );
 
-    if (!response.ok) return [];
-
-    const data = await response.json();
     const posts = Array.isArray(data?.docs) ? data.docs : [];
 
     return posts
@@ -544,7 +545,7 @@ export default async function AuthorPage() {
                         src={getImageUrl(featured)!}
                         alt={
                           typeof featured.featuredImage === "object" &&
-                          featured.featuredImage?.alt
+                            featured.featuredImage?.alt
                             ? featured.featuredImage.alt
                             : featured.title
                         }
@@ -589,7 +590,7 @@ export default async function AuthorPage() {
                               src={getImageUrl(post)!}
                               alt={
                                 typeof post.featuredImage === "object" &&
-                                post.featuredImage?.alt
+                                  post.featuredImage?.alt
                                   ? post.featuredImage.alt
                                   : post.title
                               }

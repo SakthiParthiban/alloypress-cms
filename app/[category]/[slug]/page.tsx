@@ -1,350 +1,859 @@
 import type { Metadata } from "next";
+
 import { notFound } from "next/navigation";
 
 import BlogPostView from "@/components/blogs/BlogPostView";
 
-const PAYLOAD_URL =
-    process.env.PAYLOAD_API_URL?.replace(/\/$/, "") ||
-    "http://localhost:3000/api";
+import { payloadFetch } from "@/lib/payload";
+
+import type {
+  Post,
+  PayloadResponse,
+} from "@/lib/cms";
+
+// ============================================================
+// ALLOWED CATEGORIES
+// ============================================================
 
 const ALLOWED_CATEGORIES = new Set([
-    "blogs",
-    "reviews",
-    "news",
-    "alternatives",
-    "comparisons",
+  "blogs",
+  "reviews",
+  "news",
+  "alternatives",
+  "comparisons",
 ]);
 
-const CATEGORY_LABELS: Record<string, string> = {
-    blogs: "Blogs",
-    reviews: "Reviews",
-    news: "News",
-    alternatives: "Alternatives",
-    comparisons: "Comparisons",
+const CATEGORY_LABELS: Record<
+  string,
+  string
+> = {
+  blogs: "Blogs",
+  reviews: "Reviews",
+  news: "News",
+  alternatives: "Alternatives",
+  comparisons: "Comparisons",
 };
 
+// ============================================================
+// PARAMS
+// ============================================================
+
 type Params = Promise<{
-    category: string;
-    slug: string;
+  category: string;
+  slug: string;
 }>;
 
-async function fetchJSON(url: string, revalidate = 60) {
-    const res = await fetch(url, { next: { revalidate } });
+// ============================================================
+// POST META TYPES
+// ============================================================
 
-    if (!res.ok) return null;
+type RobotsMeta = {
+  index?: boolean;
+  follow?: boolean;
+  noArchive?: boolean;
+  noImageIndex?: boolean;
+  noSnippet?: boolean;
+};
 
-    return res.json();
+type OpenGraphMeta = {
+  title?: string;
+  description?: string;
+  image?: unknown;
+};
+
+type TwitterMeta = {
+  title?: string;
+  description?: string;
+};
+
+type PostMeta = {
+  title?: string;
+  description?: string;
+  canonicalURL?: string;
+
+  robots?: RobotsMeta;
+
+  image?: unknown;
+
+  openGraph?: OpenGraphMeta;
+
+  twitter?: TwitterMeta;
+};
+
+type PostWithMeta = Post & {
+  meta?: PostMeta;
+};
+
+// ============================================================
+// MEDIA HELPERS
+// ============================================================
+
+function mediaUrl(
+  value: unknown,
+): string | null {
+  if (
+    typeof value === "object" &&
+    value !== null &&
+    "url" in value
+  ) {
+    const url = (
+      value as {
+        url?: unknown;
+      }
+    ).url;
+
+    return typeof url === "string"
+      ? url
+      : null;
+  }
+
+  return null;
 }
 
-function mediaUrl(value: any) {
-    if (!value) return null;
+function imageUrl(
+  value: unknown,
+): string | null {
+  if (
+    typeof value === "object" &&
+    value !== null &&
+    "url" in value
+  ) {
+    const url = (
+      value as {
+        url?: unknown;
+      }
+    ).url;
 
-    if (typeof value === "object" && value.url) {
-        return value.url;
-    }
+    return typeof url === "string"
+      ? url
+      : null;
+  }
 
-    return null;
+  if (typeof value === "number") {
+    const cmsUrl =
+      process.env.PAYLOAD_API_URL ||
+      "http://localhost:3000/api";
+
+    return `${cmsUrl.replace(
+      /\/api$/,
+      "",
+    )}/api/media/${value}`;
+  }
+
+  return null;
 }
 
-function imageUrl(value: any) {
-    if (!value) return null;
+// ============================================================
+// HYDRATE NESTED LEXICAL MEDIA
+// ============================================================
 
-    if (typeof value === "object" && value.url) {
-        return value.url;
+async function hydrateContentMedia(
+  content: unknown,
+): Promise<unknown> {
+  if (
+    typeof content !== "object" ||
+    content === null
+  ) {
+    return content;
+  }
+
+  const root = (
+    content as {
+      root?: {
+        children?: unknown[];
+      };
+    }
+  ).root;
+
+  if (
+    !root ||
+    !Array.isArray(root.children)
+  ) {
+    return content;
+  }
+
+  const ids = new Set<number>();
+
+  function collect(
+    node: unknown,
+  ): void {
+    if (
+      typeof node !== "object" ||
+      node === null
+    ) {
+      return;
     }
 
-    if (typeof value === "number") {
-        return `${PAYLOAD_URL}/media/${value}`;
+    const current = node as {
+      type?: unknown;
+      value?: unknown;
+      fields?: Record<
+        string,
+        unknown
+      >;
+      children?: unknown[];
+    };
+
+    // --------------------------------------------------------
+    // Upload node
+    // --------------------------------------------------------
+
+    if (
+      current.type === "upload" &&
+      typeof current.value === "number"
+    ) {
+      ids.add(current.value);
     }
 
-    return null;
-}
+    // --------------------------------------------------------
+    // Custom media blocks
+    // --------------------------------------------------------
 
-async function hydrateContentMedia(content: any) {
-    const root = content?.root;
+    if (current.type === "block") {
+      const fields =
+        current.fields || {};
 
-    if (!root?.children) return content;
+      if (
+        fields.blockType ===
+          "videoFile" &&
+        typeof fields.video === "number"
+      ) {
+        ids.add(fields.video);
+      }
 
-    const ids = new Set<number>();
-
-    function collect(node: any) {
-        if (!node || typeof node !== "object") return;
-
-        if (node.type === "upload" && typeof node.value === "number") {
-            ids.add(node.value);
-        }
-
-        if (node.type === "block") {
-            const fields = node.fields || {};
-
-            if (
-                fields.blockType === "videoFile" &&
-                typeof fields.video === "number"
-            ) {
-                ids.add(fields.video);
-            }
-
-            if (
-                fields.blockType === "audio" &&
-                typeof fields.audio === "number"
-            ) {
-                ids.add(fields.audio);
-            }
-        }
-
-        if (Array.isArray(node.children)) {
-            node.children.forEach(collect);
-        }
+      if (
+        fields.blockType ===
+          "audio" &&
+        typeof fields.audio === "number"
+      ) {
+        ids.add(fields.audio);
+      }
     }
 
-    root.children.forEach(collect);
+    // --------------------------------------------------------
+    // Nested children
+    // --------------------------------------------------------
 
-    if (!ids.size) return content;
+    if (
+      Array.isArray(
+        current.children,
+      )
+    ) {
+      current.children.forEach(
+        collect,
+      );
+    }
+  }
 
-    const entries = await Promise.all(
-        Array.from(ids).map(async (id) => {
-            const data = await fetchJSON(
-                `${PAYLOAD_URL}/media/${id}?depth=1`,
-                300
-            );
+  root.children.forEach(collect);
 
-            return [id, data] as const;
-        })
+  if (!ids.size) {
+    return content;
+  }
+
+  // ==========================================================
+  // FETCH MEDIA IN PARALLEL
+  // ==========================================================
+
+  const entries = await Promise.all(
+    Array.from(ids).map(
+      async (id) => {
+        const data =
+          await payloadFetch<unknown>(
+            `/media/${id}?depth=1`,
+            {
+              next: {
+                revalidate: 300,
+                tags: [`media:${id}`],
+              },
+            },
+          );
+
+        return [id, data] as const;
+      },
+    ),
+  );
+
+  const mediaMap =
+    new Map<number, unknown>(
+      entries.filter(
+        (
+          entry,
+        ): entry is [
+          number,
+          unknown,
+        ] =>
+          entry[1] !== null,
+      ),
     );
 
-    const mediaMap = new Map<number, any>(
-        entries.filter(([, value]) => value)
-    );
+  // ==========================================================
+  // REPLACE MEDIA IDS
+  // ==========================================================
 
-    function replace(node: any): any {
-        if (!node || typeof node !== "object") return node;
-
-        const next = { ...node };
-
-        if (next.type === "upload" && typeof next.value === "number") {
-            next.value = mediaMap.get(next.value) || next.value;
-        }
-
-        if (next.type === "block") {
-            const fields = { ...(next.fields || {}) };
-
-            if (
-                fields.blockType === "videoFile" &&
-                typeof fields.video === "number"
-            ) {
-                fields.video = mediaMap.get(fields.video) || fields.video;
-            }
-
-            if (
-                fields.blockType === "audio" &&
-                typeof fields.audio === "number"
-            ) {
-                fields.audio = mediaMap.get(fields.audio) || fields.audio;
-            }
-
-            next.fields = fields;
-        }
-
-        if (Array.isArray(next.children)) {
-            next.children = next.children.map(replace);
-        }
-
-        return next;
+  function replace(
+    node: unknown,
+  ): unknown {
+    if (
+      typeof node !== "object" ||
+      node === null
+    ) {
+      return node;
     }
 
-    return {
-        ...content,
-        root: {
-            ...root,
-            children: root.children.map(replace),
+    const current =
+      node as Record<
+        string,
+        unknown
+      >;
+
+    const next: Record<
+      string,
+      unknown
+    > = {
+      ...current,
+    };
+
+    // --------------------------------------------------------
+    // Upload
+    // --------------------------------------------------------
+
+    if (
+      next.type === "upload" &&
+      typeof next.value === "number"
+    ) {
+      next.value =
+        mediaMap.get(
+          next.value,
+        ) ?? next.value;
+    }
+
+    // --------------------------------------------------------
+    // Custom block
+    // --------------------------------------------------------
+
+    if (next.type === "block") {
+      const fields =
+        typeof next.fields ===
+          "object" &&
+        next.fields !== null
+          ? {
+              ...(
+                next.fields as Record<
+                  string,
+                  unknown
+                >
+              ),
+            }
+          : {};
+
+      if (
+        fields.blockType ===
+          "videoFile" &&
+        typeof fields.video ===
+          "number"
+      ) {
+        fields.video =
+          mediaMap.get(
+            fields.video,
+          ) ?? fields.video;
+      }
+
+      if (
+        fields.blockType ===
+          "audio" &&
+        typeof fields.audio ===
+          "number"
+      ) {
+        fields.audio =
+          mediaMap.get(
+            fields.audio,
+          ) ?? fields.audio;
+      }
+
+      next.fields = fields;
+    }
+
+    // --------------------------------------------------------
+    // Children
+    // --------------------------------------------------------
+
+    if (
+      Array.isArray(
+        next.children,
+      )
+    ) {
+      next.children =
+        next.children.map(
+          replace,
+        );
+    }
+
+    return next;
+  }
+
+  return {
+    ...(content as Record<
+      string,
+      unknown
+    >),
+
+    root: {
+      ...root,
+
+      children:
+        root.children.map(
+          replace,
+        ),
+    },
+  };
+}
+
+// ============================================================
+// GET POST
+// ============================================================
+
+async function getPost(
+  category: string,
+  slug: string,
+): Promise<PostWithMeta | null> {
+  // ----------------------------------------------------------
+  // Validate category
+  // ----------------------------------------------------------
+
+  if (
+    !ALLOWED_CATEGORIES.has(
+      category,
+    )
+  ) {
+    return null;
+  }
+
+  const params =
+    new URLSearchParams();
+
+  params.set(
+    "where[slug][equals]",
+    slug,
+  );
+
+  params.set(
+    "where[_status][equals]",
+    "published",
+  );
+
+  params.set(
+    "limit",
+    "1",
+  );
+
+  // Keep depth=5 for migrated
+  // Lexical/media relationships.
+  params.set(
+    "depth",
+    "5",
+  );
+
+  const data =
+    await payloadFetch<
+      PayloadResponse<PostWithMeta>
+    >(
+      `/posts?${params.toString()}`,
+      {
+        next: {
+          revalidate: 60,
+          tags: [
+            `post:${category}:${slug}`,
+            `post:${slug}`,
+          ],
         },
-    };
+      },
+    );
+
+  const post =
+    data?.docs?.[0] ?? null;
+
+  if (!post) {
+    return null;
+  }
+
+  // ----------------------------------------------------------
+  // Verify category
+  // ----------------------------------------------------------
+
+  const postCategory =
+    typeof post.category ===
+    "object"
+      ? post.category?.slug
+      : null;
+
+  if (
+    postCategory !== category
+  ) {
+    return null;
+  }
+
+  // ----------------------------------------------------------
+  // Hydrate media
+  // ----------------------------------------------------------
+
+  const hydratedContent =
+    await hydrateContentMedia(
+      post.content,
+    );
+
+  return {
+    ...post,
+
+    content:
+      hydratedContent as Post["content"],
+  };
 }
 
-async function getPost(category: string, slug: string) {
-    if (!ALLOWED_CATEGORIES.has(category)) {
-        return null;
-    }
+// ============================================================
+// GET RELATED POSTS
+// ============================================================
 
-    const url =
-        `${PAYLOAD_URL}/posts` +
-        `?where[slug][equals]=${encodeURIComponent(slug)}` +
-        `&where[_status][equals]=published` +
-        `&limit=1&depth=5`;
+async function getRelatedPosts(
+  categoryId: string | number,
+  currentPostId: string,
+  category: string,
+): Promise<Post[]> {
+  const params =
+    new URLSearchParams();
 
-    const data = await fetchJSON(url, 60);
-    const post = data?.docs?.[0] ?? null;
+  params.set(
+    "where[_status][equals]",
+    "published",
+  );
 
-    if (!post) return null;
+  params.set(
+    "where[category][equals]",
+    String(categoryId),
+  );
 
-    const postCategory =
-        typeof post.category === "object"
-            ? post.category?.slug
-            : null;
+  params.set(
+    "sort",
+    "-publishedAt",
+  );
 
-    if (postCategory !== category) {
-        return null;
-    }
+  params.set(
+    "limit",
+    "5",
+  );
 
-    return {
-        ...post,
-        content: await hydrateContentMedia(post.content),
-    };
+  params.set(
+    "depth",
+    "2",
+  );
+
+  const data =
+    await payloadFetch<
+      PayloadResponse<Post>
+    >(
+      `/posts?${params.toString()}`,
+      {
+        next: {
+          revalidate: 120,
+          tags: [
+            `category:${category}`,
+          ],
+        },
+      },
+    );
+
+  return (data?.docs ?? [])
+    .filter(
+      (item) =>
+        item.id !==
+        currentPostId,
+    )
+    .filter(
+      (item) =>
+        !/^Untitled WordPress Post/i.test(
+          item.title || "",
+        ),
+    )
+    .slice(0, 3);
 }
+
+// ============================================================
+// METADATA
+// ============================================================
 
 export async function generateMetadata({
-    params,
+  params,
 }: {
-    params: Params;
+  params: Params;
 }): Promise<Metadata> {
-    const { category, slug } = await params;
+  const {
+    category,
+    slug,
+  } = await params;
 
-    const post = await getPost(category, slug);
+  const post =
+    await getPost(
+      category,
+      slug,
+    );
 
-    if (!post) {
-        return {
-            title: "Article Not Found | AlloyPress",
-            robots: {
-                index: false,
-                follow: false,
-            },
-        };
-    }
-
-    const meta = post.meta ?? {};
-
-    const title = meta.title || post.title;
-    const description = meta.description || post.excerpt || "";
-
-    const ogImage =
-        mediaUrl(meta.openGraph?.image) ||
-        mediaUrl(meta.image) ||
-        mediaUrl(post.featuredImage);
-
-    const canonical =
-        meta.canonicalURL || `/${category}/${post.slug}`;
-
+  if (!post) {
     return {
+      title:
+        "Article Not Found | AlloyPress",
+
+      robots: {
+        index: false,
+        follow: false,
+      },
+    };
+  }
+
+  const meta =
+    post.meta ?? {};
+
+  const title =
+    meta.title ||
+    post.title ||
+    "AlloyPress";
+
+  const description =
+    meta.description ||
+    post.excerpt ||
+    "";
+
+  const ogImage =
+    mediaUrl(
+      meta.openGraph?.image,
+    ) ||
+    mediaUrl(meta.image) ||
+    mediaUrl(
+      post.featuredImage,
+    );
+
+  const canonical =
+    meta.canonicalURL ||
+    `/${category}/${post.slug}`;
+
+  return {
+    title,
+
+    description,
+
+    alternates: {
+      canonical,
+    },
+
+    robots: {
+      index:
+        meta.robots?.index !==
+        false,
+
+      follow:
+        meta.robots?.follow !==
+        false,
+
+      noarchive:
+        meta.robots?.noArchive ===
+        true,
+
+      noimageindex:
+        meta.robots
+          ?.noImageIndex ===
+        true,
+
+      nosnippet:
+        meta.robots?.noSnippet ===
+        true,
+    },
+
+    openGraph: {
+      type: "article",
+
+      title:
+        meta.openGraph?.title ||
         title,
+
+      description:
+        meta.openGraph
+          ?.description ||
         description,
 
-        alternates: {
-            canonical,
-        },
+      publishedTime:
+        post.publishedAt ||
+        undefined,
 
-        robots: {
-            index: meta.robots?.index !== false,
-            follow: meta.robots?.follow !== false,
-            noarchive: meta.robots?.noArchive === true,
-            noimageindex: meta.robots?.noImageIndex === true,
-            nosnippet: meta.robots?.noSnippet === true,
-        },
+      modifiedTime:
+        post.updatedAt ||
+        undefined,
 
-        openGraph: {
-            type: "article",
-            title: meta.openGraph?.title || title,
-            description: meta.openGraph?.description || description,
-            publishedTime: post.publishedAt || undefined,
-            modifiedTime: post.updatedAt || undefined,
-            url: canonical,
-            images: ogImage
-                ? [
-                    {
-                        url: ogImage,
-                        alt: post.title,
-                    },
-                ]
-                : undefined,
-        },
+      url: canonical,
 
-        twitter: {
-            card: "summary_large_image",
-            title: meta.twitter?.title || title,
-            description: meta.twitter?.description || description,
-            images: ogImage ? [ogImage] : undefined,
-        },
-    };
+      images: ogImage
+        ? [
+            {
+              url: ogImage,
+
+              alt:
+                post.title ||
+                "AlloyPress article",
+            },
+          ]
+        : undefined,
+    },
+
+    twitter: {
+      card:
+        "summary_large_image",
+
+      title:
+        meta.twitter?.title ||
+        title,
+
+      description:
+        meta.twitter?.description ||
+        description,
+
+      images: ogImage
+        ? [ogImage]
+        : undefined,
+    },
+  };
 }
 
+// ============================================================
+// PAGE
+// ============================================================
+
 export default async function CategoryPostPage({
-    params,
+  params,
 }: {
-    params: Params;
+  params: Params;
 }) {
-    const { category, slug } = await params;
+  const {
+    category,
+    slug,
+  } = await params;
 
-    const post = await getPost(category, slug);
-
-    if (!post) {
-        notFound();
-    }
-
-    const categoryId =
-        typeof post.category === "object"
-            ? post.category?.id
-            : post.category;
-
-    const relatedPromise = categoryId
-        ? fetchJSON(
-            `${PAYLOAD_URL}/posts?where[_status][equals]=published&where[category][equals]=${categoryId}&sort=-publishedAt&limit=5&depth=2`,
-            120
-        )
-        : Promise.resolve(null);
-
-    const [relatedData] = await Promise.all([relatedPromise]);
-
-    const related = (relatedData?.docs || [])
-        .filter((item: any) => item.id !== post.id)
-        .filter(
-            (item: any) =>
-                !/^Untitled WordPress Post/i.test(item.title || "")
-        )
-        .slice(0, 3);
-
-    const articleImage = imageUrl(post.featuredImage);
-    const categoryLabel = CATEGORY_LABELS[category] || category;
-
-    const jsonLd = {
-        "@context": "https://schema.org",
-        "@type": "Article",
-        headline: post.title,
-        description: post.meta?.description || post.excerpt || "",
-        image: articleImage ? [articleImage] : undefined,
-        datePublished: post.publishedAt || undefined,
-        dateModified: post.updatedAt || post.publishedAt || undefined,
-
-        author: {
-            "@type": "Organization",
-            name: "AlloyPress",
-        },
-
-        publisher: {
-            "@type": "Organization",
-            name: "AlloyPress",
-        },
-
-        mainEntityOfPage: {
-            "@type": "WebPage",
-            "@id": `/${category}/${post.slug}`,
-        },
-    };
-
-    return (
-        <>
-            <script
-                type="application/ld+json"
-                dangerouslySetInnerHTML={{
-                    __html: JSON.stringify(jsonLd),
-                }}
-            />
-
-            <BlogPostView
-                post={post}
-                related={related}
-                articleImage={articleImage}
-                category={category}
-                categoryLabel={categoryLabel}
-            />
-        </>
+  const post =
+    await getPost(
+      category,
+      slug,
     );
+
+  if (!post) {
+    notFound();
+  }
+
+  const categoryId =
+    typeof post.category ===
+    "object"
+      ? post.category?.id
+      : post.category;
+
+  const related = categoryId
+    ? await getRelatedPosts(
+        categoryId,
+        post.id,
+        category,
+      )
+    : [];
+
+  const articleImage =
+    imageUrl(
+      post.featuredImage,
+    );
+
+  const categoryLabel =
+    CATEGORY_LABELS[
+      category
+    ] || category;
+
+  // ==========================================================
+  // JSON-LD
+  // ==========================================================
+
+  const jsonLd = {
+    "@context":
+      "https://schema.org",
+
+    "@type":
+      "Article",
+
+    headline:
+      post.title,
+
+    description:
+      post.meta?.description ||
+      post.excerpt ||
+      "",
+
+    image:
+      articleImage
+        ? [articleImage]
+        : undefined,
+
+    datePublished:
+      post.publishedAt ||
+      undefined,
+
+    dateModified:
+      post.updatedAt ||
+      post.publishedAt ||
+      undefined,
+
+    author: {
+      "@type":
+        "Organization",
+
+      name:
+        "AlloyPress",
+    },
+
+    publisher: {
+      "@type":
+        "Organization",
+
+      name:
+        "AlloyPress",
+    },
+
+    mainEntityOfPage: {
+      "@type":
+        "WebPage",
+
+      "@id":
+        `/${category}/${post.slug}`,
+    },
+  };
+
+  // ==========================================================
+  // RENDER
+  // ==========================================================
+
+  return (
+    <>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html:
+            JSON.stringify(
+              jsonLd,
+            ),
+        }}
+      />
+
+      <BlogPostView
+        post={post}
+        related={related}
+        articleImage={
+          articleImage
+        }
+        category={category}
+        categoryLabel={
+          categoryLabel
+        }
+      />
+    </>
+  );
 }

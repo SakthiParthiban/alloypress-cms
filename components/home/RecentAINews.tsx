@@ -1,5 +1,6 @@
 import Image from "next/image";
 import Link from "next/link";
+import { payloadFetch } from "@/lib/payload";
 
 const PAYLOAD_URL =
   process.env.PAYLOAD_API_URL || "http://localhost:3001/api";
@@ -12,12 +13,12 @@ type NewsPost = {
   publishedAt?: string | null;
   author?: string | { name?: string } | null;
   featuredImage?:
-    | {
-        url?: string | null;
-        alt?: string | null;
-      }
-    | number
-    | null;
+  | {
+    url?: string | null;
+    alt?: string | null;
+  }
+  | number
+  | null;
 };
 
 async function getRecentAINews(): Promise<NewsPost[]> {
@@ -26,20 +27,19 @@ async function getRecentAINews(): Promise<NewsPost[]> {
        GET NEWS CATEGORY
     ------------------------------------------------------- */
 
-    const categoryResponse = await fetch(
-      `${PAYLOAD_URL}/categories?where[slug][equals]=news&limit=1`,
+    const categoryData = await payloadFetch<{
+      docs?: Array<{
+        id: number | string;
+      }>;
+    }>(
+      "/categories?where[slug][equals]=news&limit=1",
       {
         next: {
           revalidate: 60,
+          tags: ["category:news"],
         },
       }
     );
-
-    if (!categoryResponse.ok) {
-      return [];
-    }
-
-    const categoryData = await categoryResponse.json();
     const category = categoryData?.docs?.[0];
 
     if (!category?.id) {
@@ -50,22 +50,19 @@ async function getRecentAINews(): Promise<NewsPost[]> {
        GET LATEST PUBLISHED NEWS POSTS
     ------------------------------------------------------- */
 
-    const postsResponse = await fetch(
-      `${PAYLOAD_URL}/posts?where[workflowStatus][equals]=published&where[category][equals]=${encodeURIComponent(
+    const postsData = await payloadFetch<{
+      docs?: NewsPost[];
+    }>(
+      `/posts?where[workflowStatus][equals]=published&where[category][equals]=${encodeURIComponent(
         category.id
       )}&sort=-publishedAt&limit=8&depth=1`,
       {
         next: {
           revalidate: 60,
+          tags: ["home:latest-news"],
         },
       }
     );
-
-    if (!postsResponse.ok) {
-      return [];
-    }
-
-    const postsData = await postsResponse.json();
 
     const posts = Array.isArray(postsData?.docs)
       ? postsData.docs
@@ -200,9 +197,9 @@ export default async function RecentAINews() {
                     alt={
                       typeof featured.featuredImage ===
                         "object" &&
-                      featured.featuredImage !== null
+                        featured.featuredImage !== null
                         ? featured.featuredImage.alt ||
-                          featured.title
+                        featured.title
                         : featured.title
                     }
                     fill
@@ -288,9 +285,9 @@ export default async function RecentAINews() {
                           alt={
                             typeof post.featuredImage ===
                               "object" &&
-                            post.featuredImage !== null
+                              post.featuredImage !== null
                               ? post.featuredImage.alt ||
-                                post.title
+                              post.title
                               : post.title
                           }
                           fill

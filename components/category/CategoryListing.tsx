@@ -1,12 +1,31 @@
 import "./CategoryListing.css";
+
 import ArticleGrid from "./ArticleGrid";
 import Link from "next/link";
+
+import {
+  payloadFetch,
+  PAYLOAD_API_URL,
+} from "@/lib/payload";
+
+import type {
+  Category,
+  PayloadResponse,
+} from "@/lib/cms";
+
+// ============================================================
+// PROPS
+// ============================================================
 
 type CategoryListingProps = {
   slug: string;
   title: string;
   description: string;
 };
+
+// ============================================================
+// LOCAL CMS TYPES
+// ============================================================
 
 type Media = {
   id?: number;
@@ -16,34 +35,29 @@ type Media = {
   height?: number;
 };
 
-type Category = {
-  id: number;
+type ListingCategory = {
+  id: number | string;
   name: string;
   slug: string;
 };
 
 type Post = {
-  id: number;
+  id: number | string;
   title?: string | null;
   slug?: string | null;
   excerpt?: string | null;
   publishedAt?: string | null;
   featuredImage?: number | Media | null;
-  category?: number | Category | null;
+  category?: number | ListingCategory | null;
   author?: {
     name?: string | null;
   } | number | null;
   workflowStatus?: string | null;
 };
 
-type PayloadResponse<T> = {
-  docs?: T[];
-  totalDocs?: number;
-};
-
-const PAYLOAD_URL =
-  process.env.PAYLOAD_API_URL?.replace(/\/$/, "") ||
-  "http://localhost:3000/api";
+// ============================================================
+// NAVIGATION CATEGORIES
+// ============================================================
 
 const NAV_CATEGORIES = [
   {
@@ -68,47 +82,82 @@ const NAV_CATEGORIES = [
   },
 ];
 
+// ============================================================
+// FALLBACK IMAGES
+// ============================================================
+
 const FALLBACK_IMAGES = [
   "https://images.unsplash.com/photo-1677442136019-21780ecad995?auto=format&fit=crop&w=1400&q=80",
   "https://images.unsplash.com/photo-1620712943543-bcc4688e7485?auto=format&fit=crop&w=1400&q=80",
   "https://images.unsplash.com/photo-1635070041078-e363dbe005cb?auto=format&fit=crop&w=1400&q=80",
 ];
 
+// ============================================================
+// IMAGE URL
+// ============================================================
+
 function getImageUrl(
   featuredImage: Post["featuredImage"],
-  index = 0
-) {
+  index = 0,
+): string {
+  // Populated media object
   if (
     typeof featuredImage === "object" &&
-    featuredImage?.url
+    featuredImage !== null &&
+    typeof featuredImage.url === "string" &&
+    featuredImage.url
   ) {
     return featuredImage.url;
   }
 
+  // Numeric media ID
   if (typeof featuredImage === "number") {
-    return `${PAYLOAD_URL.replace(
-      /\/api$/,
-      ""
-    )}/api/media/${featuredImage}`;
+    const cmsUrl =
+      PAYLOAD_API_URL ||
+      "http://localhost:3000/api";
+
+    return `${cmsUrl.replace(/\/api$/, "")}/api/media/${featuredImage}`;
   }
 
-  return FALLBACK_IMAGES[index % FALLBACK_IMAGES.length];
+  // Fallback image
+  return FALLBACK_IMAGES[
+    index % FALLBACK_IMAGES.length
+  ];
 }
 
-function cleanTitle(title?: string | null) {
-  if (!title) return "Untitled article";
+// ============================================================
+// TITLE
+// ============================================================
+
+function cleanTitle(
+  title?: string | null,
+): string {
+  if (!title) {
+    return "Untitled article";
+  }
 
   return title
-    .replace(/^Untitled WordPress Post\s*[-:|]?\s*/i, "")
+    .replace(
+      /^Untitled WordPress Post\s*[-:|]?\s*/i,
+      "",
+    )
     .trim();
 }
 
-function isUsefulPost(post: Post) {
+// ============================================================
+// POST VALIDATION
+// ============================================================
+
+function isUsefulPost(post: Post): boolean {
   const title = cleanTitle(post.title);
 
-  if (!title) return false;
+  if (!title) {
+    return false;
+  }
 
-  if (/^Untitled WordPress Post/i.test(title)) {
+  if (
+    /^Untitled WordPress Post/i.test(title)
+  ) {
     return false;
   }
 
@@ -116,23 +165,45 @@ function isUsefulPost(post: Post) {
     return false;
   }
 
+  if (!post.slug) {
+    return false;
+  }
+
+  if (!post.publishedAt) {
+    return false;
+  }
+
   return true;
 }
 
-function formatDate(date?: string | null) {
-  if (!date) return "Recently";
+// ============================================================
+// DATE
+// ============================================================
 
-  try {
-    return new Intl.DateTimeFormat("en-US", {
-      month: "short",
-      year: "numeric",
-    }).format(new Date(date));
-  } catch {
+function formatDate(
+  date?: string | null,
+): string {
+  if (!date) {
     return "Recently";
   }
+
+  const parsed = new Date(date);
+
+  if (Number.isNaN(parsed.getTime())) {
+    return "Recently";
+  }
+
+  return new Intl.DateTimeFormat("en-US", {
+    month: "short",
+    year: "numeric",
+  }).format(parsed);
 }
 
-function getExcerpt(post: Post) {
+// ============================================================
+// EXCERPT
+// ============================================================
+
+function getExcerpt(post: Post): string {
   if (post.excerpt?.trim()) {
     return post.excerpt.trim();
   }
@@ -140,10 +211,15 @@ function getExcerpt(post: Post) {
   return "Practical insights, testing, and analysis from AlloyPress.";
 }
 
-function getAuthor(post: Post) {
+// ============================================================
+// AUTHOR
+// ============================================================
+
+function getAuthor(post: Post): string {
   if (
     typeof post.author === "object" &&
-    post.author?.name
+    post.author !== null &&
+    post.author.name
   ) {
     return post.author.name;
   }
@@ -151,30 +227,38 @@ function getAuthor(post: Post) {
   return "AlloyPress Team";
 }
 
-async function getCategoryPosts(slug: string) {
-  try {
-    const categoryResponse = await fetch(
-      `${PAYLOAD_URL}/categories?where[slug][equals]=${encodeURIComponent(
-        slug
-      )}&limit=1`,
-      {
-        next: {
-          revalidate: 60,
-        },
-      }
-    );
+// ============================================================
+// GET CATEGORY + POSTS
+// ============================================================
 
-    if (!categoryResponse.ok) {
-      return {
-        category: null,
-        posts: [],
-      };
-    }
+async function getCategoryPosts(
+  slug: string,
+): Promise<{
+  category: ListingCategory | null;
+  posts: Post[];
+}> {
+  try {
+    // ========================================================
+    // 1. GET CATEGORY
+    // ========================================================
 
     const categoryData =
-      (await categoryResponse.json()) as PayloadResponse<Category>;
+      await payloadFetch<
+        PayloadResponse<ListingCategory>
+      >(
+        `/categories?where[slug][equals]=${encodeURIComponent(
+          slug,
+        )}&limit=1`,
+        {
+          next: {
+            revalidate: 60,
+            tags: [`category:${slug}`],
+          },
+        },
+      );
 
-    const category = categoryData.docs?.[0];
+    const category =
+      categoryData?.docs?.[0];
 
     if (!category) {
       return {
@@ -183,26 +267,30 @@ async function getCategoryPosts(slug: string) {
       };
     }
 
-    const postsResponse = await fetch(
-      `${PAYLOAD_URL}/posts?where[workflowStatus][equals]=published&where[category][equals]=${category.id}&sort=-publishedAt&limit=13&depth=1`,
-      {
-        next: {
-          revalidate: 60,
-        },
-      }
-    );
-
-    if (!postsResponse.ok) {
-      return {
-        category,
-        posts: [],
-      };
-    }
+    // ========================================================
+    // 2. GET PUBLISHED POSTS
+    // ========================================================
 
     const postsData =
-      (await postsResponse.json()) as PayloadResponse<Post>;
+      await payloadFetch<
+        PayloadResponse<Post>
+      >(
+        `/posts?where[workflowStatus][equals]=published&where[category][equals]=${encodeURIComponent(
+          String(category.id),
+        )}&sort=-publishedAt&limit=13&depth=1`,
+        {
+          next: {
+            revalidate: 60,
+            tags: [`category:${slug}`],
+          },
+        },
+      );
 
-    const posts = (postsData.docs || [])
+    // ========================================================
+    // 3. FILTER POSTS
+    // ========================================================
+
+    const posts = (postsData?.docs ?? [])
       .filter(isUsefulPost)
       .slice(0, 13);
 
@@ -210,7 +298,12 @@ async function getCategoryPosts(slug: string) {
       category,
       posts,
     };
-  } catch {
+  } catch (error) {
+    console.error(
+      `CategoryListing fetch error for "${slug}":`,
+      error,
+    );
+
     return {
       category: null,
       posts: [],
@@ -218,74 +311,120 @@ async function getCategoryPosts(slug: string) {
   }
 }
 
+// ============================================================
+// CATEGORY LISTING
+// ============================================================
+
 export default async function CategoryListing({
   slug,
   title,
   description,
 }: CategoryListingProps) {
-  const { posts } = await getCategoryPosts(slug);
+  const { posts } =
+    await getCategoryPosts(slug);
 
-  const featuredPost = posts[0] || null;
-  const remainingPosts = posts.slice(1);
+  const featuredPost =
+    posts[0] || null;
+
+  const remainingPosts =
+    posts.slice(1);
+
+  // ==========================================================
+  // SECTION NUMBER
+  // ==========================================================
+
+  const sectionIndex =
+    NAV_CATEGORIES.findIndex(
+      (item) => item.slug === slug,
+    ) + 1;
+
+  const sectionNumber =
+    String(
+      sectionIndex > 0 ? sectionIndex : 1,
+    ).padStart(2, "0");
+
+  // ==========================================================
+  // RENDER
+  // ==========================================================
 
   return (
     <main className="category-page">
+      {/* ====================================================
+          HERO
+      ==================================================== */}
+
       <section className="category-hero">
         <div className="category-hero-grid" />
 
         <div className="category-hero-inner">
           <div className="category-hero-label">
             <span />
-            ALLOYPRESS / {slug.toUpperCase()}
+            ALLOYPRESS /{" "}
+            {slug.toUpperCase()}
           </div>
 
           <div className="category-hero-main">
             <div>
               <h1>{title}</h1>
 
-              <p>{description}</p>
+              <p>
+                {description}
+              </p>
             </div>
 
             <div className="category-hero-index">
               <span>SECTION</span>
 
               <strong>
-                {String(
-                  NAV_CATEGORIES.findIndex(
-                    (item) => item.slug === slug
-                  ) + 1
-                ).padStart(2, "0")}
+                {sectionNumber}
               </strong>
             </div>
           </div>
+
+          {/* ==================================================
+              CATEGORY NAVIGATION
+          ================================================== */}
 
           <nav
             className="category-filter"
             aria-label="Article categories"
           >
-            {NAV_CATEGORIES.map((item) => (
-              <Link
-                key={item.slug}
-                href={`/${item.slug}`}
-                className={
-                  item.slug === slug
-                    ? "category-filter-link active"
-                    : "category-filter-link"
-                }
-              >
-                {item.label}
+            {NAV_CATEGORIES.map(
+              (item) => (
+                <Link
+                  key={item.slug}
+                  href={`/${item.slug}`}
+                  className={
+                    item.slug === slug
+                      ? "category-filter-link active"
+                      : "category-filter-link"
+                  }
+                >
+                  {item.label}
 
-                {item.slug === slug && (
-                  <span>•</span>
-                )}
-              </Link>
-            ))}
+                  {item.slug === slug && (
+                    <span>
+                      •
+                    </span>
+                  )}
+                </Link>
+              ),
+            )}
           </nav>
         </div>
       </section>
 
+      {/* ======================================================
+          CONTENT
+      ====================================================== */}
+
       <section className="category-content">
         <div className="category-content-inner">
+
+          {/* ==================================================
+              FEATURED ARTICLE
+          ================================================== */}
+
           {featuredPost ? (
             <>
               <div className="category-section-heading">
@@ -294,7 +433,9 @@ export default async function CategoryListing({
                     01
                   </span>
 
-                  <h2>Featured</h2>
+                  <h2>
+                    Featured
+                  </h2>
                 </div>
 
                 <span className="section-rule" />
@@ -308,14 +449,18 @@ export default async function CategoryListing({
                   <img
                     src={getImageUrl(
                       featuredPost.featuredImage,
-                      0
+                      0,
                     )}
                     alt={
                       typeof featuredPost.featuredImage ===
                         "object" &&
-                      featuredPost.featuredImage?.alt
+                      featuredPost.featuredImage !==
+                        null &&
+                      featuredPost.featuredImage.alt
                         ? featuredPost.featuredImage.alt
-                        : cleanTitle(featuredPost.title)
+                        : cleanTitle(
+                            featuredPost.title,
+                          )
                     }
                     loading="eager"
                     decoding="async"
@@ -327,37 +472,47 @@ export default async function CategoryListing({
                     {title.toUpperCase()}
                   </span>
 
-                  <span className="featured-image-arrow">
+                  <span
+                    className="featured-image-arrow"
+                    aria-hidden="true"
+                  >
                     ↗
                   </span>
                 </div>
 
                 <div className="featured-info">
                   <div className="featured-meta">
-                    <span>FEATURED ARTICLE</span>
+                    <span>
+                      FEATURED ARTICLE
+                    </span>
 
                     <i />
 
                     <span>
                       {formatDate(
-                        featuredPost.publishedAt
+                        featuredPost.publishedAt,
                       )}
                     </span>
                   </div>
 
                   <h3>
                     {cleanTitle(
-                      featuredPost.title
+                      featuredPost.title,
                     )}
                   </h3>
 
                   <p>
-                    {getExcerpt(featuredPost)}
+                    {getExcerpt(
+                      featuredPost,
+                    )}
                   </p>
 
                   <div className="featured-footer">
                     <span>
-                      By {getAuthor(featuredPost)}
+                      By{" "}
+                      {getAuthor(
+                        featuredPost,
+                      )}
                     </span>
 
                     <strong>
@@ -368,22 +523,35 @@ export default async function CategoryListing({
               </Link>
             </>
           ) : (
+            /* =================================================
+               EMPTY STATE
+            ================================================= */
+
             <div className="empty-state">
-              <span>NO ARTICLES YET</span>
+              <span>
+                NO ARTICLES YET
+              </span>
 
               <h2>
-                New {title.toLowerCase()} content
-                is on the way.
+                New{" "}
+                {title.toLowerCase()}{" "}
+                content is on the way.
               </h2>
 
               <p>
-                Check back soon for new AlloyPress
-                articles and insights.
+                Check back soon for new
+                AlloyPress articles and
+                insights.
               </p>
             </div>
           )}
 
-          {remainingPosts.length > 0 && (
+          {/* ==================================================
+              LATEST ARTICLES
+          ================================================== */}
+
+          {remainingPosts.length >
+            0 && (
             <section className="latest-section">
               <div className="category-section-heading">
                 <div>
@@ -397,7 +565,8 @@ export default async function CategoryListing({
                 </div>
 
                 <span className="article-count">
-                  {remainingPosts.length} ARTICLES
+                  {remainingPosts.length}{" "}
+                  ARTICLES
                 </span>
               </div>
 
@@ -413,27 +582,36 @@ export default async function CategoryListing({
                         <img
                           src={getImageUrl(
                             post.featuredImage,
-                            index + 1
+                            index + 1,
                           )}
                           alt={
                             typeof post.featuredImage ===
                               "object" &&
-                            post.featuredImage?.alt
+                            post.featuredImage !==
+                              null &&
+                            post.featuredImage.alt
                               ? post.featuredImage.alt
-                              : cleanTitle(post.title)
+                              : cleanTitle(
+                                  post.title,
+                                )
                           }
                           loading="lazy"
                           decoding="async"
                         />
 
                         <span className="article-card-number">
-                          {String(index + 1).padStart(
+                          {String(
+                            index + 1,
+                          ).padStart(
                             2,
-                            "0"
+                            "0",
                           )}
                         </span>
 
-                        <span className="article-card-arrow">
+                        <span
+                          className="article-card-arrow"
+                          aria-hidden="true"
+                        >
                           ↗
                         </span>
                       </div>
@@ -448,22 +626,28 @@ export default async function CategoryListing({
 
                           <span>
                             {formatDate(
-                              post.publishedAt
+                              post.publishedAt,
                             )}
                           </span>
                         </div>
 
                         <h3>
-                          {cleanTitle(post.title)}
+                          {cleanTitle(
+                            post.title,
+                          )}
                         </h3>
 
                         <p>
-                          {getExcerpt(post)}
+                          {getExcerpt(
+                            post,
+                          )}
                         </p>
 
                         <div className="article-card-footer">
                           <span>
-                            {getAuthor(post)}
+                            {getAuthor(
+                              post,
+                            )}
                           </span>
 
                           <strong>
@@ -472,11 +656,15 @@ export default async function CategoryListing({
                         </div>
                       </div>
                     </Link>
-                  )
+                  ),
                 )}
               </ArticleGrid>
             </section>
           )}
+
+          {/* ==================================================
+              BOTTOM CTA
+          ================================================== */}
 
           <div className="category-bottom-cta">
             <div>
@@ -490,8 +678,9 @@ export default async function CategoryListing({
               </h2>
 
               <p>
-                Explore our reviews, comparisons,
-                alternatives, and practical AI guides.
+                Explore our reviews,
+                comparisons, alternatives,
+                and practical AI guides.
               </p>
             </div>
 
@@ -500,7 +689,10 @@ export default async function CategoryListing({
               className="category-home-link"
             >
               Explore AlloyPress
-              <span>→</span>
+
+              <span>
+                →
+              </span>
             </Link>
           </div>
         </div>

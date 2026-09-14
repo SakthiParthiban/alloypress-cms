@@ -2,13 +2,16 @@ const PAYLOAD_API_URL =
   process.env.PAYLOAD_API_URL ||
   "http://localhost:3000/api";
 
+type PayloadFetchOptions = RequestInit & {
+  next?: {
+    revalidate?: number | false;
+    tags?: string[];
+  };
+};
+
 export async function payloadFetch<T>(
   path: string,
-  options?: RequestInit & {
-    next?: {
-      revalidate?: number;
-    };
-  }
+  options?: PayloadFetchOptions
 ): Promise<T | null> {
   try {
     const response = await fetch(

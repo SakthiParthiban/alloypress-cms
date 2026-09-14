@@ -128,10 +128,11 @@ async function getPublishedPosts(): Promise<Post[]> {
   try {
     const data =
       await payloadFetch<PayloadResponse>(
-        "/posts?where[workflowStatus][equals]=published&sort=-publishedAt&limit=30&depth=1",
+        "/posts?where[workflowStatus][equals]=published&sort=-publishedAt&limit=30&depth=1&select[id]=true&select[title]=true&select[slug]=true&select[excerpt]=true&select[publishedAt]=true&select[cornerstone]=true&select[featuredImage]=true&select[category]=true",
         {
           next: {
             revalidate: 60,
+            tags: ["home:latest-posts"],
           },
         }
       );

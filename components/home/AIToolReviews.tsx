@@ -1,6 +1,7 @@
+import { payloadFetch } from "@/lib/payload";
 const PAYLOAD_URL =
   process.env.PAYLOAD_API_URL || "http://localhost:3001/api";
-
+  
 export type ReviewPost = {
   id: number | string;
   title: string;
@@ -19,42 +20,39 @@ export type ReviewPost = {
 
 async function getReviewPosts(): Promise<ReviewPost[]> {
   try {
-    const categoryResponse = await fetch(
-      `${PAYLOAD_URL}/categories?where[slug][equals]=reviews&limit=1`,
-      {
-        next: {
-          revalidate: 60,
-        },
-      }
-    );
+    const categoryData = await payloadFetch<{
+  docs?: Array<{
+    id: number | string;
+  }>;
+}>(
+  "/categories?where[slug][equals]=reviews&limit=1",
+  {
+    next: {
+      revalidate: 60,
+      tags: ["category:reviews"],
+    },
+  }
+);
 
-    if (!categoryResponse.ok) {
-      return [];
-    }
-
-    const categoryData = await categoryResponse.json();
-    const category = categoryData?.docs?.[0];
+const category = categoryData?.docs?.[0];
 
     if (!category?.id) {
       return [];
     }
 
-    const postsResponse = await fetch(
-      `${PAYLOAD_URL}/posts?where[workflowStatus][equals]=published&where[category][equals]=${encodeURIComponent(
-        category.id
-      )}&sort=-publishedAt&limit=10&depth=1`,
-      {
-        next: {
-          revalidate: 60,
-        },
-      }
-    );
-
-    if (!postsResponse.ok) {
-      return [];
-    }
-
-    const postsData = await postsResponse.json();
+    const postsData = await payloadFetch<{
+  docs?: ReviewPost[];
+}>(
+  `/posts?where[workflowStatus][equals]=published&where[category][equals]=${encodeURIComponent(
+    category.id
+  )}&sort=-publishedAt&limit=10&depth=1`,
+  {
+    next: {
+      revalidate: 60,
+      tags: ["home:reviews"],
+    },
+  }
+);
 
     const posts = Array.isArray(postsData?.docs)
       ? postsData.docs

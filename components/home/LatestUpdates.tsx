@@ -116,6 +116,7 @@ async function getLatestPosts(): Promise<Post[]> {
         {
           next: {
             revalidate: 60,
+            tags: ["category:reviews"],
           },
         }
       );
@@ -135,10 +136,11 @@ async function getLatestPosts(): Promise<Post[]> {
       await payloadFetch<PayloadResponse>(
         `/posts?where[workflowStatus][equals]=published&where[category][equals]=${encodeURIComponent(
           String(reviewsCategory.id)
-        )}&sort=-publishedAt&limit=30&depth=1`,
+        )}&sort=-publishedAt&limit=4&depth=1&select[id]=true&select[title]=true&select[slug]=true&select[excerpt]=true&select[publishedAt]=true&select[featuredImage]=true&select[category]=true`,
         {
           next: {
             revalidate: 60,
+            tags: ["home:reviews"],
           },
         }
       );
@@ -240,12 +242,12 @@ export default async function LatestUpdates() {
                       src={image}
                       alt={
                         typeof post.featuredImage ===
-                        "object"
+                          "object"
                           ? post.featuredImage?.alt ||
-                            post.title ||
-                            "Latest AI update"
+                          post.title ||
+                          "Latest AI update"
                           : post.title ||
-                            "Latest AI update"
+                          "Latest AI update"
                       }
                       fill
                       sizes="(max-width: 700px) 100vw, 240px"

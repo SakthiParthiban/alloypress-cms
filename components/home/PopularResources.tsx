@@ -152,6 +152,7 @@ async function getLatestPosts(): Promise<Post[]> {
         {
           next: {
             revalidate: 60,
+            tags: ["category:alternatives"],
           },
         }
       );
@@ -184,6 +185,7 @@ async function getLatestPosts(): Promise<Post[]> {
         {
           next: {
             revalidate: 60,
+            tags: ["home:alternatives"],
           },
         }
       );

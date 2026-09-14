@@ -2,43 +2,64 @@
 // AlloyPress — CMS Data Layer
 // ============================================================
 
+import {
+  payloadFetch,
+  PAYLOAD_API_URL,
+} from "@/lib/payload";
+
+// ============================================================
+// MEDIA
+// ============================================================
+
 export type Media = {
-  id?: string
-  url?: string
-  alt?: string
-  width?: number
-  height?: number
-  filename?: string
-  mimeType?: string
-}
+  id?: string;
+  url?: string;
+  alt?: string;
+  width?: number;
+  height?: number;
+  filename?: string;
+  mimeType?: string;
+};
+
+// ============================================================
+// AUTHOR
+// ============================================================
 
 export type Author = {
-  id?: string
-  name?: string
-  email?: string
-}
+  id?: string;
+  name?: string;
+  email?: string;
+};
+
+// ============================================================
+// CATEGORY
+// ============================================================
 
 export type Category = {
-  id?: string
-  name?: string
-  title?: string
-  slug?: string
-}
+  id?: string;
+  name?: string;
+  title?: string;
+  slug?: string;
+};
+
+// ============================================================
+// TAG
+// ============================================================
 
 export type Tag = {
-  id?: string
-  name?: string
-  title?: string
-  slug?: string
-}
+  id?: string;
+  name?: string;
+  title?: string;
+  slug?: string;
+};
 
 // ============================================================
 // PAYLOAD / LEXICAL RICH TEXT TYPES
 // ============================================================
 
 export type RichTextNode = {
-  type?: string
-  tag?: string
+  type?: string;
+  tag?: string;
 
   /**
    * Lexical text formatting flags:
@@ -49,154 +70,149 @@ export type RichTextNode = {
    * 8  = underline
    * 16 = inline code
    */
-  format?: number | string
+  format?: number | string;
 
-  text?: string
+  text?: string;
 
   /**
    * Used by lists.
    */
-  listType?: string
+  listType?: string;
 
   /**
    * Used by links and custom nodes.
    */
-  url?: string
+  url?: string;
 
-  fields?: Record<string, unknown>
+  fields?: Record<string, unknown>;
 
-  children?: RichTextNode[]
-}
+  children?: RichTextNode[];
+};
 
 export type RichTextRoot = {
-  type?: string
-  format?: string
-  indent?: number
-  version?: number
-  children: RichTextNode[]
-}
+  type?: string;
+  format?: string;
+  indent?: number;
+  version?: number;
+  children: RichTextNode[];
+};
 
 export type RichTextContent = {
-  root: RichTextRoot
-}
+  root: RichTextRoot;
+};
 
 // ============================================================
 // POST TYPE
 // ============================================================
 
 export type Post = {
-  id: string
+  id: string;
 
-  title?: string
-  slug?: string
-  excerpt?: string
+  title?: string;
+  slug?: string;
+  excerpt?: string;
 
-  publishedAt?: string
-  updatedAt?: string
+  publishedAt?: string;
+  updatedAt?: string;
 
   // ----------------------------------------------------------
   // Author
   // ----------------------------------------------------------
 
-  author?: Author
+  author?: Author;
 
   // ----------------------------------------------------------
   // Featured Image
   // ----------------------------------------------------------
 
-  featuredImage?: Media
+  featuredImage?: Media;
 
   // ----------------------------------------------------------
   // Main Lexical Content
   // ----------------------------------------------------------
 
-  content?: RichTextContent
+  content?: RichTextContent;
 
   // ----------------------------------------------------------
   // Category
   // ----------------------------------------------------------
 
-  category?: Category
+  category?: Category;
 
   // ----------------------------------------------------------
   // Tags
   // ----------------------------------------------------------
 
-  tags?: Tag[]
+  tags?: Tag[];
 
   // ----------------------------------------------------------
   // Image Position
   // ----------------------------------------------------------
 
   imagePosition?:
-    | 'left'
-    | 'right'
-    | 'full'
+    | "left"
+    | "right"
+    | "full";
 
   // ----------------------------------------------------------
   // Workflow
   // ----------------------------------------------------------
 
   workflowStatus?:
-    | 'draft'
-    | 'review'
-    | 'published'
+    | "draft"
+    | "review"
+    | "published";
 
   // Payload built-in status
-  _status?: 'draft' | 'published'
+  _status?: "draft" | "published";
 
   // ----------------------------------------------------------
   // SEO / Sitemap
   // ----------------------------------------------------------
 
-  cornerstone?: boolean
-  includeInSitemap?: boolean
+  cornerstone?: boolean;
+  includeInSitemap?: boolean;
 
   // ----------------------------------------------------------
   // Redirect
   // ----------------------------------------------------------
 
-  redirectFrom?: string
+  redirectFrom?: string;
 
   // ----------------------------------------------------------
   // Migration / Internal
   // ----------------------------------------------------------
 
   legacy?: {
-    wordpressId?: number
-  }
-}
+    wordpressId?: number;
+  };
+};
 
 // ============================================================
 // PAYLOAD API RESPONSE
 // ============================================================
 
 export type PayloadResponse<T> = {
-  docs?: T[]
+  docs?: T[];
 
-  totalDocs?: number
-  limit?: number
-  totalPages?: number
-  page?: number
-  pagingCounter?: number
+  totalDocs?: number;
+  limit?: number;
+  totalPages?: number;
+  page?: number;
+  pagingCounter?: number;
 
-  hasPrevPage?: boolean
-  hasNextPage?: boolean
+  hasPrevPage?: boolean;
+  hasNextPage?: boolean;
 
-  prevPage?: number | null
-  nextPage?: number | null
-}
+  prevPage?: number | null;
+  nextPage?: number | null;
+};
 
 // ============================================================
 // CMS URL
 // ============================================================
 
-function getCmsUrl(): string {
-  return (
-    process.env.NEXT_PUBLIC_CMS_URL ||
-    'http://localhost:3000'
-  )
-}
+export { PAYLOAD_API_URL };
 
 // ============================================================
 // GET POST BY SLUG
@@ -205,67 +221,41 @@ function getCmsUrl(): string {
 export async function getPostBySlug(
   slug: string,
 ): Promise<Post | null> {
-  const cmsUrl = getCmsUrl()
+  const params = new URLSearchParams();
 
-  const url = new URL(
-    `${cmsUrl}/api/posts`,
-  )
-
-  // Payload slug query
-  url.searchParams.set(
-    'where[slug][equals]',
+  params.set(
+    "where[slug][equals]",
     slug,
-  )
+  );
 
-  // Resolve relationships
-  url.searchParams.set(
-    'depth',
-    '2',
-  )
+  params.set(
+    "where[_status][equals]",
+    "published",
+  );
 
-  // Only one post is required
-  url.searchParams.set(
-    'limit',
-    '1',
-  )
+  params.set(
+    "depth",
+    "2",
+  );
 
-  try {
-    const response = await fetch(
-      url.toString(),
-      {
-        // TEMPORARY DEBUG: bypasses the Next.js data cache entirely so we
-        // can rule out stale cached responses while diagnosing the missing
-        // image issue. Revert to the `next: { revalidate, tags }` version
-        // below once confirmed.
-        cache: 'no-store',
+  params.set(
+    "limit",
+    "1",
+  );
 
-        // next: {
-        //   revalidate: 60,
-        //   tags: [`post:${slug}`],
-        // },
+  const data = await payloadFetch<
+    PayloadResponse<Post>
+  >(
+    `/posts?${params.toString()}`,
+    {
+      next: {
+        revalidate: 60,
+        tags: [`post:${slug}`],
       },
-    )
+    },
+  );
 
-    if (!response.ok) {
-      console.error(
-        `Failed to fetch post: ${response.status} ${response.statusText}`,
-      )
-
-      return null
-    }
-
-    const data =
-      (await response.json()) as PayloadResponse<Post>
-
-    return data.docs?.[0] ?? null
-  } catch (error) {
-    console.error(
-      'Failed to fetch post by slug:',
-      error,
-    )
-
-    return null
-  }
+  return data?.docs?.[0] ?? null;
 }
 
 // ============================================================
@@ -275,42 +265,15 @@ export async function getPostBySlug(
 export async function getPostById(
   id: string,
 ): Promise<Post | null> {
-  const cmsUrl = getCmsUrl()
-
-  try {
-    const response = await fetch(
-      `${cmsUrl}/api/posts/${encodeURIComponent(
-        id,
-      )}?depth=2`,
-      {
-        // TEMPORARY DEBUG: see note above.
-        cache: 'no-store',
-
-        // next: {
-        //   revalidate: 60,
-        //   tags: [`post:id:${id}`],
-        // },
+  const data = await payloadFetch<Post>(
+    `/posts/${encodeURIComponent(id)}?depth=2`,
+    {
+      next: {
+        revalidate: 60,
+        tags: [`post:id:${id}`],
       },
-    )
+    },
+  );
 
-    if (!response.ok) {
-      console.error(
-        `Failed to fetch post ${id}: ${response.status} ${response.statusText}`,
-      )
-
-      return null
-    }
-
-    const data =
-      (await response.json()) as Post
-
-    return data ?? null
-  } catch (error) {
-    console.error(
-      'Failed to fetch post by ID:',
-      error,
-    )
-
-    return null
-  }
+  return data ?? null;
 }
