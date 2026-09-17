@@ -2636,3 +2636,22 @@
 .hero-title .hero-highlight {
   color: var(--brand) !important;
 }
+
+
+.hero-stats-section {
+  margin-top: 56px;
+}
+
+.hero-stats-heading {
+  margin-bottom: 24px;
+  text-align: center;
+}
+
+.hero-stats-heading span {
+  display: block;
+  font-size: 36px;
+  line-height: 1.1;
+  font-weight: 700;
+  letter-spacing: -0.03em;
+  color: var(--text-primary);
+}

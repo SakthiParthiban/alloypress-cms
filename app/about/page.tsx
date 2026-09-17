@@ -4,11 +4,35 @@ import Link from "next/link";
 export const metadata: Metadata = {
   title: "About AlloyPress",
   description:
-    "Learn how AlloyPress tests, reviews, compares, and explains AI tools with practical, reader-first editorial standards.",
+    "AlloyPress is an independent AI editorial publication. We test AI tools hands-on, write what we actually find, and help readers choose without expensive trial and error.",
   alternates: {
     canonical: "/about",
   },
 };
+
+const stats = [
+  ["Top 1%", "Cited across AI answer engines (Perplexity, ChatGPT, Gemini and more)"],
+  ["250+", "AI tools tested and published"],
+  ["100%", "Independent editorial verdicts"],
+  ["1000+ hrs", "Hands-on AI tool testing"],
+];
+
+const storyParagraphs = [
+  "AlloyPress started from a practical frustration. We are a team of SEO and digital marketing professionals who spent years working with and for AI tool companies. As we tested tools for clients, wrote content about them, and evaluated competitors, we kept running into the same problem.",
+  "There was no reliable, independent source that actually tested AI tools hands-on and told you honestly which ones were worth using. Most reviews were surface-level. Many were based on vendor information rather than real use. Readers had to subscribe to multiple tools, pay multiple times, and still ended up guessing which one to keep.",
+  "We started AlloyPress to fix that. A publication where every recommendation comes from genuine testing, where alternatives are compared against each other fairly, and where readers can find the right AI tool without the expensive trial and error we experienced ourselves.",
+  "Today AlloyPress is a dedicated team with deep backgrounds across SEO, digital marketing, content, advertising, social media, and business. That experience shapes how we test tools, what we look for, and how honestly we write about what we find.",
+];
+
+const storyTags = [
+  "SEO",
+  "Digital Marketing",
+  "Content Writing",
+  "Advertising",
+  "Social Media",
+  "Business Strategy",
+  "AI Tool Testing",
+];
 
 const principles = [
   {
@@ -42,17 +66,26 @@ const contentTypes = [
   ["02", "AI Guides & Tutorials", "Practical explanations that help readers understand and use AI without unnecessary complexity.", "BLOGS"],
   ["03", "AI Alternatives", "Useful alternatives when the obvious choice is not the right fit for a reader.", "ALTERNATIVES"],
   ["04", "AI Comparisons", "Side-by-side analysis designed to make choosing between AI tools easier.", "COMPARISONS"],
-  ["05", "AI News & Updates", "Important launches, product changes, announcements, and developments across AI.", "NEWS"],
+  ["05", "AI News and Updates", "Important launches, product changes, announcements, and developments across AI.", "NEWS"],
   ["06", "AI Education", "Clear explanations of AI concepts, trends, terminology, and technologies.", "LEARN"],
 ];
 
 const standards = [
-  ["01", "Testing", "Real hands-on testing", "When we review a product, we aim to use it ourselves and evaluate it in practical scenarios."],
-  ["02", "Integrity", "Paid or organic, same standard", "Commercial relationships should never change the standard used to evaluate a product."],
-  ["03", "Honesty", "Limitations are included", "Readers deserve to know what may not work before they make a decision."],
-  ["04", "Accuracy", "Updated when things change", "Important information should be reviewed and refreshed when meaningful product changes happen."],
-  ["05", "Independence", "No backdoor rankings", "Editorial decisions should be based on usefulness and evidence, not placement payments."],
-  ["06", "Readers", "Written for humans", "Useful context and practical answers come before unnecessary optimization or filler."],
+  ["01", "Testing", "Real hands-on testing", "When we review a product, we use it ourselves and evaluate it in practical scenarios, not guided demos or vendor walkthroughs."],
+  ["02", "Integrity", "Paid or organic, same standard", "Commercial relationships should never change the standard used to evaluate a product. The same framework applies regardless of how a tool comes to us."],
+  ["03", "Honesty", "Limitations are included", "Readers deserve to know what may not work before they make a decision. A review that only highlights strengths is not a useful review."],
+  ["04", "Accuracy", "Updated when things change", "Important information should be reviewed and refreshed when meaningful product changes happen. We revisit articles, not just republish them."],
+  ["05", "Independence", "No backdoor rankings", "Editorial decisions are based on usefulness and evidence, not placement payments. Position in any article reflects testing results, not commercial arrangement."],
+  ["06", "Readers", "Written for humans", "Useful context and practical answers come before unnecessary optimisation or filler. Content is written for the person reading it, not for an algorithm."],
+];
+
+const team = [
+  ["SEO and Search", "Our team has hands-on experience running SEO campaigns and content strategies for AI tool companies, which shapes how we evaluate tools and write about them."],
+  ["Digital Marketing", "Years spent managing marketing for AI-focused brands gives us a grounded understanding of what these tools are actually used for in practice."],
+  ["Content and Editorial", "Experienced writers and editors who understand the difference between a useful recommendation and a sponsored-sounding overview."],
+  ["Business and Strategy", "We understand the commercial context around AI tools — pricing models, competitive positioning, and what actually matters to the teams buying and using these products."],
+  ["Social Media", "Direct experience managing social media for brands helps us evaluate AI social tools, content tools, and scheduling platforms against real-world use cases."],
+  ["AI Tool Testing", "Structured, consistent frameworks applied across 250+ tools over time. We know what questions to ask and what gaps to look for because we have seen how every category evolves."],
 ];
 
 const audiences = [
@@ -60,6 +93,33 @@ const audiences = [
   ["✦", "Content creators", "Writing, design, marketing, video, and creative AI workflows."],
   ["◈", "Business owners", "AI tools that can improve productivity and everyday operations."],
   ["○", "Everyday users", "People who want useful AI without the technical overload."],
+];
+
+const workPaths = [
+  {
+    label: "Article inclusion",
+    title: "Get featured in a roundup",
+    text: "Hands-on testing by our editorial team, evaluation against the criteria for that category, and a dedicated write-up based entirely on what we find. Position is based on test results, not payment.",
+    href: "/inclusion",
+    cta: "See how inclusion works",
+    primary: true,
+  },
+  {
+    label: "Dedicated review",
+    title: "Get a full standalone review",
+    text: "A full in-depth article covering every feature, real use cases, pricing, and our honest verdict. Ranks independently in search and gets cited in AI platforms like ChatGPT and Perplexity over time.",
+    href: "/review-tool",
+    cta: "See how reviews work",
+    primary: false,
+  },
+  {
+    label: "Testing partnership",
+    title: "Ongoing testing and feedback",
+    text: "We work with a small number of AI teams as a regular testing partner — structured evaluations, product feedback, competitive benchmarking, and business and SEO input on an ongoing basis.",
+    href: "/testing-partner",
+    cta: "Explore partnerships",
+    primary: false,
+  },
 ];
 
 const styles = `
@@ -589,6 +649,67 @@ const styles = `
   font: 400 var(--text-md)/1.7 var(--font-body);
 }
 
+/* =========================================================
+   ORIGIN STORY
+   ========================================================= */
+
+.about-story {
+  background:
+    color-mix(in srgb, var(--brand) 3%, var(--background));
+  border-block: 1px solid var(--border);
+}
+
+.about-story .about-section-head::after {
+  content: "01 / ORIGIN";
+}
+
+.about-story-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1.25fr) minmax(280px, .75fr);
+  gap: 60px;
+  align-items: start;
+}
+
+.about-story-copy p {
+  margin: 0 0 var(--text-lg);
+  max-width: 640px;
+  color: var(--text-secondary);
+  font: 400 var(--text-md)/1.75 var(--font-body);
+}
+
+.about-story-copy p:last-of-type {
+  margin-bottom: 0;
+}
+
+.about-story-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--text-xs);
+  margin-top: 26px;
+}
+
+.about-quote {
+  padding: var(--text-xl);
+  border-left: 2px solid var(--brand);
+  border-radius: 0 var(--text-sm) var(--text-sm) 0;
+  background: color-mix(in srgb, var(--brand) 5%, var(--card));
+}
+
+.about-quote p {
+  margin: 0;
+  color: var(--text-primary);
+  font: 500 var(--text-md)/1.6 var(--font-body);
+}
+
+.about-quote cite {
+  display: block;
+  margin-top: var(--text-md);
+  color: var(--text-secondary);
+  font: 500 var(--text-xs) var(--font-mono);
+  font-style: normal;
+  letter-spacing: .06em;
+}
+
 .about-principles {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
@@ -672,6 +793,10 @@ const styles = `
 
 .about-content-section {
   padding-top: 45px;
+}
+
+.about-content-section .about-section-head::after {
+  content: "02 / PUBLISHING";
 }
 
 .about-content-list {
@@ -839,7 +964,7 @@ const styles = `
 }
 
 .about-standards .about-section-head::after {
-  content: "02 / TRUST";
+  content: "03 / TRUST";
   color: color-mix(in srgb, var(--brand) 28%, transparent);
 }
 
@@ -918,12 +1043,75 @@ const styles = `
   font: 400 var(--text-sm)/1.6 var(--font-body);
 }
 
+/* =========================================================
+   TEAM
+   ========================================================= */
+
+.about-team {
+  background: color-mix(in srgb, var(--brand) 3%, var(--background));
+  border-block: 1px solid var(--border);
+}
+
+.about-team .about-section-head::after {
+  content: "04 / TEAM";
+}
+
+.about-team-grid,
+.about-work-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: var(--text-xs);
+}
+
+.about-team-card,
+.about-work-card {
+  position: relative;
+  padding: 22px;
+  border: 1px solid var(--border);
+  border-radius: var(--text-md);
+  background: var(--card);
+  transition:
+    transform .28s ease,
+    border-color .28s ease,
+    box-shadow .28s ease;
+}
+
+.about-team-card:hover,
+.about-work-card:hover {
+  transform: translateY(-5px);
+  border-color: color-mix(in srgb, var(--brand) 28%, transparent);
+  box-shadow: var(--shadow-md);
+}
+
+.about-team-card h3,
+.about-work-card h3 {
+  margin: 0;
+  font: 600 var(--text-md)/1.3 var(--font-ui);
+  letter-spacing: -.025em;
+}
+
+.about-team-card p,
+.about-work-card p {
+  margin: var(--text-xs) 0 0;
+  color: var(--text-secondary);
+  font: 400 var(--text-sm)/1.65 var(--font-body);
+}
+
+.about-work-card .about-standard-meta {
+  display: block;
+  margin-bottom: var(--text-lg);
+}
+
+.about-work-card .about-button {
+  margin-top: var(--text-xl);
+}
+
 .about-audience {
   padding-bottom: 82px;
 }
 
 .about-audience .about-section-head::after {
-  content: "03 / READERS";
+  content: "05 / READERS";
 }
 
 .about-audience-grid {
@@ -1011,120 +1199,16 @@ const styles = `
   font: 400 var(--text-sm)/1.6 var(--font-body);
 }
 
-.about-cta {
-  position: relative;
-  isolation: isolate;
-  overflow: hidden;
-  padding: 82px 0 88px;
-  background: var(--background-base);
-  color: var(--foreground);
-  text-align: center;
-  border-top: 1px solid color-mix(in srgb, var(--foreground) 7%, transparent);
+/* =========================================================
+   WORK WITH US
+   ========================================================= */
+
+.about-work {
+  padding-bottom: 92px;
 }
 
-.about-cta::before {
-  content: "";
-  position: absolute;
-  inset: 0;
-  z-index: -3;
-  background-image:
-    radial-gradient(
-      circle at 1px 1px,
-      color-mix(in srgb, var(--foreground) 7%, transparent) 1px,
-      transparent 1.25px
-    ),
-    linear-gradient(
-      color-mix(in srgb, var(--brand) 5%, transparent) 1px,
-      transparent 1px
-    ),
-    linear-gradient(
-      90deg,
-      color-mix(in srgb, var(--brand) 5%, transparent) 1px,
-      transparent 1px
-    );
-  background-size:
-    22px 22px,
-    70px 70px,
-    70px 70px;
-  opacity: .85;
-}
-
-.about-cta::after {
-  content: "";
-  position: absolute;
-  width: 760px;
-  height: 420px;
-  left: 50%;
-  top: -150px;
-  transform: translateX(-50%);
-  z-index: -2;
-  background:
-    linear-gradient(
-      160deg,
-      transparent 44%,
-      color-mix(in srgb, var(--brand) 10%, transparent) 44.2%,
-      transparent 44.6%
-    ),
-    radial-gradient(
-      ellipse,
-      color-mix(in srgb, var(--brand) 16%, transparent),
-      transparent 68%
-    );
-  pointer-events: none;
-}
-
-.about-cta-inner {
-  position: relative;
-  z-index: 3;
-}
-
-.about-cta-inner::before,
-.about-cta-inner::after {
-  content: "01";
-  position: absolute;
-  color: color-mix(in srgb, var(--brand) 18%, transparent);
-  font: 500 var(--text-xs) var(--font-mono);
-  letter-spacing: .12em;
-}
-
-.about-cta-inner::before {
-  left: 0;
-  top: 5px;
-}
-
-.about-cta-inner::after {
-  right: 0;
-  top: 5px;
-  content: "AP / CONTACT";
-}
-
-.about-cta .about-kicker {
-  justify-content: center;
-}
-
-.about-cta h2 {
-  margin: 0;
-  color: var(--foreground);
-  font: 700 clamp(var(--text-3xl), 4.5vw, var(--text-4xl))/1.03 var(--font-ui);
-  letter-spacing: -.055em;
-}
-
-.about-cta h2 .about-accent {
-  color: var(--brand);
-}
-
-.about-cta p {
-  max-width: 520px;
-  margin: var(--text-md) auto 0;
-  color: var(--text-secondary);
-  font: 400 var(--text-sm)/1.7 var(--font-body);
-}
-
-.about-cta-actions {
-  display: flex;
-  justify-content: center;
-  gap: var(--text-xs);
-  margin-top: 25px;
+.about-work .about-section-head::after {
+  content: "06 / CONTACT";
 }
 
 .about-button {
@@ -1148,7 +1232,7 @@ const styles = `
 
 .about-button-primary {
   background: var(--brand);
-  color: var(--background);
+  color: white;
 }
 
 .about-button-primary:hover {
@@ -1166,7 +1250,8 @@ const styles = `
 }
 
 @media (max-width: 980px) {
-  .about-hero-grid {
+  .about-hero-grid,
+  .about-story-grid {
     grid-template-columns: 1fr;
     gap: var(--text-3xl);
   }
@@ -1180,6 +1265,11 @@ const styles = `
   }
 
   .about-audience-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .about-team-grid,
+  .about-work-grid {
     grid-template-columns: repeat(2, 1fr);
   }
 
@@ -1278,12 +1368,22 @@ const styles = `
 
   .about-principles,
   .about-standards-grid,
-  .about-audience-grid {
+  .about-audience-grid,
+  .about-team-grid,
+  .about-work-grid {
     grid-template-columns: 1fr;
   }
 
   .about-principle {
     min-height: 190px;
+  }
+
+  .about-story-copy p {
+    font-size: var(--text-sm);
+  }
+
+  .about-quote {
+    padding: var(--text-lg);
   }
 
   .about-content-row {
@@ -1307,23 +1407,8 @@ const styles = `
     padding: 68px 0;
   }
 
-  .about-cta {
-    padding: 68px 0 74px;
-  }
-
-  .about-cta-inner::before,
-  .about-cta-inner::after {
-    display: none;
-  }
-
-  .about-cta-actions {
-    flex-direction: column;
-    align-items: stretch;
-    max-width: 280px;
-    margin-inline: auto;
-  }
-
-  .about-button {
+  .about-work-card .about-button {
+    width: 100%;
     justify-content: center;
   }
 }
@@ -1332,6 +1417,8 @@ const styles = `
   .about-principle,
   .about-standard,
   .about-audience-card,
+  .about-team-card,
+  .about-work-card,
   .about-content-row,
   .about-button {
     transition: none;
@@ -1339,15 +1426,13 @@ const styles = `
 }
 
 html[data-theme="light"] .about-hero,
-html[data-theme="light"] .about-standards,
-html[data-theme="light"] .about-cta {
+html[data-theme="light"] .about-standards {
   background: var(--surface);
   color: var(--foreground);
 }
 
 html[data-theme="light"] .about-hero::before,
-html[data-theme="light"] .about-standards::before,
-html[data-theme="light"] .about-cta::before {
+html[data-theme="light"] .about-standards::before {
   opacity: .28;
 }
 
@@ -1359,14 +1444,12 @@ html[data-theme="light"] .about-standard {
 }
 
 html[data-theme="light"] .about-hero .about-title,
-html[data-theme="light"] .about-standards .about-section-head h2,
-html[data-theme="light"] .about-cta h2 {
+html[data-theme="light"] .about-standards .about-section-head h2 {
   color: var(--text-primary);
 }
 
 html[data-theme="light"] .about-hero-description,
-html[data-theme="light"] .about-standards .about-section-head p,
-html[data-theme="light"] .about-cta p {
+html[data-theme="light"] .about-standards .about-section-head p {
   color: var(--text-secondary);
 }
 
@@ -1375,58 +1458,20 @@ html[data-theme="light"] .about-button-secondary {
   background: var(--surface-2);
   color: var(--text-primary);
 }
+
 .about-hero-description,
 .about-signal p,
 .about-section-head p,
 .about-principle p,
+.about-story-copy p,
 .about-content-main p,
 .about-standard p,
-.about-audience-card p,
-.about-cta p {
+.about-team-card p,
+.about-work-card p,
+.about-audience-card p {
   opacity: 1;
   text-shadow: none;
-}
-
-.about-signal p,
-.about-section-head p,
-.about-principle p,
-.about-content-main p,
-.about-standard p,
-.about-audience-card p,
-.about-cta p {
   text-wrap: pretty;
-}
-
-html[data-theme="dark"] .about-signal p,
-html[data-theme="dark"] .about-section-head p,
-html[data-theme="dark"] .about-principle p,
-html[data-theme="dark"] .about-content-main p,
-html[data-theme="dark"] .about-standard p,
-html[data-theme="dark"] .about-audience-card p,
-html[data-theme="dark"] .about-cta p {
-  color: var(--text-secondary);
-}
-
-html[data-theme="light"] .about-signal p,
-html[data-theme="light"] .about-section-head p,
-html[data-theme="light"] .about-principle p,
-html[data-theme="light"] .about-content-main p,
-html[data-theme="light"] .about-standard p,
-html[data-theme="light"] .about-audience-card p,
-html[data-theme="light"] .about-cta p {
-  color: var(--text-secondary);
-}
-
-@media (max-width: 760px) {
-  .about-signal p,
-  .about-principle p,
-  .about-content-main p,
-  .about-standard p,
-  .about-audience-card p,
-  .about-cta p {
-    font-size: var(--text-sm);
-    line-height: 1.65;
-  }
 }
 `;
 
@@ -1457,16 +1502,15 @@ export default function AboutPage() {
               <h1 className="about-title">
                 The AI publication that
                 <br />
-                actually <span>tests</span> before
+                actually <span>tests</span> before it
                 <br />
-                it tells you.
+                tells you.
               </h1>
 
               <p className="about-hero-description">
-                AlloyPress is an independent AI editorial publication covering
-                AI tools, SaaS products, automation software, and the news
-                shaping how people use them. We research, test where possible,
-                explain what matters, and make AI easier to understand.
+                AlloyPress is an independent AI editorial publication. We test
+                AI tools hands-on, write about what we actually find, and help
+                readers make better decisions without expensive trial and error.
               </p>
             </div>
 
@@ -1474,17 +1518,13 @@ export default function AboutPage() {
               className="about-signal"
               aria-label="AlloyPress editorial approach"
             >
-              <div className="about-signal-label">
-                The AlloyPress standard
-              </div>
+              <div className="about-signal-label">The AlloyPress standard</div>
 
               <div className="about-signal-row">
                 <span className="about-signal-number">01</span>
                 <div>
                   <strong>Alloy</strong>
-                  <p>
-                    A stronger mix of ideas, evidence, testing, and context.
-                  </p>
+                  <p>A stronger mix of ideas, evidence, testing, and context.</p>
                 </div>
               </div>
 
@@ -1518,24 +1558,54 @@ export default function AboutPage() {
             ===================================================== */}
         <section className="about-stats" aria-label="AlloyPress highlights">
           <div className="about-container about-stats-grid">
-            <div className="about-stat">
-              <strong>3.5M+</strong>
-              <span>Impressions in the last 90 days</span>
+            {stats.map(([value, label]) => (
+              <div className="about-stat" key={value}>
+                <strong>{value}</strong>
+                <span>{label}</span>
+              </div>
+            ))}
+          </div>
+        </section>
+
+        {/* =====================================================
+            HOW WE STARTED
+            ===================================================== */}
+        <section className="about-section about-story">
+          <div className="about-container">
+            <div className="about-section-head">
+              <div>
+                <div className="about-kicker">How we started</div>
+                <h2>
+                  Built by people who tested
+                  <br />
+                  <span className="about-accent">AI tools for a living.</span>
+                </h2>
+              </div>
             </div>
 
-            <div className="about-stat">
-              <strong>50+</strong>
-              <span>AI tools tested and published</span>
-            </div>
+            <div className="about-story-grid">
+              <div className="about-story-copy">
+                {storyParagraphs.map((paragraph) => (
+                  <p key={paragraph.slice(0, 40)}>{paragraph}</p>
+                ))}
 
-            <div className="about-stat">
-              <strong>Page 1</strong>
-              <span>Google rankings across AI categories</span>
-            </div>
+                <div className="about-story-tags">
+                  {storyTags.map((tag) => (
+                    <span className="about-content-tag" key={tag}>
+                      {tag}
+                    </span>
+                  ))}
+                </div>
+              </div>
 
-            <div className="about-stat">
-              <strong>AI-cited</strong>
-              <span>Content appearing in AI search experiences</span>
+              <blockquote className="about-quote">
+                <p>
+                  &ldquo;We kept running into the same problem. There was no
+                  reliable, independent source that actually tested AI tools and
+                  told you honestly which ones were worth using.&rdquo;
+                </p>
+                <cite>Abdullah, Co-founder, AlloyPress</cite>
+              </blockquote>
             </div>
           </div>
         </section>
@@ -1641,6 +1711,41 @@ export default function AboutPage() {
         </section>
 
         {/* =====================================================
+            TEAM
+            ===================================================== */}
+        <section className="about-section about-team">
+          <div className="about-container">
+            <div className="about-section-head">
+              <div>
+                <div className="about-kicker">Our team</div>
+                <h2>
+                  A dedicated team
+                  <br />
+                  <span className="about-accent">behind every article.</span>
+                </h2>
+              </div>
+
+              <p>
+                AlloyPress is built and run by a team with real professional
+                backgrounds in the domains that matter for evaluating AI tools.
+                Every article, review, and test comes from people who have
+                worked in these areas, not generalists producing content at
+                scale.
+              </p>
+            </div>
+
+            <div className="about-team-grid">
+              {team.map(([title, text]) => (
+                <article className="about-team-card" key={title}>
+                  <h3>{title}</h3>
+                  <p>{text}</p>
+                </article>
+              ))}
+            </div>
+          </div>
+        </section>
+
+        {/* =====================================================
             AUDIENCE
             ===================================================== */}
         <section className="about-section about-audience">
@@ -1671,38 +1776,45 @@ export default function AboutPage() {
         </section>
 
         {/* =====================================================
-            CTA
+            WORK WITH US
             ===================================================== */}
-        <section className="about-cta">
-          <div className="about-container about-cta-inner">
-            <div className="about-kicker">Work with us</div>
+        <section className="about-section about-work" id="work-with-us">
+          <div className="about-container">
+            <div className="about-section-head">
+              <div>
+                <div className="about-kicker">Work with us</div>
+                <h2>
+                  Three ways to{" "}
+                  <span className="about-accent">work with us.</span>
+                </h2>
+              </div>
 
-            <h2>
-              Have an AI tool worth
-              <br />
-              <span className="about-accent">covering?</span>
-            </h2>
+              <p>
+                Whether you want your tool covered, reviewed in depth, or need
+                an ongoing testing partner, each path is separate and has a
+                clear process behind it.
+              </p>
+            </div>
 
-            <p>
-              Built something in AI or SaaS and think it belongs on AlloyPress?
-              Send it our way. We are always interested in useful products worth
-              putting through their paces.
-            </p>
+            <div className="about-work-grid">
+              {workPaths.map((path) => (
+                <article className="about-work-card" key={path.label}>
+                  <span className="about-standard-meta">{path.label}</span>
+                  <h3>{path.title}</h3>
+                  <p>{path.text}</p>
 
-            <div className="about-cta-actions">
-              <Link
-                href="/contact-us"
-                className="about-button about-button-primary"
-              >
-                Submit a Tool <span aria-hidden="true">↗</span>
-              </Link>
-
-              <Link
-                href="/contact-us"
-                className="about-button about-button-secondary"
-              >
-                Get in Touch
-              </Link>
+                  <Link
+                    href={path.href}
+                    className={
+                      path.primary
+                        ? "about-button about-button-primary"
+                        : "about-button about-button-secondary"
+                    }
+                  >
+                    {path.cta}
+                  </Link>
+                </article>
+              ))}
             </div>
           </div>
         </section>

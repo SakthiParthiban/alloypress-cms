@@ -9,11 +9,13 @@ import PopularResources from "@/components/home/PopularResources";
 import ToolSubmissionCTA from "@/components/home/ToolSubmissionCTA";
 import NewsletterSection from "@/components/home/NewsletterSection";
 import BackToTop from '@/components/BackToTop'
+import TestingPartnerPromo from "@/components/home/testing-cta";
 
 export default function Home() {
   return (
     <main>
       <Hero />
+      <TestingPartnerPromo />
       <CategorySection />
       <AlloyPick />
       <LatestUpdate />

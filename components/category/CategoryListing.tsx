@@ -269,6 +269,14 @@ async function getCategoryPosts(
 
     // ========================================================
     // 2. GET PUBLISHED POSTS
+    // ----------------------------------------------------------
+    // FIX (Bug 1): limit was hardcoded to 13, which silently cut
+    // off any category with more than 13 published posts at the
+    // API level (blogs has 30 in WP). Bumped to 100 so every post
+    // for a category is fetched. This is a band-aid, not real
+    // pagination — once any single category crosses ~100 posts,
+    // switch this to page/limit query params + a "Load more" /
+    // page number UI instead of raising the number again.
     // ========================================================
 
     const postsData =
@@ -277,7 +285,7 @@ async function getCategoryPosts(
       >(
         `/posts?where[workflowStatus][equals]=published&where[category][equals]=${encodeURIComponent(
           String(category.id),
-        )}&sort=-publishedAt&limit=13&depth=1`,
+        )}&sort=-publishedAt&limit=100&depth=1`,
         {
           next: {
             revalidate: 60,
@@ -288,11 +296,13 @@ async function getCategoryPosts(
 
     // ========================================================
     // 3. FILTER POSTS
+    // ----------------------------------------------------------
+    // FIX (Bug 1): removed the `.slice(0, 13)` re-truncation that
+    // was capping the already-limited result a second time.
     // ========================================================
 
     const posts = (postsData?.docs ?? [])
-      .filter(isUsefulPost)
-      .slice(0, 13);
+      .filter(isUsefulPost);
 
     return {
       category,
@@ -599,9 +609,16 @@ export default async function CategoryListing({
                           decoding="async"
                         />
 
+                        {/*
+                          FIX (Bug 2): was `index + 1`, which
+                          restarted numbering at 01 and collided
+                          with the Featured post's own "01" label.
+                          Featured post occupies slot 1, so the
+                          grid now continues from 2.
+                        */}
                         <span className="article-card-number">
                           {String(
-                            index + 1,
+                            index + 2,
                           ).padStart(
                             2,
                             "0",

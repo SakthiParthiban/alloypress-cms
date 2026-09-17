@@ -122,14 +122,14 @@ function isValidPost(post: Post): boolean {
 
   const category =
     post.category &&
-    typeof post.category === "object"
+      typeof post.category === "object"
       ? post.category
       : null;
 
   if (
     category?.slug === "uncategorized" ||
     category?.name?.toLowerCase() ===
-      "uncategorized"
+    "uncategorized"
   ) {
     return false;
   }
@@ -266,7 +266,7 @@ export default async function PopularResources() {
             return (
               <Link
                 key={resource.post.id}
-                href={`/blogs/${resource.post.slug}`}
+                href={`/alternatives/${resource.post.slug}`}
                 className="resource-card"
               >
                 {image ? (
@@ -276,14 +276,14 @@ export default async function PopularResources() {
                       alt={
                         typeof resource.post
                           .featuredImage ===
-                        "object"
+                          "object"
                           ? resource.post
-                              .featuredImage
-                              ?.alt ||
-                            resource.post.title ||
-                            "Popular AI resource"
+                            .featuredImage
+                            ?.alt ||
+                          resource.post.title ||
+                          "Popular AI resource"
                           : resource.post.title ||
-                            "Popular AI resource"
+                          "Popular AI resource"
                       }
                       fill
                       sizes="(max-width: 620px) 100vw, (max-width: 950px) 50vw, 25vw"

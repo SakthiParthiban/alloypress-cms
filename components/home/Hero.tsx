@@ -12,6 +12,7 @@ type HeroCard = {
   meta: string;
   icon: string;
   className: string;
+  categorySlug: string;
   post: HeroPost | null;
 };
 
@@ -92,6 +93,7 @@ async function getHeroCards(): Promise<HeroCard[]> {
       meta: "Latest review",
       icon: "◫",
       className: "hero-card-review",
+      categorySlug: "reviews",
       post: reviewPost,
     },
     {
@@ -99,6 +101,7 @@ async function getHeroCards(): Promise<HeroCard[]> {
       meta: "Latest update",
       icon: "▤",
       className: "hero-card-news",
+      categorySlug: "news",
       post: newsPost,
     },
     {
@@ -106,6 +109,7 @@ async function getHeroCards(): Promise<HeroCard[]> {
       meta: "Latest comparison",
       icon: "◒",
       className: "hero-card-comparison",
+      categorySlug: "comparisons",
       post: comparisonPost,
     },
   ];
@@ -140,7 +144,7 @@ export default async function Hero() {
                 aria-hidden="true"
               />
 
-              <span>AI Intelligence Hub</span>
+              <span>Independent AI Editorial</span>
             </div>
 
 
@@ -770,7 +774,7 @@ export default async function Hero() {
                 card.post && (
                   <Link
                     key={card.post.id}
-                    href={`/blogs/${card.post.slug}`}
+                    href={`/${card.categorySlug}/${card.post.slug}`}
                     className={`hero-floating-card ${card.className}`}
                     aria-label={`Read ${card.label.toLowerCase()}: ${card.post.title}`}
                   >
@@ -819,78 +823,73 @@ export default async function Hero() {
 
 
         {/* =====================================================
-            STATS
-        ===================================================== */}
+    STATS
+===================================================== */}
 
-        <div className="hero-stats">
+        <div className="hero-stats-section">
 
-          <div className="hero-stat">
-
-            <div
-              className="hero-stat-icon"
-              aria-hidden="true"
-            >
-              ▤
-            </div>
-
-            <div>
-              <strong>100%</strong>
-              <span>Hands on Testing</span>
-            </div>
-
+          <div className="hero-stats-heading">
+            <span>Why Trust AlloyPress?</span>
           </div>
 
-          <div className="hero-stat">
+          <div className="hero-stats">
 
-            <div
-              className="hero-stat-icon"
-              aria-hidden="true"
-            >
-              ⚗
+            <div className="hero-stat">
+              <div
+                className="hero-stat-icon"
+                aria-hidden="true"
+              >
+                ▤
+              </div>
+
+              <div>
+                <strong>100%</strong>
+                <span>Hands on Testing</span>
+              </div>
             </div>
 
-            <div>
-              <strong>250+</strong>
-              <span>AI Tools Tested</span>
+            <div className="hero-stat">
+              <div
+                className="hero-stat-icon"
+                aria-hidden="true"
+              >
+                ⚗
+              </div>
+
+              <div>
+                <strong>250+</strong>
+                <span>AI Tools Tested</span>
+              </div>
             </div>
 
-          </div>
+            <div className="hero-stat">
+              <div
+                className="hero-stat-icon"
+                aria-hidden="true"
+              >
+                ♧
+              </div>
 
-
-          <div className="hero-stat">
-
-            <div
-              className="hero-stat-icon"
-              aria-hidden="true"
-            >
-              ♧
+              <div>
+                <strong>20+</strong>
+                <span>Detailed AI Reviews</span>
+              </div>
             </div>
 
-            <div>
-              <strong>57%+</strong>
-              <span>Organic Search Traffic</span>
-            </div>
+            <div className="hero-stat">
+              <div
+                className="hero-stat-icon"
+                aria-hidden="true"
+              >
+                ☆
+              </div>
 
-          </div>
-
-
-          <div className="hero-stat">
-
-            <div
-              className="hero-stat-icon"
-              aria-hidden="true"
-            >
-              ☆
-            </div>
-
-            <div>
-
-              <strong>
-                4+ LLMs
-              </strong>
-
-              <span>Cited by GPT, Gemini, Claude, Perplexity and more</span>
-
+              <div>
+                <strong>4+ LLMs</strong>
+                <span>
+                  Cited by GPT, Gemini, Claude, Perplexity and more
+                </span>
+              </div>
             </div>
 
           </div>

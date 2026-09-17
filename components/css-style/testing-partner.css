@@ -1,0 +1,988 @@
+/* ==========================================================================
+   ALLOYPRESS — AI TOOL TESTING PARTNER PAGE
+   --------------------------------------------------------------------------
+   Root class: .testing-partner-page  (alias supported: .testing-partner-tool-page)
+   All colors, radii, shadows and fonts come from globals.css tokens, so the
+   page follows dark / light theme automatically. Navbar + Footer are global
+   components and are never touched here — every selector is prefixed.
+   ========================================================================== */
+
+.testing-partner-page,
+.testing-partner-tool-page {
+  --tp-max: 1174px;
+  --tp-copy: 780px;
+  --tp-gutter: 32px;
+
+  position: relative;
+  isolation: isolate;
+
+  width: 100%;
+  overflow: clip;
+
+  font-family: var(--font-ui);
+  color: var(--text-primary);
+  background: transparent;
+}
+
+.testing-partner-page *,
+.testing-partner-tool-page * {
+  font-family: var(--font-ui);
+}
+
+.testing-partner-container {
+  width: min(calc(100% - (var(--tp-gutter) * 2)), var(--tp-max));
+  margin-inline: auto;
+}
+
+
+/* ==========================================================================
+   SHARED — EYEBROW
+   ========================================================================== */
+
+.testing-partner-eyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+
+  margin-bottom: 16px;
+
+  color: var(--brand);
+
+  font-size: 11px;
+  line-height: 1.3;
+  font-weight: 700;
+
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+}
+
+.testing-partner-eyebrow::before {
+  content: "";
+
+  width: 7px;
+  height: 7px;
+  flex: 0 0 7px;
+
+  border-radius: var(--radius-pill);
+
+  background: var(--brand);
+  box-shadow: 0 0 12px var(--brand-glow);
+}
+
+
+/* ==========================================================================
+   HERO
+   ========================================================================== */
+
+.testing-partner-hero {
+  position: relative;
+  isolation: isolate;
+
+  border-bottom: 1px solid var(--border);
+
+  background:
+    radial-gradient(
+      ellipse 70% 70% at 50% 0%,
+      color-mix(in srgb, var(--brand) 12%, transparent),
+      transparent 72%
+    );
+}
+
+.testing-partner-hero-grid {
+  min-height: 450px;
+
+  display: grid;
+  grid-template-columns: minmax(0, 1.35fr) minmax(300px, 0.65fr);
+  align-items: center;
+  gap: 72px;
+
+  padding-block: 78px 84px;
+}
+
+.testing-partner-hero-copy {
+  max-width: var(--tp-copy);
+}
+
+.testing-partner-hero h1 {
+  max-width: 14ch;
+  margin: 0;
+
+  font-size: clamp(42px, 5.2vw, 68px);
+  line-height: 1;
+  font-weight: 800;
+  letter-spacing: -0.05em;
+
+  color: var(--text-primary);
+}
+
+.testing-partner-hero h1 em {
+  font-style: normal;
+  color: var(--brand);
+}
+
+.testing-partner-hero-description {
+  max-width: 62ch;
+  margin: 24px 0 0;
+
+  color: var(--text-secondary);
+
+  font-size: 16px;
+  line-height: 1.7;
+  font-weight: 400;
+}
+
+.testing-partner-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+
+  margin-top: 28px;
+}
+
+.testing-partner-btn {
+  min-height: 48px;
+
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+
+  padding: 0 18px;
+
+  border: 1px solid transparent;
+  border-radius: var(--radius-sm);
+
+  font-size: 14px;
+  line-height: 1;
+  font-weight: 700;
+
+  text-decoration: none;
+  white-space: nowrap;
+
+  transition:
+    transform 0.2s ease,
+    border-color 0.2s ease,
+    background-color 0.2s ease;
+}
+
+.testing-partner-btn svg {
+  width: 15px;
+  height: 15px;
+  flex: 0 0 15px;
+}
+
+.testing-partner-btn-primary {
+  border-color: var(--brand);
+  background: var(--brand);
+  color: #001006;
+}
+
+.testing-partner-btn-primary:hover {
+  background: var(--brand-hover);
+  border-color: var(--brand-hover);
+  transform: translateY(-2px);
+}
+
+.testing-partner-btn-secondary {
+  border-color: var(--border-strong);
+  background: transparent;
+  color: var(--text-primary);
+}
+
+.testing-partner-btn-secondary:hover {
+  border-color: var(--brand);
+  background: var(--brand-soft);
+  transform: translateY(-2px);
+}
+
+.testing-partner-hero-note {
+  margin-top: 18px;
+
+  color: var(--text-muted);
+
+  font-size: 13px;
+  line-height: 1.6;
+}
+
+
+/* --------------------------------------------------------------------------
+   HERO — PROOF CARD (right column)
+   -------------------------------------------------------------------------- */
+
+.testing-partner-proof-card {
+  align-self: center;
+
+  padding: 20px;
+
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+
+  background: var(--surface-elevated);
+  box-shadow: var(--shadow-sm);
+}
+
+.testing-partner-proof-card-title {
+  display: block;
+
+  margin-bottom: 6px;
+
+  color: var(--text-muted);
+
+  font-size: 10px;
+  line-height: 1.3;
+  font-weight: 700;
+
+  letter-spacing: 0.11em;
+  text-transform: uppercase;
+}
+
+.testing-partner-proof-line {
+  display: grid;
+  grid-template-columns: 5px minmax(0, 1fr);
+  gap: 11px;
+
+  padding: 12px 0;
+
+  border-bottom: 1px solid var(--border-soft);
+}
+
+.testing-partner-proof-line:last-child {
+  padding-bottom: 0;
+  border-bottom: 0;
+}
+
+.testing-partner-proof-line > span {
+  width: 5px;
+  height: 5px;
+
+  margin-top: 8px;
+
+  border-radius: var(--radius-pill);
+  background: var(--brand);
+}
+
+.testing-partner-proof-line p {
+  margin: 0;
+
+  color: var(--text-secondary);
+
+  font-size: 13px;
+  line-height: 1.65;
+}
+
+
+/* --------------------------------------------------------------------------
+   HERO — PROOF STRIP (thin divider band under hero)
+   -------------------------------------------------------------------------- */
+
+.testing-partner-proof-strip {
+  min-height: 74px;
+
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 30px;
+
+  border-bottom: 1px solid var(--border);
+
+  color: var(--text-muted);
+}
+
+.testing-partner-proof-strip strong {
+  font-size: 11px;
+  line-height: 1.3;
+  font-weight: 700;
+
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.testing-partner-proof-points {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  flex-wrap: wrap;
+  gap: 26px;
+}
+
+.testing-partner-proof-points span {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+
+  font-size: 13px;
+  line-height: 1.3;
+}
+
+.testing-partner-proof-points svg {
+  width: 13px;
+  height: 13px;
+  flex: 0 0 13px;
+
+  color: var(--brand);
+}
+
+
+/* ==========================================================================
+   SECTION SHELL
+   ========================================================================== */
+
+.testing-partner-section {
+  padding-block: 88px;
+  border-bottom: 1px solid var(--border);
+}
+
+.testing-partner-section:last-of-type {
+  border-bottom: 0;
+}
+
+.testing-partner-section-heading {
+  position: relative;
+
+  max-width: var(--tp-copy);
+  margin-bottom: 38px;
+}
+
+.testing-partner-section-heading-wide {
+  max-width: 920px;
+}
+
+.testing-partner-section-heading .testing-partner-eyebrow {
+  margin-bottom: 13px;
+}
+
+.testing-partner-section-heading h2 {
+  margin: 0;
+
+  font-size: clamp(28px, 3.2vw, 42px);
+  line-height: 1.1;
+  font-weight: 800;
+  letter-spacing: -0.04em;
+
+  color: var(--text-primary);
+}
+
+.testing-partner-section-heading p {
+  max-width: 68ch;
+  margin: 14px 0 0;
+
+  color: var(--text-secondary);
+
+  font-size: 16px;
+  line-height: 1.7;
+}
+
+.testing-partner-section-count {
+  position: absolute;
+  right: 0;
+  bottom: 2px;
+
+  color: var(--text-muted);
+
+  font-size: 11px;
+  font-weight: 600;
+}
+
+
+/* ==========================================================================
+   GRID SHELLS
+   Hairline separators are produced with grid `gap` over a border-colored
+   background. No nth-child border juggling — nothing to re-patch on mobile.
+   ========================================================================== */
+
+.testing-partner-four-grid,
+.testing-partner-three-grid,
+.testing-partner-differentiator-grid {
+  display: grid;
+  gap: 1px;
+
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+
+  background: var(--border);
+
+  overflow: hidden;
+}
+
+.testing-partner-four-grid,
+.testing-partner-differentiator-grid {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.testing-partner-three-grid {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+
+/* ==========================================================================
+   INFO CARDS (what we do)
+   ========================================================================== */
+
+.testing-partner-info-card {
+  min-height: 190px;
+
+  padding: 26px;
+
+  background: var(--surface-2);
+}
+
+.testing-partner-card-icon {
+  display: block;
+
+  width: 15px;
+  height: 15px;
+
+  margin-bottom: 16px;
+
+  color: var(--brand);
+}
+
+.testing-partner-card-mark {
+  display: block;
+
+  margin-bottom: 14px;
+
+  color: var(--brand);
+
+  font-size: 11px;
+  line-height: 1.3;
+  font-weight: 700;
+
+  letter-spacing: 0.06em;
+}
+
+.testing-partner-info-card h3,
+.testing-partner-approach-card h3,
+.testing-partner-output-card h3,
+.testing-partner-differentiator h3,
+.testing-partner-workflow-row h3 {
+  margin: 0;
+
+  font-size: 16px;
+  line-height: 1.4;
+  font-weight: 700;
+  letter-spacing: -0.015em;
+
+  color: var(--text-primary);
+}
+
+.testing-partner-info-card p,
+.testing-partner-approach-card > p,
+.testing-partner-output-card p,
+.testing-partner-differentiator p,
+.testing-partner-workflow-row p,
+.testing-partner-standard p {
+  margin: 9px 0 0;
+  max-width: 60ch;
+
+  color: var(--text-secondary);
+
+  font-size: 14px;
+  line-height: 1.7;
+}
+
+
+/* ==========================================================================
+   APPROACH (who this is for)
+   ========================================================================== */
+
+.testing-partner-two-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.testing-partner-approach-card {
+  padding: 26px;
+
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+
+  background: var(--surface-2);
+}
+
+.testing-partner-card-label {
+  display: inline-block;
+
+  margin-bottom: 14px;
+
+  color: var(--brand);
+
+  font-size: 11px;
+  line-height: 1.4;
+  font-weight: 700;
+
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+}
+
+.testing-partner-approach-card ul {
+  display: grid;
+  gap: 8px;
+
+  margin: 18px 0 0;
+  padding: 0;
+
+  list-style: none;
+}
+
+.testing-partner-approach-card li {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+
+  color: var(--text-secondary);
+
+  font-size: 13px;
+  line-height: 1.6;
+}
+
+.testing-partner-approach-card li svg {
+  width: 13px;
+  height: 13px;
+  flex: 0 0 13px;
+
+  margin-top: 3px;
+
+  color: var(--brand);
+}
+
+
+/* ==========================================================================
+   WORKFLOW (how it works — real sequence, so numbers stay)
+   ========================================================================== */
+
+.testing-partner-workflow {
+  max-width: 850px;
+  border-top: 1px solid var(--border);
+}
+
+.testing-partner-workflow-row {
+  display: grid;
+  grid-template-columns: 70px minmax(0, 1fr);
+  gap: 18px;
+
+  padding-block: 24px;
+
+  border-bottom: 1px solid var(--border);
+}
+
+.testing-partner-workflow-number {
+  color: var(--brand);
+
+  font-size: 13px;
+  line-height: 1.5;
+  font-weight: 700;
+}
+
+.testing-partner-workflow-row p {
+  max-width: 66ch;
+  margin-top: 7px;
+}
+
+
+/* ==========================================================================
+   OUTPUTS (what you get)
+   ========================================================================== */
+
+.testing-partner-output-card {
+  min-height: 180px;
+
+  padding: 24px;
+
+  background: var(--surface-2);
+}
+
+
+/* ==========================================================================
+   DIFFERENTIATORS (why AlloyPress)
+   ========================================================================== */
+
+.testing-partner-differentiator {
+  min-height: 190px;
+
+  display: grid;
+  grid-template-columns: 28px minmax(0, 1fr);
+  gap: 12px;
+
+  padding: 24px;
+
+  background: var(--surface-2);
+}
+
+.testing-partner-differentiator > span {
+  color: var(--brand);
+
+  font-size: 12px;
+  line-height: 1.5;
+  font-weight: 700;
+}
+
+
+/* ==========================================================================
+   STANDARDS (what this is not)
+   ========================================================================== */
+
+.testing-partner-standards-section {
+  padding-bottom: 76px;
+}
+
+.testing-partner-standards-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.testing-partner-standard {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+
+  padding: 16px;
+
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+
+  background: transparent;
+}
+
+.testing-partner-standard svg {
+  width: 14px;
+  height: 14px;
+  flex: 0 0 14px;
+
+  margin-top: 3px;
+
+  color: var(--text-muted);
+}
+
+.testing-partner-standard p {
+  margin: 0;
+  font-size: 13px;
+  line-height: 1.65;
+}
+
+
+/* ==========================================================================
+   FINAL CTA
+   ========================================================================== */
+
+.testing-partner-final-cta {
+  padding: 74px 0 88px;
+  border-bottom: 0;
+}
+
+.testing-partner-cta-card {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 40px;
+
+  padding: 32px;
+
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+
+  background: var(--card-elevated);
+}
+
+.testing-partner-cta-card h2 {
+  margin: 0;
+
+  font-size: 20px;
+  line-height: 1.25;
+  font-weight: 800;
+  letter-spacing: -0.025em;
+}
+
+.testing-partner-cta-card p {
+  max-width: 60ch;
+  margin: 10px 0 0;
+
+  color: var(--text-secondary);
+
+  font-size: 14px;
+  line-height: 1.65;
+}
+
+.testing-partner-cta-email {
+  min-height: 44px;
+
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+
+  padding: 0 18px;
+  flex: 0 0 auto;
+
+  border-radius: var(--radius-sm);
+
+  background: var(--brand);
+  color: #001006;
+
+  font-size: 13px;
+  line-height: 1;
+  font-weight: 700;
+
+  text-decoration: none;
+
+  transition:
+    background-color 0.2s ease,
+    transform 0.2s ease;
+}
+
+.testing-partner-cta-email:hover {
+  background: var(--brand-hover);
+  transform: translateY(-2px);
+}
+
+.testing-partner-cta-email svg {
+  width: 14px;
+  height: 14px;
+  flex: 0 0 14px;
+}
+
+
+/* ==========================================================================
+   HOVER + FOCUS
+   ========================================================================== */
+
+.testing-partner-info-card,
+.testing-partner-approach-card,
+.testing-partner-output-card,
+.testing-partner-differentiator,
+.testing-partner-standard {
+  transition:
+    border-color 0.2s ease,
+    background-color 0.2s ease;
+}
+
+.testing-partner-approach-card:hover,
+.testing-partner-standard:hover {
+  border-color: var(--border-strong);
+}
+
+.testing-partner-info-card:hover,
+.testing-partner-output-card:hover,
+.testing-partner-differentiator:hover {
+  background: color-mix(in srgb, var(--surface-2) 90%, var(--brand-soft));
+}
+
+.testing-partner-page a:focus-visible,
+.testing-partner-page button:focus-visible,
+.testing-partner-tool-page a:focus-visible,
+.testing-partner-tool-page button:focus-visible {
+  outline: 2px solid var(--accent-neon);
+  outline-offset: 3px;
+}
+
+
+/* ==========================================================================
+   LIGHT THEME
+   Semantic tokens do most of the work; these keep the surfaces crisp.
+   ========================================================================== */
+
+html[data-theme="light"] .testing-partner-hero {
+  background:
+    radial-gradient(
+      ellipse 72% 80% at 50% 0%,
+      color-mix(in srgb, var(--brand) 7%, transparent),
+      transparent 70%
+    );
+}
+
+html[data-theme="light"] .testing-partner-proof-card,
+html[data-theme="light"] .testing-partner-info-card,
+html[data-theme="light"] .testing-partner-approach-card,
+html[data-theme="light"] .testing-partner-output-card,
+html[data-theme="light"] .testing-partner-differentiator,
+html[data-theme="light"] .testing-partner-cta-card {
+  background: var(--surface-elevated);
+}
+
+html[data-theme="light"] .testing-partner-info-card:hover,
+html[data-theme="light"] .testing-partner-output-card:hover,
+html[data-theme="light"] .testing-partner-differentiator:hover {
+  background: color-mix(in srgb, #ffffff 92%, var(--brand-soft));
+}
+
+html[data-theme="light"] .testing-partner-btn-secondary {
+  background: rgba(255, 255, 255, 0.7);
+}
+
+
+/* ==========================================================================
+   TABLET — max 980px
+   ========================================================================== */
+
+@media (max-width: 980px) {
+  .testing-partner-hero-grid {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 36px;
+
+    padding-block: 64px;
+  }
+
+  .testing-partner-hero-copy,
+  .testing-partner-proof-card {
+    max-width: 760px;
+  }
+
+  .testing-partner-proof-strip {
+    align-items: flex-start;
+    flex-direction: column;
+    justify-content: center;
+
+    padding-block: 22px;
+  }
+
+  .testing-partner-proof-points {
+    justify-content: flex-start;
+  }
+
+  .testing-partner-three-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+
+/* ==========================================================================
+   MOBILE — max 700px
+   ========================================================================== */
+
+@media (max-width: 700px) {
+  .testing-partner-page,
+  .testing-partner-tool-page {
+    --tp-gutter: 16px;
+  }
+
+  .testing-partner-hero-grid {
+    min-height: auto;
+    padding-block: 48px;
+  }
+
+  .testing-partner-hero h1 {
+    max-width: none;
+    font-size: clamp(34px, 10vw, 50px);
+    letter-spacing: -0.045em;
+  }
+
+  .testing-partner-hero-description,
+  .testing-partner-section-heading p {
+    font-size: 15px;
+    line-height: 1.65;
+  }
+
+  .testing-partner-actions {
+    width: 100%;
+  }
+
+  .testing-partner-btn {
+    flex: 1 1 auto;
+  }
+
+  .testing-partner-proof-points {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 12px;
+    width: 100%;
+  }
+
+  .testing-partner-section {
+    padding-block: 60px;
+  }
+
+  .testing-partner-section-heading {
+    margin-bottom: 28px;
+  }
+
+  .testing-partner-section-count {
+    position: static;
+    display: block;
+    margin-top: 18px;
+  }
+
+  .testing-partner-four-grid,
+  .testing-partner-three-grid,
+  .testing-partner-differentiator-grid,
+  .testing-partner-two-grid,
+  .testing-partner-standards-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .testing-partner-info-card,
+  .testing-partner-output-card,
+  .testing-partner-differentiator {
+    min-height: 0;
+  }
+
+  .testing-partner-workflow-row {
+    grid-template-columns: 44px minmax(0, 1fr);
+    gap: 12px;
+  }
+
+  .testing-partner-cta-card {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 20px;
+
+    padding: 24px;
+  }
+
+  .testing-partner-cta-email {
+    width: 100%;
+  }
+}
+
+
+/* ==========================================================================
+   SMALL MOBILE — max 420px
+   ========================================================================== */
+
+@media (max-width: 420px) {
+  .testing-partner-page,
+  .testing-partner-tool-page {
+    --tp-gutter: 12px;
+  }
+
+  .testing-partner-proof-points {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .testing-partner-actions {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .testing-partner-btn {
+    width: 100%;
+  }
+
+  .testing-partner-section {
+    padding-block: 50px;
+  }
+}
+
+
+/* ==========================================================================
+   REDUCED MOTION
+   ========================================================================== */
+
+@media (prefers-reduced-motion: reduce) {
+  .testing-partner-btn,
+  .testing-partner-cta-email,
+  .testing-partner-info-card,
+  .testing-partner-approach-card,
+  .testing-partner-output-card,
+  .testing-partner-differentiator,
+  .testing-partner-standard {
+    transition: none;
+  }
+
+  .testing-partner-btn:hover,
+  .testing-partner-cta-email:hover {
+    transform: none;
+  }
+}

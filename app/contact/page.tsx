@@ -368,7 +368,7 @@ const styles = `
 }
 
 .contact-eyebrow-light {
-  color: var(--accent-neon);
+   color: var(--contact-brand);
 }
 
 .contact-hero-copy h1 {
@@ -380,7 +380,7 @@ const styles = `
 }
 
 .contact-hero-copy h1 em {
-  color: var(--contact-brand-bright);
+  color: var(--contact-brand);
   font-style: normal;
 }
 
@@ -417,7 +417,7 @@ const styles = `
 }
 
 .contact-response strong {
-  color: var(--contact-brand-bright);
+  color: var(--contact-brand);
 }
 
 .contact-card-divider {
@@ -781,7 +781,7 @@ const styles = `
 }
 
 .contact-final-inner h2 em {
-  color: var(--contact-brand-bright);
+  color: var(--contact-brand);
   font-style: normal;
 }
 

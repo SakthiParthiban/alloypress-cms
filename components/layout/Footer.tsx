@@ -17,17 +17,17 @@ const navigateLinks = [
 ];
 
 const resourceLinks = [
-  { label: "AI Image Generators", href: "/resources/ai-image-generators" },
-  { label: "Best AI Chatbots", href: "/resources/ai-chatbots" },
+  { label: "AI Image Generators", href: "/blogs/best-ai-image-generator" },
+  { label: "AI Website Builders", href: "/blogs/best-ai-website-builders" },
   {
     label: "AI Background Removers",
-    href: "/resources/ai-background-removers",
+    href: "/blogs/best-ai-background-remover-tools",
   },
-  { label: "AI Detectors", href: "/resources/ai-detectors" },
-  { label: "AI Blog Writers", href: "/resources/ai-blog-writers" },
+  { label: "AI Voice Generators", href: "/blogs/best-ai-voice-generators" },
+  { label: "AI Blog Writers", href: "/blogs/best-ai-blog-writing-tools" },
   {
     label: "AI Logo Generators",
-    href: "/resources/ai-logo-generators",
+    href: "/blogs/best-ai-logo-generators",
     popular: true,
   },
 ];
@@ -36,7 +36,6 @@ const companyLinks = [
   { label: "About Us", href: "/about" },
   { label: "Contact", href: "/contact" },
   { label: "Submit a Tool", href: "/inclusion" },
-  { label: "Advertise", href: "/advertise" },
   {
     label: "Careers",
     href: "https://nvdigital.in/careers/",
@@ -45,18 +44,18 @@ const companyLinks = [
 ];
 
 const learnLinks = [
-  { label: "What is AI?", href: "/blogs/what-is-ai" },
-  { label: "AI Hallucinations", href: "/blogs/ai-hallucinations" },
-  { label: "AI vs Humans", href: "/blogs/ai-vs-humans" },
-  { label: "AI Writing Prompts", href: "/blogs/ai-writing-prompts" },
-  { label: "AI Resume Builders", href: "/blogs/ai-resume-builders" },
+  { label: "What is AI?", href: "/blogs/artificial-intelligence" },
+  { label: "AI Hallucinations", href: "/blogs/ai-hallucinations-explained" },
+  { label: "AI vs Humans", href: "/blogs/ai-vs-human-intelligence" },
+  { label: "AI Writing Prompts", href: "/blogs/ai-writing-prompts-for-every-task" },
+  { label: "AI Resume Builders", href: "/blogs/list-of-top-ai-resume-builders" },
 ];
 
 const popularLinks = [
   {
     category: "LISTICLE",
-    label: "Best AI Image Generators",
-    href: "/resources/ai-image-generators",
+    label: "AI Video Generators",
+    href: "/blogs/best-ai-video-generators",
   },
   {
     category: "ALTERNATIVES",
@@ -65,18 +64,18 @@ const popularLinks = [
   },
   {
     category: "REVIEW",
-    label: "Reve AI Review",
-    href: "/reviews/reve-ai-review",
+    label: "Cursor AI Review",
+    href: "/reviews/cursor-ai",
   },
   {
     category: "EDUCATION",
-    label: "AI Hallucinations Explained",
-    href: "/blogs/ai-hallucinations",
+    label: "Google AI Mode Explained",
+    href: "/blogs/google-ai-mode-explained",
   },
   {
     category: "COMPARISONS",
-    label: "AI Tool Head-to-Heads",
-    href: "/comparisons",
+    label: "Invideo vs Synthesia",
+    href: "comparisons/invideo-vs-synthesia",
   },
 ];
 
@@ -168,24 +167,28 @@ export default function Footer() {
               </Link>
 
               <p>
-                Get actionable AI insights, AI tool reviews and more.
-                AlloyPress simplifies AI info for everyone.
+                Honest AI tool reviewes, comparisons and alternatives-based on hands on testing.
               </p>
 
               <div className="footer-socials">
-                <SocialIcon label="YouTube">
+                <SocialIcon
+                  label="YouTube"
+                  href="https://www.youtube.com/@AlloyPress"
+                >
                   <FaYoutube aria-hidden="true" />
                 </SocialIcon>
 
-                <SocialIcon label="Instagram">
-                  < FaInstagram aria-hidden="true" />
+                <SocialIcon
+                  label="Instagram"
+                  href="https://www.instagram.com/alloypressdotcom/"
+                >
+                  <FaInstagram aria-hidden="true" />
                 </SocialIcon>
 
-                <SocialIcon label="Facebook">
-                  <FaFacebookF aria-hidden="true" />
-                </SocialIcon>
-
-                <SocialIcon label="X">
+                <SocialIcon
+                  label="X"
+                  href="https://x.com/AlloyPress"
+                >
                   <FaXTwitter aria-hidden="true" />
                 </SocialIcon>
               </div>
@@ -207,12 +210,11 @@ export default function Footer() {
                 companyLinks[0],
                 companyLinks[1],
                 companyLinks[2],
-                companyLinks[3],
                 {
                   label: "Review Your Tool",
                   href: "/review-tool",
                 },
-                companyLinks[4],
+                companyLinks[3],
               ]}
             />
 

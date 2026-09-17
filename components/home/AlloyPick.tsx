@@ -276,15 +276,12 @@ export default async function AlloyPick() {
               {trendingPosts.map(
                 (post, index) => {
 
-                  const category =
-                    getCategory(
-                      post.category
-                    );
+                  const category = getCategory(post.category);
 
                   return (
                     <Link
                       key={post.id}
-                      href={`/blogs/${post.slug}`}
+                      href={`/${category.slug}/${post.slug}`}
                       className="alloy-trending-card"
                       aria-label={`Read ${post.title}`}
                     >

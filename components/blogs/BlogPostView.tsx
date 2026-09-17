@@ -9,14 +9,16 @@ import {
   ChevronDown,
   Share2,
   Sparkles,
+  Send,
   X as LucideX,
 } from "lucide-react";
+
 import {
-  FaXTwitter,
-  FaLinkedinIn,
-  FaFacebookF,
   FaWhatsapp,
-  FaInstagram,
+  FaLinkedinIn,
+  FaXTwitter,
+  FaRedditAlien,
+  FaPinterestP,
 } from "react-icons/fa6";
 
 import "./BlogPostView.css";
@@ -126,24 +128,6 @@ function paragraphContainsBlockNode(children: any[]): boolean {
  * Returns true when the node contains no visible text and is therefore
  * probably an empty migration/editor artefact.
  */
-function hasVisibleText(node: any): boolean {
-  if (!node) return false;
-
-  if (typeof node.text === "string" && node.text.trim()) {
-    return true;
-  }
-
-  if (Array.isArray(node.children)) {
-    return node.children.some(hasVisibleText);
-  }
-
-  if (typeof node.fields?.text === "string" && node.fields.text.trim()) {
-    return true;
-  }
-
-  return false;
-}
-
 function buildHeadingIndex(
   nodes: any[] = []
 ): {
@@ -1107,9 +1091,16 @@ export default function BlogPostView({
   const [copied, setCopied] =
     useState(false);
 
+  const [articleUrl, setArticleUrl] =
+    useState("");
+
   const [tocOpen, setTocOpen] = useState(false);
   const [desktopTocOpen, setDesktopTocOpen] = useState(true);
   const [isDesktop, setIsDesktop] = useState(false);
+
+  useEffect(() => {
+    setArticleUrl(window.location.href);
+  }, []);
 
   useEffect(() => {
     if (!shareOpen) return;
@@ -1217,6 +1208,20 @@ export default function BlogPostView({
     new Date(post.publishedAt).getTime() >
     24 * 60 * 60 * 1000;
 
+  function openShareWindow(url: string) {
+    const shareWindow = window.open(
+      url,
+      "alloypress-share",
+      "noopener,noreferrer,width=720,height=640,resizable=yes,scrollbars=yes"
+    );
+
+    if (shareWindow) {
+      shareWindow.opener = null;
+    }
+
+    setShareOpen(false);
+  }
+
   async function copyArticleLink() {
     try {
       await navigator.clipboard.writeText(window.location.href);
@@ -1228,15 +1233,10 @@ export default function BlogPostView({
     }
   }
 
-  function openShareWindow(url: string) {
-    window.open(url, "_blank", "noopener,noreferrer");
-    setShareOpen(false);
-  }
-
-  function shareOnX() {
-    const url = `https://twitter.com/intent/tweet?url=${encodeURIComponent(
+  function shareOnWhatsApp() {
+    const url = `https://wa.me/?text=${encodeURIComponent(
       window.location.href
-    )}&text=${encodeURIComponent(post?.title || "")}`;
+    )}`;
 
     openShareWindow(url);
   }
@@ -1249,17 +1249,25 @@ export default function BlogPostView({
     openShareWindow(url);
   }
 
-  function shareOnFacebook() {
-    const url = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(
+  function shareOnX() {
+    const url = `https://twitter.com/intent/tweet?url=${encodeURIComponent(
       window.location.href
     )}`;
 
     openShareWindow(url);
   }
 
-  function shareOnWhatsApp() {
-    const url = `https://wa.me/?text=${encodeURIComponent(
-      `${post?.title || "AlloyPress article"} ${window.location.href}`
+  function shareOnReddit() {
+    const url = `https://www.reddit.com/submit?url=${encodeURIComponent(
+      window.location.href
+    )}`;
+
+    openShareWindow(url);
+  }
+
+  function shareOnPinterest() {
+    const url = `https://www.pinterest.com/pin/create/button/?url=${encodeURIComponent(
+      window.location.href
     )}`;
 
     openShareWindow(url);
@@ -1274,25 +1282,14 @@ export default function BlogPostView({
     setTocOpen((value) => !value);
   }
 
-  function handleTocKeyDown(event: React.KeyboardEvent<HTMLButtonElement>) {
+  function handleTocKeyDown(
+    event: React.KeyboardEvent<HTMLButtonElement>
+  ) {
     if (event.key === "Enter" || event.key === " ") {
       event.preventDefault();
       toggleToc();
     }
   }
-
-  async function shareOnInstagram() {
-    try {
-      await navigator.clipboard.writeText(window.location.href);
-      setCopied(true);
-      window.setTimeout(() => setCopied(false), 1800);
-      window.open("https://www.instagram.com/", "_blank", "noopener,noreferrer");
-      setShareOpen(false);
-    } catch {
-      setCopied(false);
-    }
-  }
-
 
   return (
     <>
@@ -1525,34 +1522,6 @@ export default function BlogPostView({
               className="article-sidebar"
               aria-label="Article tools"
             >
-              <div className="sidebar-card trusted-card">
-                <div className="trusted-badge">
-                  <span className="trusted-badge-mark">✓</span>
-                  Work with AlloyPress
-                </div>
-
-                <h3>Get your AI tool reviewed.</h3>
-
-                <div className="trust-list">
-                  <div className="trust-item">
-                    <b>✓</b>
-                    <span>Reach an AI-focused audience</span>
-                  </div>
-
-                  <div className="trust-item">
-                    <b>✓</b>
-                    <span>Professional editorial review</span>
-                  </div>
-                </div>
-
-                <a
-                  href="/review-tool"
-                  className="trusted-cta"
-                >
-                  Get Reviewed
-                  <span>↗</span>
-                </a>
-              </div>
 
               <div className="sidebar-card">
                 <div className="side-label">Share article</div>
@@ -1571,7 +1540,7 @@ export default function BlogPostView({
                 </button>
               </div>
 
-              <div className="sidebar-card">
+              <div className="sidebar-card ai-tools-card">
                 <div className="side-label">AI tools</div>
 
                 <div className="ai-options">
@@ -1621,7 +1590,7 @@ export default function BlogPostView({
                   </div>
 
                   <a
-                    href="/blogs"
+                    href={`/${category}`}
                     className="related-view-all"
                   >
                     View all →
@@ -1636,7 +1605,7 @@ export default function BlogPostView({
                     return (
                       <a
                         className="related-card"
-                        href={`/blogs/${item.slug}`}
+                        href={`/${typeof item.category === "object" ? item.category?.slug || category : category}/${item.slug}`}
                         key={item.id}
                       >
                         {relatedImage ? (
@@ -1667,6 +1636,31 @@ export default function BlogPostView({
             </section>
           ) : null
         }
+
+        {/* ---------------------------------------------------------------- */}
+        {/* Desktop AI launcher                                               */}
+        {/* ---------------------------------------------------------------- */}
+
+        {isDesktop ? (
+          <button
+            type="button"
+            className="desktop-ai-fab"
+            aria-label={
+              aiOpen
+                ? "Close Alloy AI assistant"
+                : "Open Alloy AI assistant"
+            }
+            aria-haspopup="dialog"
+            aria-expanded={aiOpen}
+            aria-controls="alloy-ai-panel"
+            onClick={() => setAiOpen((open) => !open)}
+          >
+            <Sparkles aria-hidden="true" />
+            <span className="desktop-ai-fab-label">
+              Ask AI
+            </span>
+          </button>
+        ) : null}
 
         {/* ---------------------------------------------------------------- */}
         {/* Share dialog                                                     */}
@@ -1706,15 +1700,18 @@ export default function BlogPostView({
                 </div>
 
                 <div className="share-modal-options">
+
+                  {/* WhatsApp */}
                   <button
                     type="button"
                     className="share-option share-option-primary"
-                    onClick={shareOnX}
+                    onClick={shareOnWhatsApp}
                   >
-                    <FaXTwitter aria-hidden="true" />
-                    <span>Share on X</span>
+                    <FaWhatsapp aria-hidden="true" />
+                    <span>WhatsApp</span>
                   </button>
 
+                  {/* LinkedIn */}
                   <button
                     type="button"
                     className="share-option"
@@ -1724,33 +1721,37 @@ export default function BlogPostView({
                     <span>LinkedIn</span>
                   </button>
 
+                  {/* X */}
                   <button
                     type="button"
                     className="share-option"
-                    onClick={shareOnFacebook}
+                    onClick={shareOnX}
                   >
-                    <FaFacebookF aria-hidden="true" />
-                    <span>Facebook</span>
+                    <FaXTwitter aria-hidden="true" />
+                    <span>Share on X</span>
                   </button>
 
+                  {/* Reddit */}
                   <button
                     type="button"
                     className="share-option"
-                    onClick={shareOnWhatsApp}
+                    onClick={shareOnReddit}
                   >
-                    <FaWhatsapp aria-hidden="true" />
-                    <span>WhatsApp</span>
+                    <FaRedditAlien aria-hidden="true" />
+                    <span>Reddit</span>
                   </button>
 
+                  {/* Pinterest */}
                   <button
                     type="button"
                     className="share-option"
-                    onClick={shareOnInstagram}
+                    onClick={shareOnPinterest}
                   >
-                    <FaInstagram aria-hidden="true" />
-                    <span>Instagram</span>
+                    <FaPinterestP aria-hidden="true" />
+                    <span>Pinterest</span>
                   </button>
 
+                  {/* Copy link */}
                   <button
                     type="button"
                     className="share-option"
@@ -1761,13 +1762,16 @@ export default function BlogPostView({
                     ) : (
                       <Copy aria-hidden="true" />
                     )}
-                    <span>{copied ? "Link copied" : "Copy link"}</span>
-                  </button>
-                </div>
 
+                    <span>
+                      {copied ? "Link copied" : "Copy link"}
+                    </span>
+                  </button>
+
+                </div>
                 <div className="share-modal-url">
                   <Link2 aria-hidden="true" />
-                  <span>{post?.title || "AlloyPress article"}</span>
+                  <span title={articleUrl}>{articleUrl || "Article link"}</span>
                 </div>
               </div>
             </div>
@@ -1781,30 +1785,100 @@ export default function BlogPostView({
         {
           aiOpen ? (
             <div
+              id="alloy-ai-panel"
               className="ai-panel"
               role="dialog"
               aria-modal="false"
-              aria-label="Ask Alloy AI"
+              aria-labelledby="alloy-ai-title"
             >
-              <button
-                type="button"
-                className="ai-close"
-                aria-label="Close AI assistant"
-                onClick={() => setAiOpen(false)}
-              >
-                ×
-              </button>
+              {/* Header */}
+              <div className="ai-panel-header">
+                <div className="ai-panel-heading">
+                  <div className="ai-panel-icon" aria-hidden="true">
+                    <Sparkles />
+                  </div>
 
-              <h3>Alloy AI</h3>
+                  <div>
+                    <h3 id="alloy-ai-title">Ask AI</h3>
+                    <span>Article assistant</span>
+                  </div>
+                </div>
 
-              <p>
-                Quick article assistant. Use the article summary
-                below as the starting point.
-              </p>
+                <button
+                  type="button"
+                  className="ai-close"
+                  aria-label="Close Alloy AI assistant"
+                  onClick={() => setAiOpen(false)}
+                >
+                  <LucideX aria-hidden="true" />
+                </button>
+              </div>
 
+              {/* Intro */}
+              <div className="ai-intro">
+                <p>
+                  Ask questions about this article and get quick,
+                  easy-to-understand answers.
+                </p>
+              </div>
+
+              {/* Quick take */}
               <div className="ai-answer">
-                <strong>Quick take:</strong>{" "}
-                {summary}
+                <div className="ai-answer-label">
+                  <Sparkles aria-hidden="true" />
+                  <span>Quick take</span>
+                </div>
+
+                <p>{summary}</p>
+              </div>
+
+              {/* Suggested questions */}
+              <div className="ai-suggestions">
+                <div className="ai-section-label">
+                  Try asking
+                </div>
+
+                <button type="button" className="ai-suggestion">
+                  What are the key takeaways?
+                </button>
+
+                <button type="button" className="ai-suggestion">
+                  Which option is best?
+                </button>
+
+                <button type="button" className="ai-suggestion">
+                  Give me a short summary
+                </button>
+
+                <button type="button" className="ai-suggestion">
+                  Who should use this?
+                </button>
+              </div>
+
+              {/* Question input */}
+              <div className="ai-input-wrap">
+                <input
+                  type="text"
+                  className="ai-input"
+                  placeholder="Ask about this article..."
+                  aria-label="Ask about this article"
+                  disabled
+                />
+
+                <button
+                  type="button"
+                  className="ai-send"
+                  aria-label="Send question"
+                  disabled
+                >
+                  <Send aria-hidden="true" />
+                </button>
+              </div>
+
+              {/* Temporary status until API is connected */}
+              <div className="ai-powered-note">
+                <span className="ai-status-dot" />
+                AI answers will be connected here.
               </div>
             </div>
           ) : null

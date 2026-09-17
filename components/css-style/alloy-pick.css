@@ -693,3 +693,111 @@
     transition: none;
   }
 }
+
+
+
+
+
+
+
+
+
+
+
+.alloy-featured-carousel {
+  position: relative;
+  width: 100%;
+  overflow: visible;
+}
+
+.alloy-featured-mobile-controls {
+  display: none;
+}
+
+@media (max-width: 820px) {
+  .alloy-featured-mobile-controls {
+    position: absolute;
+    left: -10px;
+    right: -10px;
+    top: 40%;
+    transform: translateY(-50%);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    z-index: 50;
+    pointer-events: none;
+  }
+
+  .alloy-featured-mobile-arrow {
+    width: 38px;
+    height: 38px;
+    margin: 0;
+    padding: 0;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex: 0 0 38px;
+    border: 1px solid var(--border-strong);
+    border-radius: 50%;
+    background: var(--surface-elevated);
+    color: var(--text-primary);
+    font-family: inherit;
+    font-size: 28px;
+    font-weight: 400;
+    line-height: 1;
+    cursor: pointer;
+    pointer-events: auto;
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.18);
+    transition:
+      transform 0.2s ease,
+      border-color 0.2s ease,
+      background-color 0.2s ease;
+  }
+
+  .alloy-featured-mobile-arrow span {
+    display: block;
+    transform: translateY(-1px);
+  }
+
+  .alloy-featured-mobile-arrow:hover {
+    border-color: var(--brand);
+    background: var(--surface-2);
+  }
+
+  .alloy-featured-mobile-arrow:active {
+    transform: scale(0.92);
+  }
+
+  .alloy-featured-mobile-arrow:focus-visible {
+    outline: 2px solid var(--brand);
+    outline-offset: 3px;
+  }
+}
+
+@media (max-width: 480px) {
+  .alloy-featured-mobile-controls {
+    left: -10px;
+    right: -10px;
+  }
+
+  .alloy-featured-mobile-arrow {
+    width: 34px;
+    height: 34px;
+    flex-basis: 34px;
+    font-size: 25px;
+  }
+}
+
+@media (max-width: 360px) {
+  .alloy-featured-mobile-controls {
+    left: -12px;
+    right: -12px;
+  }
+
+  .alloy-featured-mobile-arrow {
+    width: 32px;
+    height: 32px;
+    flex-basis: 32px;
+    font-size: 23px;
+  }
+}

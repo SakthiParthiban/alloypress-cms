@@ -120,7 +120,7 @@ export default function ReviewsPage() {
           <h1>
             Your AI Tool, Reviewed by
             <br />
-            People Who <em>Actually Use It.</em>
+            People Who <span><em>Actually Use It.</em></span>
           </h1>
 
           <p className="review-hero-copy">
@@ -516,7 +516,7 @@ const styles = `
 
 .review-hero h1 em {
   color: var(--brand-hover);
-  font-style: italic;
+  font-style: normal;
 }
 
 .review-hero-copy {
@@ -549,7 +549,7 @@ const styles = `
 }
 
 .review-primary {
-  color: var(--background);
+  color: white;
   background: var(--brand-hover);
 }
 

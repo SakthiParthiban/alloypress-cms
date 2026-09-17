@@ -203,7 +203,7 @@ export default async function LatestUpdates() {
             return (
               <Link
                 key={post.id}
-                href={`/blogs/${post.slug}`}
+                href={`/${category.slug}/${post.slug}`}
                 className="latest-update-item"
                 aria-label={`Read ${post.title}`}
               >

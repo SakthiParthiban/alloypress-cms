@@ -30,7 +30,7 @@ const categoryDefinitions: CategoryDefinition[] = [
     slug: "blogs",
     title: "Blogs",
     description:
-      "Practical guides, tutorials and useful AI knowledge.",
+      "AI Guides and explainers, in plain English.",
     href: "/blogs",
 
     icon: (
@@ -62,7 +62,7 @@ const categoryDefinitions: CategoryDefinition[] = [
     slug: "reviews",
     title: "Reviews",
     description:
-      "Hands-on AI tool reviews based on real testing.",
+      "Real testing, Honest verdicts, No sponsored rankings.",
     href: "/reviews",
 
     icon: (
@@ -96,7 +96,7 @@ const categoryDefinitions: CategoryDefinition[] = [
     slug: "news",
     title: "News",
     description:
-      "The latest AI developments, launches and updates.",
+      "AI updates filtered for what actually matters.",
     href: "/news",
 
     icon: (
@@ -132,7 +132,7 @@ const categoryDefinitions: CategoryDefinition[] = [
     slug: "alternatives",
     title: "Alternatives",
     description:
-      "Find better AI tools when the obvious choice isn't right.",
+      "Better AI tool options when the obvious chioce falls short.",
     href: "/alternatives",
 
     icon: (
@@ -179,7 +179,7 @@ const categoryDefinitions: CategoryDefinition[] = [
     slug: "comparisons",
     title: "Comparisons",
     description:
-      "Side-by-side analysis to help you choose confidently.",
+      "Head-to-head AI tool testing so you don't have to.",
     href: "/comparisons",
 
     icon: (

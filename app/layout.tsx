@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Sora, Lora, DM_Mono } from "next/font/google";
+import { Inter } from "next/font/google";
 
 import "./globals.css";
 
@@ -15,30 +15,17 @@ import "@/components/css-style/footer.css";
 import "@/components/css-style/popular.css";
 import "@/components/css-style/news-letter.css";
 import "@/components/css-style/tool-submit.css";
+import "@/components/css-style/testing-partner.css";
 
 import Navbar from "@/components/layout/Navbar";
 import Footer from "@/components/layout/Footer";
 import ThemeScript from "@/components/ThemeScript";
 
-const sora = Sora({
-  variable: "--font-sora",
+const inter = Inter({
+  variable: "--font-inter",
   subsets: ["latin"],
   display: "swap",
   weight: ["400", "500", "600", "700", "800"],
-});
-
-const lora = Lora({
-  variable: "--font-lora",
-  subsets: ["latin"],
-  display: "swap",
-  weight: ["400", "500", "600", "700"],
-});
-
-const dmMono = DM_Mono({
-  variable: "--font-dm-mono",
-  subsets: ["latin"],
-  display: "swap",
-  weight: ["400", "500"],
 });
 
 export const metadata: Metadata = {
@@ -69,7 +56,7 @@ export default function RootLayout({
     <html
       lang="en"
       suppressHydrationWarning
-      className={`${sora.variable} ${lora.variable} ${dmMono.variable}`}
+      className={inter.variable}
     >
       <body>
         <ThemeScript />
