@@ -202,13 +202,13 @@ export default function Navbar() {
         <div className="header-actions">
 
           {/* Search */}
-          <button
-            type="button"
-            className="header-icon-button"
-            aria-label="Search AlloyPress"
-          >
-            <SearchIcon />
-          </button>
+          <Link
+  href="/search"
+  className="header-icon-button"
+  aria-label="Search AlloyPress"
+>
+  <SearchIcon />
+</Link>
 
           {/* Theme */}
           <button

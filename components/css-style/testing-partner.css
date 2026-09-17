@@ -175,7 +175,7 @@
 .testing-partner-btn-primary {
   border-color: var(--brand);
   background: var(--brand);
-  color: #001006;
+  color: #ffffff;
 }
 
 .testing-partner-btn-primary:hover {
@@ -720,7 +720,7 @@
   border-radius: var(--radius-sm);
 
   background: var(--brand);
-  color: #001006;
+  color: #ffffff;
 
   font-size: 13px;
   line-height: 1;

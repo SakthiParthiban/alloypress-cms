@@ -36,6 +36,7 @@ const companyLinks = [
   { label: "About Us", href: "/about" },
   { label: "Contact", href: "/contact" },
   { label: "Submit a Tool", href: "/inclusion" },
+  {label: "Testing Partner", href:"/testing-partner"},
   {
     label: "Careers",
     href: "https://nvdigital.in/careers/",
@@ -211,7 +212,7 @@ export default function Footer() {
                 companyLinks[1],
                 companyLinks[2],
                 {
-                  label: "Review Your Tool",
+                  label: "Get Reviewed",
                   href: "/review-tool",
                 },
                 companyLinks[3],

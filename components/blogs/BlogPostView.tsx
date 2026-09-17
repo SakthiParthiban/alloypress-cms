@@ -1,5 +1,5 @@
 "use client";
-
+import Image from "next/image";
 import { useEffect, useMemo, useState } from "react";
 import {
   Check,
@@ -1324,7 +1324,15 @@ export default function BlogPostView({
               ) : null}
 
               <div className="post-byline">
-                <span className="author-dot">AP</span>
+                <span className="author-dot">
+                  <Image
+                    src="/ap-icon.png"
+                    alt="AlloyPress"
+                    width={32}
+                    height={32}
+                  />
+                </span>
+
                 <span>By AlloyPress Team</span>
               </div>
 
