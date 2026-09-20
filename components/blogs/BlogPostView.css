@@ -4938,3 +4938,20 @@ html[data-theme="dark"] .single-post .ai-panel {
     margin-right: 14px !important;
   }
 }
+
+
+
+.post-author-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  color: inherit;
+  text-decoration: none;
+  transition:
+    color 0.2s ease,
+    opacity 0.2s ease;
+}
+
+.post-author-link:hover {
+  color: var(--green);
+}

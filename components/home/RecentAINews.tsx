@@ -1,9 +1,16 @@
 import Image from "next/image";
 import Link from "next/link";
+import { cache } from "react";
+
 import { payloadFetch } from "@/lib/payload";
 
 const PAYLOAD_URL =
-  process.env.PAYLOAD_API_URL || "http://localhost:3001/api";
+  process.env.PAYLOAD_API_URL ||
+  "http://localhost:3001/api";
+
+const NEWS_CATEGORY_SLUG = "news";
+const HOME_NEWS_LIMIT = 6;
+const HOME_NEWS_COUNT = 5;
 
 type NewsPost = {
   id: number | string;
@@ -11,122 +18,205 @@ type NewsPost = {
   slug: string;
   excerpt?: string | null;
   publishedAt?: string | null;
-  author?: string | { name?: string } | null;
   featuredImage?:
-  | {
-    url?: string | null;
-    alt?: string | null;
-  }
-  | number
-  | null;
+    | {
+        url?: string | null;
+        alt?: string | null;
+      }
+    | number
+    | null;
 };
 
-async function getRecentAINews(): Promise<NewsPost[]> {
-  try {
-    /* -------------------------------------------------------
-       GET NEWS CATEGORY
-    ------------------------------------------------------- */
+type NewsCategory = {
+  id: number | string;
+};
 
-    const categoryData = await payloadFetch<{
-      docs?: Array<{
-        id: number | string;
-      }>;
-    }>(
-      "/categories?where[slug][equals]=news&limit=1",
-      {
-        next: {
-          revalidate: 60,
-          tags: ["category:news"],
-        },
+type CategoryResponse = {
+  docs?: NewsCategory[];
+};
+
+type PostsResponse = {
+  docs?: NewsPost[];
+};
+
+/* =========================================================
+   GET NEWS CATEGORY
+
+   Small cached request:
+   - depth=0
+   - ID only
+   - ISR: 5 minutes
+========================================================= */
+
+const getNewsCategory = cache(
+  async (): Promise<NewsCategory | null> => {
+    try {
+      const categoryData =
+        await payloadFetch<CategoryResponse>(
+          `/categories?where[slug][equals]=${NEWS_CATEGORY_SLUG}&limit=1&depth=0&select[id]=true`,
+          {
+            next: {
+              revalidate: 300,
+              tags: [
+                `category:${NEWS_CATEGORY_SLUG}`,
+                "categories",
+              ],
+            },
+          },
+        );
+
+      return categoryData?.docs?.[0] ?? null;
+    } catch (error) {
+      console.error(
+        "Recent AI News category fetch error:",
+        error,
+      );
+
+      return null;
+    }
+  },
+);
+
+/* =========================================================
+   GET LATEST PUBLISHED NEWS
+
+   Only fields actually rendered by this component.
+========================================================= */
+
+const getRecentAINews = cache(
+  async (): Promise<NewsPost[]> => {
+    try {
+      const category = await getNewsCategory();
+
+      if (!category?.id) {
+        console.error(
+          "Recent AI News: News category not found.",
+        );
+
+        return [];
       }
-    );
-    const category = categoryData?.docs?.[0];
 
-    if (!category?.id) {
+      const postsData =
+        await payloadFetch<PostsResponse>(
+          `/posts?where[workflowStatus][equals]=published&where[category][equals]=${encodeURIComponent(
+            String(category.id),
+          )}&sort=-publishedAt&limit=${HOME_NEWS_LIMIT}&depth=1&select[id]=true&select[title]=true&select[slug]=true&select[excerpt]=true&select[publishedAt]=true&select[featuredImage]=true`,
+          {
+            next: {
+              revalidate: 300,
+              tags: [
+                "home:latest-news",
+                "posts",
+                `category:${NEWS_CATEGORY_SLUG}`,
+              ],
+            },
+          },
+        );
+
+      const posts = Array.isArray(
+        postsData?.docs,
+      )
+        ? postsData.docs
+        : [];
+
+      return posts
+        .filter((post) => {
+          if (
+            !post?.id ||
+            !post?.title?.trim() ||
+            !post?.slug?.trim() ||
+            !post?.publishedAt
+          ) {
+            return false;
+          }
+
+          const title = post.title
+            .trim()
+            .toLowerCase();
+
+          return (
+            !title.includes(
+              "untitled wordpress",
+            ) &&
+            !title.includes("dummy") &&
+            !title.includes("test post") &&
+            !title.includes("sample post") &&
+            !title.includes("lorem ipsum")
+          );
+        })
+        .slice(0, HOME_NEWS_COUNT);
+    } catch (error) {
+      console.error(
+        "Recent AI News fetch error:",
+        error,
+      );
+
       return [];
     }
+  },
+);
 
-    /* -------------------------------------------------------
-       GET LATEST PUBLISHED NEWS POSTS
-    ------------------------------------------------------- */
-
-    const postsData = await payloadFetch<{
-      docs?: NewsPost[];
-    }>(
-      `/posts?where[workflowStatus][equals]=published&where[category][equals]=${encodeURIComponent(
-        category.id
-      )}&sort=-publishedAt&limit=8&depth=1`,
-      {
-        next: {
-          revalidate: 60,
-          tags: ["home:latest-news"],
-        },
-      }
-    );
-
-    const posts = Array.isArray(postsData?.docs)
-      ? postsData.docs
-      : [];
-
-    /* -------------------------------------------------------
-       REMOVE INVALID / PLACEHOLDER POSTS
-    ------------------------------------------------------- */
-
-    return posts
-      .filter(
-        (post: NewsPost) =>
-          post?.id &&
-          post?.title &&
-          post?.slug &&
-          post?.publishedAt &&
-          !/^Untitled WordPress Post/i.test(post.title) &&
-          !/dummy/i.test(post.title) &&
-          !/test post/i.test(post.title) &&
-          !/sample post/i.test(post.title) &&
-          !/lorem ipsum/i.test(post.title)
-      )
-      .slice(0, 5);
-  } catch {
-    return [];
-  }
-}
+/* =========================================================
+   IMAGE URL
+========================================================= */
 
 function getImageUrl(
-  featuredImage: NewsPost["featuredImage"]
+  featuredImage: NewsPost["featuredImage"],
 ): string | null {
   if (
     typeof featuredImage === "object" &&
     featuredImage !== null &&
     featuredImage.url
   ) {
-    return featuredImage.url;
+    const imageUrl = featuredImage.url;
+
+    if (imageUrl.startsWith("http")) {
+      return imageUrl;
+    }
+
+    return `${PAYLOAD_URL.replace(
+      /\/api$/,
+      "",
+    )}${imageUrl}`;
   }
 
   if (typeof featuredImage === "number") {
     return `${PAYLOAD_URL.replace(
       /\/api$/,
-      ""
+      "",
     )}/api/media/${featuredImage}`;
   }
 
   return null;
 }
 
-function formatDate(date?: string | null) {
+/* =========================================================
+   DATE
+========================================================= */
+
+function formatDate(
+  date?: string | null,
+): string {
   if (!date) {
     return "";
   }
 
-  try {
-    return new Intl.DateTimeFormat("en-US", {
-      month: "short",
-      day: "numeric",
-      year: "numeric",
-    }).format(new Date(date));
-  } catch {
+  const parsedDate = new Date(date);
+
+  if (Number.isNaN(parsedDate.getTime())) {
     return "";
   }
+
+  return new Intl.DateTimeFormat("en-US", {
+    month: "short",
+    day: "numeric",
+    year: "numeric",
+  }).format(parsedDate);
 }
+
+/* =========================================================
+   COMPONENT
+========================================================= */
 
 export default async function RecentAINews() {
   const posts = await getRecentAINews();
@@ -142,7 +232,7 @@ export default async function RecentAINews() {
   const supportingPosts = posts.slice(1);
 
   const featuredImage = getImageUrl(
-    featured.featuredImage
+    featured.featuredImage,
   );
 
   return (
@@ -167,19 +257,20 @@ export default async function RecentAINews() {
             </h2>
           </div>
 
-          {/* NEWS CATEGORY LISTING */}
           <Link
             href="/news"
             className="recent-ai-news-view-all"
             aria-label="View all AI news"
           >
             View all
-            <span aria-hidden="true">→</span>
+
+            <span aria-hidden="true">
+              →
+            </span>
           </Link>
         </div>
 
         <div className="recent-ai-news-layout">
-
           {/* =================================================
               FEATURED — LATEST NEWS
           ================================================= */}
@@ -197,9 +288,9 @@ export default async function RecentAINews() {
                     alt={
                       typeof featured.featuredImage ===
                         "object" &&
-                        featured.featuredImage !== null
+                      featured.featuredImage !== null
                         ? featured.featuredImage.alt ||
-                        featured.title
+                          featured.title
                         : featured.title
                     }
                     fill
@@ -233,11 +324,12 @@ export default async function RecentAINews() {
 
                   <time
                     dateTime={
-                      featured.publishedAt || undefined
+                      featured.publishedAt ||
+                      undefined
                     }
                   >
                     {formatDate(
-                      featured.publishedAt
+                      featured.publishedAt,
                     )}
                   </time>
                 </div>
@@ -250,6 +342,7 @@ export default async function RecentAINews() {
 
                 <span className="recent-news-read">
                   Read story
+
                   <span aria-hidden="true">
                     ↗
                   </span>
@@ -265,7 +358,7 @@ export default async function RecentAINews() {
           <div className="recent-news-list">
             {supportingPosts.map((post) => {
               const image = getImageUrl(
-                post.featuredImage
+                post.featuredImage,
               );
 
               return (
@@ -285,9 +378,11 @@ export default async function RecentAINews() {
                           alt={
                             typeof post.featuredImage ===
                               "object" &&
-                              post.featuredImage !== null
-                              ? post.featuredImage.alt ||
-                              post.title
+                            post.featuredImage !==
+                              null
+                              ? post.featuredImage
+                                  .alt ||
+                                post.title
                               : post.title
                           }
                           fill
@@ -312,7 +407,7 @@ export default async function RecentAINews() {
                           }
                         >
                           {formatDate(
-                            post.publishedAt
+                            post.publishedAt,
                           )}
                         </time>
                       </div>

@@ -1,5 +1,7 @@
 import Image from "next/image";
 import Link from "next/link";
+import { cache } from "react";
+
 import { payloadFetch } from "@/lib/payload";
 
 type Media = {
@@ -30,6 +32,10 @@ type CategoryResponse = {
   docs?: Category[];
 };
 
+const REVIEWS_CATEGORY_SLUG = "reviews";
+const HOME_REVIEW_LIMIT = 6;
+const HOME_REVIEW_COUNT = 4;
+
 function getMediaUrl(media: Post["featuredImage"]): string | null {
   if (!media || typeof media === "number") {
     return null;
@@ -51,7 +57,7 @@ function getMediaUrl(media: Post["featuredImage"]): string | null {
 }
 
 function getCategory(
-  category: Post["category"]
+  category: Post["category"],
 ): {
   name: string;
   slug: string;
@@ -70,7 +76,9 @@ function getCategory(
 }
 
 function formatDate(date?: string | null): string {
-  if (!date) return "";
+  if (!date) {
+    return "";
+  }
 
   const parsed = new Date(date);
 
@@ -107,61 +115,89 @@ function isValidPost(post: Post): boolean {
   return true;
 }
 
-async function getLatestPosts(): Promise<Post[]> {
+/**
+ * Cached Reviews category lookup.
+ *
+ * This request is tiny:
+ * - depth=0
+ * - only id selected
+ * - revalidated every 5 minutes
+ */
+const getReviewsCategory = cache(async (): Promise<Category | null> => {
   try {
-    // 1. Get the Reviews category
-    const categoryData =
-      await payloadFetch<CategoryResponse>(
-        "/categories?where[slug][equals]=reviews&limit=1",
-        {
-          next: {
-            revalidate: 60,
-            tags: ["category:reviews"],
-          },
-        }
-      );
+    const categoryData = await payloadFetch<CategoryResponse>(
+      `/categories?where[slug][equals]=${REVIEWS_CATEGORY_SLUG}&limit=1&depth=0&select[id]=true`,
+      {
+        next: {
+          revalidate: 300,
+          tags: [
+            `category:${REVIEWS_CATEGORY_SLUG}`,
+            "categories",
+          ],
+        },
+      },
+    );
 
-    const reviewsCategory = categoryData?.docs?.[0];
+    return categoryData?.docs?.[0] ?? null;
+  } catch (error) {
+    console.error(
+      "Latest Updates category fetch error:",
+      error,
+    );
+
+    return null;
+  }
+});
+
+/**
+ * Cached latest Reviews posts.
+ *
+ * Only fields actually rendered by this component are selected.
+ */
+const getLatestPosts = cache(async (): Promise<Post[]> => {
+  try {
+    const reviewsCategory = await getReviewsCategory();
 
     if (!reviewsCategory?.id) {
       console.error(
-        "Latest Updates: Reviews category not found."
+        "Latest Updates: Reviews category not found.",
       );
 
       return [];
     }
 
-    // 2. Fetch only published posts from Reviews category
-    const postsData =
-      await payloadFetch<PayloadResponse>(
-        `/posts?where[workflowStatus][equals]=published&where[category][equals]=${encodeURIComponent(
-          String(reviewsCategory.id)
-        )}&sort=-publishedAt&limit=4&depth=1&select[id]=true&select[title]=true&select[slug]=true&select[excerpt]=true&select[publishedAt]=true&select[featuredImage]=true&select[category]=true`,
-        {
-          next: {
-            revalidate: 60,
-            tags: ["home:reviews"],
-          },
-        }
-      );
+    const postsData = await payloadFetch<PayloadResponse>(
+      `/posts?where[workflowStatus][equals]=published&where[category][equals]=${encodeURIComponent(
+        String(reviewsCategory.id),
+      )}&sort=-publishedAt&limit=${HOME_REVIEW_LIMIT}&depth=1&select[id]=true&select[title]=true&select[slug]=true&select[publishedAt]=true&select[featuredImage]=true&select[category]=true`,
+      {
+        next: {
+          revalidate: 300,
+          tags: [
+            "home:reviews",
+            "posts",
+            `category:${REVIEWS_CATEGORY_SLUG}`,
+          ],
+        },
+      },
+    );
 
-    if (!postsData?.docs) {
+    if (!postsData?.docs?.length) {
       return [];
     }
 
-    // 3. Remove invalid / placeholder posts and take latest 4
     return postsData.docs
       .filter(isValidPost)
-      .slice(0, 4);
+      .slice(0, HOME_REVIEW_COUNT);
   } catch (error) {
     console.error(
       "Latest Updates fetch error:",
-      error
+      error,
     );
 
     return [];
   }
-}
+});
 
 export default async function LatestUpdates() {
   const posts = await getLatestPosts();
@@ -193,11 +229,11 @@ export default async function LatestUpdates() {
         <div className="latest-updates-list">
           {posts.map((post, index) => {
             const image = getMediaUrl(
-              post.featuredImage
+              post.featuredImage,
             );
 
             const category = getCategory(
-              post.category
+              post.category,
             );
 
             return (
@@ -221,7 +257,7 @@ export default async function LatestUpdates() {
                       }
                     >
                       {formatDate(
-                        post.publishedAt
+                        post.publishedAt,
                       )}
                     </time>
                   </div>
@@ -242,12 +278,12 @@ export default async function LatestUpdates() {
                       src={image}
                       alt={
                         typeof post.featuredImage ===
-                          "object"
+                        "object"
                           ? post.featuredImage?.alt ||
-                          post.title ||
-                          "Latest AI update"
+                            post.title ||
+                            "Latest AI update"
                           : post.title ||
-                          "Latest AI update"
+                            "Latest AI update"
                       }
                       fill
                       sizes="(max-width: 700px) 100vw, 240px"

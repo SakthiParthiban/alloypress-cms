@@ -1,7 +1,10 @@
 import Link from "next/link";
+import { cache } from "react";
+
+import { payloadFetch } from "@/lib/payload";
 
 type HeroPost = {
-  id: number;
+  id: number | string;
   title: string;
   slug: string;
   publishedAt?: string | null;
@@ -16,104 +19,105 @@ type HeroCard = {
   post: HeroPost | null;
 };
 
-const PAYLOAD_URL =
-  process.env.PAYLOAD_API_URL || "http://localhost:3001/api";
-
 /* =========================================================
    PAYLOAD
 ========================================================= */
 
-async function getLatestPostByCategory(
-  categoryId: number
-): Promise<HeroPost | null> {
-  try {
-    const url =
-      `${PAYLOAD_URL}/posts` +
-      `?where[workflowStatus][equals]=published` +
-      `&where[category][equals]=${categoryId}` +
-      `&sort=-publishedAt` +
-      `&limit=1` +
-      `&depth=0`;
+const getLatestPostByCategory = cache(
+  async (
+    categoryId: number | string
+  ): Promise<HeroPost | null> => {
+    try {
+      const data = await payloadFetch<{
+        docs?: HeroPost[];
+      }>(
+        `/posts?where[workflowStatus][equals]=published&where[category][equals]=${encodeURIComponent(
+          String(categoryId)
+        )}&sort=-publishedAt&limit=1&depth=0&select[id]=true&select[title]=true&select[slug]=true&select[publishedAt]=true`,
+        {
+          next: {
+            revalidate: 300,
+            tags: [
+              `hero:category:${categoryId}`,
+              "posts",
+            ],
+          },
+        }
+      );
 
-    const response = await fetch(url, {
-      next: {
-        revalidate: 60,
-      },
-    });
+      const post = data?.docs?.[0];
 
-    if (!response.ok) {
+      if (
+        !post?.id ||
+        !post?.title ||
+        !post?.slug
+      ) {
+        return null;
+      }
+
+      return {
+        id: post.id,
+        title: post.title,
+        slug: post.slug,
+        publishedAt:
+          post.publishedAt ?? null,
+      };
+    } catch (error) {
       console.error(
-        `[Hero] Payload error - category ${categoryId}:`,
-        response.status
+        `[Hero] Failed to load category ${categoryId}:`,
+        error
       );
 
       return null;
     }
-
-    const data = await response.json();
-
-    const post = data?.docs?.[0];
-
-    if (!post?.id || !post?.title || !post?.slug) {
-      return null;
-    }
-
-    return {
-      id: post.id,
-      title: post.title,
-      slug: post.slug,
-      publishedAt: post.publishedAt ?? null,
-    };
-  } catch (error) {
-    console.error(
-      `[Hero] Failed to load category ${categoryId}:`,
-      error
-    );
-
-    return null;
   }
-}
+);
 
 
 /* =========================================================
    HERO DATA
 ========================================================= */
 
-async function getHeroCards(): Promise<HeroCard[]> {
-  const [reviewPost, newsPost, comparisonPost] =
-    await Promise.all([
+const getHeroCards = cache(
+  async (): Promise<HeroCard[]> => {
+    const [
+      reviewPost,
+      newsPost,
+      comparisonPost,
+    ] = await Promise.all([
       getLatestPostByCategory(4),
       getLatestPostByCategory(6),
       getLatestPostByCategory(5),
     ]);
 
-  return [
-    {
-      label: "AI TOOL REVIEW",
-      meta: "Latest review",
-      icon: "◫",
-      className: "hero-card-review",
-      categorySlug: "reviews",
-      post: reviewPost,
-    },
-    {
-      label: "LATEST NEWS",
-      meta: "Latest update",
-      icon: "▤",
-      className: "hero-card-news",
-      categorySlug: "news",
-      post: newsPost,
-    },
-    {
-      label: "DETAILED COMPARISON",
-      meta: "Latest comparison",
-      icon: "◒",
-      className: "hero-card-comparison",
-      categorySlug: "comparisons",
-      post: comparisonPost,
-    },
-  ];
-}
+    return [
+      {
+        label: "AI TOOL REVIEW",
+        meta: "Latest review",
+        icon: "◫",
+        className: "hero-card-review",
+        categorySlug: "reviews",
+        post: reviewPost,
+      },
+      {
+        label: "LATEST NEWS",
+        meta: "Latest update",
+        icon: "▤",
+        className: "hero-card-news",
+        categorySlug: "news",
+        post: newsPost,
+      },
+      {
+        label: "DETAILED COMPARISON",
+        meta: "Latest comparison",
+        icon: "◒",
+        className: "hero-card-comparison",
+        categorySlug: "comparisons",
+        post: comparisonPost,
+      },
+    ];
+  }
+);
 
 
 /* =========================================================

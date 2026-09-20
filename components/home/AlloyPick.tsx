@@ -1,7 +1,26 @@
 import Image from "next/image";
 import Link from "next/link";
+import { cache } from "react";
+
 import { payloadFetch } from "@/lib/payload";
+
 import FeaturedCarousel from "./FeaturedCarousel";
+
+// ============================================================
+// CONFIG
+// ============================================================
+
+const PAYLOAD_URL =
+  process.env.PAYLOAD_API_URL ||
+  "http://localhost:3001/api";
+
+const HOME_POST_LIMIT = 12;
+const FEATURED_POST_COUNT = 3;
+const TRENDING_POST_COUNT = 4;
+
+// ============================================================
+// TYPES
+// ============================================================
 
 type Media = {
   url?: string | null;
@@ -29,18 +48,21 @@ type PayloadResponse = {
   docs?: Post[];
 };
 
-/* =========================================================
-   HELPERS
-   ========================================================= */
+// ============================================================
+// HELPERS
+// ============================================================
 
 function getMediaUrl(
-  media: Post["featuredImage"]
+  media: Post["featuredImage"],
 ): string | null {
   if (!media || typeof media === "number") {
     return null;
   }
 
-  if (!media.url) {
+  if (
+    typeof media.url !== "string" ||
+    !media.url
+  ) {
     return null;
   }
 
@@ -52,16 +74,22 @@ function getMediaUrl(
     process.env.PAYLOAD_API_URL ||
     "http://localhost:3001/api";
 
-  return `${cmsUrl.replace(/\/api$/, "")}${media.url}`;
+  return `${cmsUrl.replace(
+    /\/api$/,
+    "",
+  )}${media.url}`;
 }
 
 function getCategory(
-  category: Post["category"]
+  category: Post["category"],
 ): {
   name: string;
   slug: string;
 } {
-  if (!category || typeof category === "number") {
+  if (
+    !category ||
+    typeof category === "number"
+  ) {
     return {
       name: "AI",
       slug: "ai",
@@ -75,9 +103,11 @@ function getCategory(
 }
 
 function formatDate(
-  date?: string | null
+  date?: string | null,
 ): string {
-  if (!date) return "";
+  if (!date) {
+    return "";
+  }
 
   const parsed = new Date(date);
 
@@ -85,34 +115,49 @@ function formatDate(
     return "";
   }
 
-  return new Intl.DateTimeFormat("en-US", {
-    month: "short",
-    day: "numeric",
-    year: "numeric",
-  }).format(parsed);
+  return new Intl.DateTimeFormat(
+    "en-US",
+    {
+      month: "short",
+      day: "numeric",
+      year: "numeric",
+    },
+  ).format(parsed);
 }
 
-/* =========================================================
-   CONTENT FILTER
-   ========================================================= */
+// ============================================================
+// CONTENT FILTER
+// ============================================================
 
-function isValidPost(post: Post): boolean {
-  if (!post.title || !post.slug) {
-    return false;
-  }
-
-  const title = post.title.trim().toLowerCase();
-  const category = getCategory(post.category);
-
-  // Remove migrated WordPress junk.
-  if (title.includes("untitled wordpress")) {
-    return false;
-  }
-
-  // Remove Uncategorized content.
+function isValidPost(
+  post: Post,
+): boolean {
   if (
-    category.slug === "uncategorized" ||
-    category.name.toLowerCase() === "uncategorized"
+    !post.title ||
+    !post.slug
+  ) {
+    return false;
+  }
+
+  const title =
+    post.title.trim().toLowerCase();
+
+  const category =
+    getCategory(post.category);
+
+  if (
+    title.includes(
+      "untitled wordpress",
+    )
+  ) {
+    return false;
+  }
+
+  if (
+    category.slug ===
+      "uncategorized" ||
+    category.name.toLowerCase() ===
+      "uncategorized"
   ) {
     return false;
   }
@@ -120,65 +165,147 @@ function isValidPost(post: Post): boolean {
   return true;
 }
 
-/* =========================================================
-   FETCH PUBLISHED POSTS
-   ========================================================= */
+// ============================================================
+// FETCH PUBLISHED POSTS
+// ============================================================
 
-async function getPublishedPosts(): Promise<Post[]> {
-  try {
-    const data =
-      await payloadFetch<PayloadResponse>(
-        "/posts?where[workflowStatus][equals]=published&sort=-publishedAt&limit=30&depth=1&select[id]=true&select[title]=true&select[slug]=true&select[excerpt]=true&select[publishedAt]=true&select[cornerstone]=true&select[featuredImage]=true&select[category]=true",
-        {
-          next: {
-            revalidate: 60,
-            tags: ["home:latest-posts"],
-          },
-        }
+const getPublishedPosts = cache(
+  async (): Promise<Post[]> => {
+    try {
+      const params =
+        new URLSearchParams();
+
+      params.set(
+        "where[workflowStatus][equals]",
+        "published",
       );
 
-    if (!data?.docs) {
+      params.set(
+        "sort",
+        "-publishedAt",
+      );
+
+      params.set(
+        "limit",
+        String(HOME_POST_LIMIT),
+      );
+
+      params.set(
+        "depth",
+        "1",
+      );
+
+      // Only fields required by this
+      // homepage section.
+      params.set(
+        "select[id]",
+        "true",
+      );
+
+      params.set(
+        "select[title]",
+        "true",
+      );
+
+      params.set(
+        "select[slug]",
+        "true",
+      );
+
+      params.set(
+        "select[publishedAt]",
+        "true",
+      );
+
+      params.set(
+        "select[cornerstone]",
+        "true",
+      );
+
+      params.set(
+        "select[featuredImage]",
+        "true",
+      );
+
+      params.set(
+        "select[category]",
+        "true",
+      );
+
+      const data =
+        await payloadFetch<PayloadResponse>(
+          `/posts?${params.toString()}`,
+          {
+            next: {
+              revalidate: 300,
+              tags: [
+                "home:latest-posts",
+                "posts",
+              ],
+            },
+          },
+        );
+
+      if (
+        !Array.isArray(
+          data?.docs,
+        )
+      ) {
+        return [];
+      }
+
+      return data.docs.filter(
+        isValidPost,
+      );
+    } catch (error) {
+      console.error(
+        "Alloy Pick / Trending posts error:",
+        error,
+      );
+
       return [];
     }
+  },
+);
 
-    return data.docs.filter(isValidPost);
-  } catch (error) {
-    console.error(
-      "Alloy Pick / Trending posts error:",
-      error
-    );
+// ============================================================
+// ALLOY PICK SELECTION
+// ============================================================
 
-    return [];
-  }
-}
-
-/* =========================================================
-   ALLOY PICK SELECTION
-   ========================================================= */
-
-function selectFeaturedPosts(posts: Post[]): Post[] {
+function selectFeaturedPosts(
+  posts: Post[],
+): Post[] {
   if (!posts.length) {
     return [];
   }
 
-  // 1. Keep the existing editorial preference:
-  //    cornerstone content gets first priority.
-  const cornerstone = posts.find(
-    (post) => post.cornerstone === true
+  const cornerstone =
+    posts.find(
+      (post) =>
+        post.cornerstone === true,
+    );
+
+  const ordered =
+    cornerstone
+      ? [
+          cornerstone,
+          ...posts.filter(
+            (post) =>
+              post.id !==
+              cornerstone.id,
+          ),
+        ]
+      : posts;
+
+  return ordered.slice(
+    0,
+    FEATURED_POST_COUNT,
   );
-
-  // 2. Fill the remaining Featured carousel slots with
-  //    the newest valid published posts, without duplicates.
-  const ordered = cornerstone
-    ? [cornerstone, ...posts.filter((post) => post.id !== cornerstone.id)]
-    : posts;
-
-  return ordered.slice(0, 3);
 }
 
-/* =========================================================
-   COMPONENT
-   ========================================================= */
+// ============================================================
+// COMPONENT
+// ============================================================
 
 export default async function AlloyPick() {
   const posts =
@@ -195,25 +322,25 @@ export default async function AlloyPick() {
     return null;
   }
 
-  /*
-   * FEATURED + RECENTLY PUBLISHED
-   *
-   * Left:
-   *   Three-post automatic Featured carousel.
-   *
-   * Right:
-   *   Existing Recently Published list is preserved.
-   */
+  const featuredIds =
+    new Set(
+      featuredPosts.map(
+        (post) => post.id,
+      ),
+    );
 
-  const featuredIds = new Set(
-    featuredPosts.map((post) => post.id)
-  );
-
-  const trendingPosts = posts
-    .filter(
-      (post) => !featuredIds.has(post.id)
-    )
-    .slice(0, 4);
+  const trendingPosts =
+    posts
+      .filter(
+        (post) =>
+          !featuredIds.has(
+            post.id,
+          ),
+      )
+      .slice(
+        0,
+        TRENDING_POST_COUNT,
+      );
 
   return (
     <section
@@ -221,15 +348,8 @@ export default async function AlloyPick() {
       aria-labelledby="alloy-trending-title"
     >
       <div className="container">
-
-        {/* =================================================
-            HEADER
-        ================================================= */}
-
         <div className="alloy-trending-header">
-
           <div className="alloy-trending-heading">
-
             <div>
               <span className="eyebrow">
                 TRENDING NOW
@@ -239,44 +359,33 @@ export default async function AlloyPick() {
                 Featured
               </h2>
             </div>
-
           </div>
-
         </div>
 
-        {/* =================================================
-            ALLOY PICK + TRENDING
-        ================================================= */}
-
         <div className="alloy-trending-grid">
-
-          {/* =================================================
-              FEATURED CAROUSEL
-              Three featured posts. Recent Posts on the right
-              remains a separate, unchanged content list.
-          ================================================= */}
-
-          <FeaturedCarousel posts={featuredPosts} />
-
-          {/* =================================================
-              TRENDING ARTICLES
-              NO IMAGES
-          ================================================= */}
+          <FeaturedCarousel
+            posts={featuredPosts}
+          />
 
           <div className="alloy-trending-posts">
             <div className="alloy-trending-posts-heading">
               <span className="trending-live-dot" />
+
               <span>
                 Recently Published
               </span>
             </div>
 
             <div className="alloy-trending-list">
-
               {trendingPosts.map(
-                (post, index) => {
-
-                  const category = getCategory(post.category);
+                (
+                  post,
+                  index,
+                ) => {
+                  const category =
+                    getCategory(
+                      post.category,
+                    );
 
                   return (
                     <Link
@@ -285,17 +394,17 @@ export default async function AlloyPick() {
                       className="alloy-trending-card"
                       aria-label={`Read ${post.title}`}
                     >
-
                       <span className="alloy-trending-number">
                         {String(
-                          index + 1
-                        ).padStart(2, "0")}
+                          index + 1,
+                        ).padStart(
+                          2,
+                          "0",
+                        )}
                       </span>
 
                       <div className="alloy-trending-content">
-
                         <div className="alloy-trending-meta">
-
                           <span>
                             {category.name}
                           </span>
@@ -307,16 +416,14 @@ export default async function AlloyPick() {
                             }
                           >
                             {formatDate(
-                              post.publishedAt
+                              post.publishedAt,
                             )}
                           </time>
-
                         </div>
 
                         <h3>
                           {post.title}
                         </h3>
-
                       </div>
 
                       <span
@@ -325,18 +432,13 @@ export default async function AlloyPick() {
                       >
                         ↗
                       </span>
-
                     </Link>
                   );
-                }
+                },
               )}
-
             </div>
-
           </div>
-
         </div>
-
       </div>
     </section>
   );

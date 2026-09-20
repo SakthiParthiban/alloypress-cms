@@ -2,6 +2,8 @@ import type { Metadata } from "next";
 
 import { notFound } from "next/navigation";
 
+import { cache } from "react";
+
 import BlogPostView from "@/components/blogs/BlogPostView";
 
 import { payloadFetch } from "@/lib/payload";
@@ -10,6 +12,14 @@ import type {
   Post,
   PayloadResponse,
 } from "@/lib/cms";
+
+// ============================================================
+// SITE
+// ============================================================
+
+const SITE_URL =
+  process.env.NEXT_PUBLIC_SITE_URL ||
+  "https://alloypress-web.vercel.app";
 
 // ============================================================
 // ALLOWED CATEGORIES
@@ -85,6 +95,20 @@ type PostWithMeta = Post & {
 };
 
 // ============================================================
+// MEDIA TYPES
+// ============================================================
+
+type MediaDocument = {
+  id: number | string;
+  url?: string | null;
+  alt?: string | null;
+  filename?: string | null;
+  width?: number | null;
+  height?: number | null;
+  mimeType?: string | null;
+};
+
+// ============================================================
 // MEDIA HELPERS
 // ============================================================
 
@@ -144,17 +168,17 @@ function imageUrl(
 }
 
 // ============================================================
-// HYDRATE NESTED LEXICAL MEDIA
+// COLLECT LEXICAL MEDIA IDS
 // ============================================================
 
-async function hydrateContentMedia(
+function collectContentMediaIds(
   content: unknown,
-): Promise<unknown> {
+): number[] {
   if (
     typeof content !== "object" ||
     content === null
   ) {
-    return content;
+    return [];
   }
 
   const root = (
@@ -169,7 +193,7 @@ async function hydrateContentMedia(
     !root ||
     !Array.isArray(root.children)
   ) {
-    return content;
+    return [];
   }
 
   const ids = new Set<number>();
@@ -195,7 +219,7 @@ async function hydrateContentMedia(
     };
 
     // --------------------------------------------------------
-    // Upload node
+    // Lexical upload node
     // --------------------------------------------------------
 
     if (
@@ -247,49 +271,180 @@ async function hydrateContentMedia(
 
   root.children.forEach(collect);
 
-  if (!ids.size) {
+  return Array.from(ids);
+}
+
+// ============================================================
+// BATCH MEDIA FETCH
+// ============================================================
+//
+// IMPORTANT:
+// Instead of:
+//
+//   /media/10
+//   /media/20
+//   /media/30
+//   /media/40
+//
+// we make ONE Payload request:
+//
+//   /media?where[id][in]=10,20,30,40
+//
+// This removes the N+1 request pattern.
+// ============================================================
+
+const getContentMedia = cache(
+  async (
+    ids: number[],
+  ): Promise<
+    Map<number, MediaDocument>
+  > => {
+    if (!ids.length) {
+      return new Map();
+    }
+
+    try {
+      const params =
+        new URLSearchParams();
+
+      params.set(
+        "where[id][in]",
+        ids.join(","),
+      );
+
+      params.set(
+        "limit",
+        String(ids.length),
+      );
+
+      params.set(
+        "depth",
+        "0",
+      );
+
+      params.set(
+        "select[id]",
+        "true",
+      );
+
+      params.set(
+        "select[url]",
+        "true",
+      );
+
+      params.set(
+        "select[alt]",
+        "true",
+      );
+
+      params.set(
+        "select[filename]",
+        "true",
+      );
+
+      params.set(
+        "select[width]",
+        "true",
+      );
+
+      params.set(
+        "select[height]",
+        "true",
+      );
+
+      params.set(
+        "select[mimeType]",
+        "true",
+      );
+
+      const data =
+        await payloadFetch<
+          PayloadResponse<MediaDocument>
+        >(
+          `/media?${params.toString()}`,
+          {
+            next: {
+              revalidate: 300,
+              tags: [
+                "media",
+                ...ids.map(
+                  (id) =>
+                    `media:${id}`,
+                ),
+              ],
+            },
+          },
+        );
+
+      const map =
+        new Map<
+          number,
+          MediaDocument
+        >();
+
+      for (
+        const media of
+          data?.docs ?? []
+      ) {
+        const numericId =
+          Number(media.id);
+
+        if (
+          Number.isFinite(
+            numericId,
+          )
+        ) {
+          map.set(
+            numericId,
+            media,
+          );
+        }
+      }
+
+      return map;
+    } catch (error) {
+      console.error(
+        "[Article] Failed to hydrate content media:",
+        error,
+      );
+
+      return new Map();
+    }
+  },
+);
+
+// ============================================================
+// REPLACE LEXICAL MEDIA
+// ============================================================
+
+function replaceContentMedia(
+  content: unknown,
+  mediaMap: Map<
+    number,
+    MediaDocument
+  >,
+): unknown {
+  if (
+    typeof content !== "object" ||
+    content === null
+  ) {
     return content;
   }
 
-  // ==========================================================
-  // FETCH MEDIA IN PARALLEL
-  // ==========================================================
+  const root = (
+    content as {
+      root?: {
+        children?: unknown[];
+      };
+    }
+  ).root;
 
-  const entries = await Promise.all(
-    Array.from(ids).map(
-      async (id) => {
-        const data =
-          await payloadFetch<unknown>(
-            `/media/${id}?depth=1`,
-            {
-              next: {
-                revalidate: 300,
-                tags: [`media:${id}`],
-              },
-            },
-          );
-
-        return [id, data] as const;
-      },
-    ),
-  );
-
-  const mediaMap =
-    new Map<number, unknown>(
-      entries.filter(
-        (
-          entry,
-        ): entry is [
-          number,
-          unknown,
-        ] =>
-          entry[1] !== null,
-      ),
-    );
-
-  // ==========================================================
-  // REPLACE MEDIA IDS
-  // ==========================================================
+  if (
+    !root ||
+    !Array.isArray(root.children)
+  ) {
+    return content;
+  }
 
   function replace(
     node: unknown,
@@ -315,7 +470,7 @@ async function hydrateContentMedia(
     };
 
     // --------------------------------------------------------
-    // Upload
+    // Upload node
     // --------------------------------------------------------
 
     if (
@@ -410,172 +565,350 @@ async function hydrateContentMedia(
 }
 
 // ============================================================
-// GET POST
+// HYDRATE NESTED LEXICAL MEDIA
 // ============================================================
 
-async function getPost(
-  category: string,
-  slug: string,
-): Promise<PostWithMeta | null> {
-  // ----------------------------------------------------------
-  // Validate category
-  // ----------------------------------------------------------
+const hydrateContentMedia = cache(
+  async (
+    content: unknown,
+  ): Promise<unknown> => {
+    const ids =
+      collectContentMediaIds(
+        content,
+      );
 
-  if (
-    !ALLOWED_CATEGORIES.has(
-      category,
-    )
-  ) {
-    return null;
-  }
+    if (!ids.length) {
+      return content;
+    }
 
-  const params =
-    new URLSearchParams();
+    const mediaMap =
+      await getContentMedia(ids);
 
-  params.set(
-    "where[slug][equals]",
-    slug,
-  );
+    if (!mediaMap.size) {
+      return content;
+    }
 
-  params.set(
-    "where[_status][equals]",
-    "published",
-  );
+    return replaceContentMedia(
+      content,
+      mediaMap,
+    );
+  },
+);
 
-  params.set(
-    "limit",
-    "1",
-  );
+// ============================================================
+// GET POST
+// ============================================================
+//
+// IMPORTANT:
+// cache() prevents generateMetadata() and the page itself from
+// independently fetching the same article during one render.
+//
+// depth changed:
+//   5 -> 1
+//
+// select added:
+// Only fields required by metadata, BlogPostView and article
+// rendering are requested.
+//
+// workflowStatus is used because that is the actual publishing
+// field in the current AlloyPress Payload data.
+// ============================================================
 
-  // Keep depth=5 for migrated
-  // Lexical/media relationships.
-  params.set(
-    "depth",
-    "5",
-  );
+const getPost = cache(
+  async (
+    category: string,
+    slug: string,
+  ): Promise<PostWithMeta | null> => {
+    // ----------------------------------------------------------
+    // Validate category
+    // ----------------------------------------------------------
 
-  const data =
-    await payloadFetch<
-      PayloadResponse<PostWithMeta>
-    >(
-      `/posts?${params.toString()}`,
-      {
-        next: {
-          revalidate: 60,
-          tags: [
-            `post:${category}:${slug}`,
-            `post:${slug}`,
-          ],
+    if (
+      !ALLOWED_CATEGORIES.has(
+        category,
+      )
+    ) {
+      return null;
+    }
+
+    const params =
+      new URLSearchParams();
+
+    params.set(
+      "where[slug][equals]",
+      slug,
+    );
+
+    params.set(
+      "where[workflowStatus][equals]",
+      "published",
+    );
+
+    params.set(
+      "limit",
+      "1",
+    );
+
+    // ----------------------------------------------------------
+    // IMPORTANT NETWORK OPTIMIZATION
+    //
+    // depth=5 was causing Payload to recursively populate
+    // relationships throughout the article.
+    //
+    // depth=1 is enough for:
+    // - category
+    // - featuredImage
+    // - meta media
+    //
+    // Nested Lexical media is hydrated separately and in batch.
+    // ----------------------------------------------------------
+
+    params.set(
+      "depth",
+      "1",
+    );
+
+    // ----------------------------------------------------------
+    // SELECT ONLY REQUIRED FIELDS
+    // ----------------------------------------------------------
+
+    params.set(
+      "select[id]",
+      "true",
+    );
+
+    params.set(
+      "select[title]",
+      "true",
+    );
+
+    params.set(
+      "select[slug]",
+      "true",
+    );
+
+    params.set(
+      "select[excerpt]",
+      "true",
+    );
+
+    params.set(
+      "select[content]",
+      "true",
+    );
+
+    params.set(
+      "select[publishedAt]",
+      "true",
+    );
+
+    params.set(
+      "select[updatedAt]",
+      "true",
+    );
+
+    params.set(
+      "select[category]",
+      "true",
+    );
+
+    params.set(
+      "select[featuredImage]",
+      "true",
+    );
+
+    params.set(
+      "select[meta]",
+      "true",
+    );
+
+    const data =
+      await payloadFetch<
+        PayloadResponse<PostWithMeta>
+      >(
+        `/posts?${params.toString()}`,
+        {
+          next: {
+            revalidate: 300,
+            tags: [
+              `post:${category}:${slug}`,
+              `post:${slug}`,
+              "posts",
+            ],
+          },
         },
-      },
-    );
+      );
 
-  const post =
-    data?.docs?.[0] ?? null;
+    const post =
+      data?.docs?.[0] ?? null;
 
-  if (!post) {
-    return null;
-  }
+    if (!post) {
+      return null;
+    }
 
-  // ----------------------------------------------------------
-  // Verify category
-  // ----------------------------------------------------------
+    // ----------------------------------------------------------
+    // VERIFY CATEGORY
+    // ----------------------------------------------------------
 
-  const postCategory =
-    typeof post.category ===
-    "object"
-      ? post.category?.slug
-      : null;
+    const postCategory =
+      typeof post.category ===
+      "object"
+        ? post.category?.slug
+        : null;
 
-  if (
-    postCategory !== category
-  ) {
-    return null;
-  }
+    if (
+      postCategory !== category
+    ) {
+      return null;
+    }
 
-  // ----------------------------------------------------------
-  // Hydrate media
-  // ----------------------------------------------------------
+    // ----------------------------------------------------------
+    // HYDRATE ONLY NESTED CONTENT MEDIA
+    // ----------------------------------------------------------
 
-  const hydratedContent =
-    await hydrateContentMedia(
-      post.content,
-    );
+    const hydratedContent =
+      await hydrateContentMedia(
+        post.content,
+      );
 
-  return {
-    ...post,
+    return {
+      ...post,
 
-    content:
-      hydratedContent as Post["content"],
-  };
-}
+      content:
+        hydratedContent as Post["content"],
+    };
+  },
+);
 
 // ============================================================
 // GET RELATED POSTS
 // ============================================================
+//
+// Related cards do NOT need:
+// - full content
+// - deep relationships
+// - SEO metadata
+// - large nested media objects
+//
+// So keep this response intentionally small.
+// ============================================================
 
-async function getRelatedPosts(
-  categoryId: string | number,
-  currentPostId: string,
-  category: string,
-): Promise<Post[]> {
-  const params =
-    new URLSearchParams();
+const getRelatedPosts = cache(
+  async (
+    categoryId: string | number,
+    currentPostId:
+      | string
+      | number,
+    category: string,
+  ): Promise<Post[]> => {
+    const params =
+      new URLSearchParams();
 
-  params.set(
-    "where[_status][equals]",
-    "published",
-  );
-
-  params.set(
-    "where[category][equals]",
-    String(categoryId),
-  );
-
-  params.set(
-    "sort",
-    "-publishedAt",
-  );
-
-  params.set(
-    "limit",
-    "5",
-  );
-
-  params.set(
-    "depth",
-    "2",
-  );
-
-  const data =
-    await payloadFetch<
-      PayloadResponse<Post>
-    >(
-      `/posts?${params.toString()}`,
-      {
-        next: {
-          revalidate: 120,
-          tags: [
-            `category:${category}`,
-          ],
-        },
-      },
+    params.set(
+      "where[workflowStatus][equals]",
+      "published",
     );
 
-  return (data?.docs ?? [])
-    .filter(
-      (item) =>
-        item.id !==
-        currentPostId,
-    )
-    .filter(
-      (item) =>
-        !/^Untitled WordPress Post/i.test(
-          item.title || "",
-        ),
-    )
-    .slice(0, 3);
-}
+    params.set(
+      "where[category][equals]",
+      String(categoryId),
+    );
+
+    params.set(
+      "sort",
+      "-publishedAt",
+    );
+
+    // Only need a small safety buffer.
+    params.set(
+      "limit",
+      "5",
+    );
+
+    // Related cards need populated category/media,
+    // but don't need deep recursive population.
+    params.set(
+      "depth",
+      "1",
+    );
+
+    // ----------------------------------------------------------
+    // SELECT ONLY RELATED-CARD FIELDS
+    // ----------------------------------------------------------
+
+    params.set(
+      "select[id]",
+      "true",
+    );
+
+    params.set(
+      "select[title]",
+      "true",
+    );
+
+    params.set(
+      "select[slug]",
+      "true",
+    );
+
+    params.set(
+      "select[excerpt]",
+      "true",
+    );
+
+    params.set(
+      "select[publishedAt]",
+      "true",
+    );
+
+    params.set(
+      "select[featuredImage]",
+      "true",
+    );
+
+    params.set(
+      "select[author]",
+      "true",
+    );
+
+    params.set(
+      "select[category]",
+      "true",
+    );
+
+    const data =
+      await payloadFetch<
+        PayloadResponse<Post>
+      >(
+        `/posts?${params.toString()}`,
+        {
+          next: {
+            revalidate: 300,
+            tags: [
+              `category:${category}`,
+              "posts",
+            ],
+          },
+        },
+      );
+
+    return (data?.docs ?? [])
+      .filter(
+        (item) =>
+          String(item.id) !==
+          String(
+            currentPostId,
+          ),
+      )
+      .filter(
+        (item) =>
+          !/^Untitled WordPress Post/i.test(
+            item.title || "",
+          ),
+      )
+      .slice(0, 3);
+  },
+);
 
 // ============================================================
 // METADATA
@@ -633,7 +966,7 @@ export async function generateMetadata({
 
   const canonical =
     meta.canonicalURL ||
-    `/${category}/${post.slug}`;
+    `${SITE_URL}/${category}/${post.slug}`;
 
   return {
     title,
@@ -745,11 +1078,19 @@ export default async function CategoryPostPage({
     notFound();
   }
 
+  // ==========================================================
+  // CATEGORY
+  // ==========================================================
+
   const categoryId =
     typeof post.category ===
     "object"
       ? post.category?.id
       : post.category;
+
+  // ==========================================================
+  // RELATED POSTS
+  // ==========================================================
 
   const related = categoryId
     ? await getRelatedPosts(
@@ -759,10 +1100,18 @@ export default async function CategoryPostPage({
       )
     : [];
 
+  // ==========================================================
+  // ARTICLE IMAGE
+  // ==========================================================
+
   const articleImage =
     imageUrl(
       post.featuredImage,
     );
+
+  // ==========================================================
+  // CATEGORY LABEL
+  // ==========================================================
 
   const categoryLabel =
     CATEGORY_LABELS[
@@ -772,6 +1121,9 @@ export default async function CategoryPostPage({
   // ==========================================================
   // JSON-LD
   // ==========================================================
+
+  const articleUrl =
+    `${SITE_URL}/${category}/${post.slug}`;
 
   const jsonLd = {
     "@context":
@@ -823,7 +1175,7 @@ export default async function CategoryPostPage({
         "WebPage",
 
       "@id":
-        `/${category}/${post.slug}`,
+        articleUrl,
     },
   };
 

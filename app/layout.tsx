@@ -16,6 +16,7 @@ import "@/components/css-style/popular.css";
 import "@/components/css-style/news-letter.css";
 import "@/components/css-style/tool-submit.css";
 import "@/components/css-style/testing-partner.css";
+import EmailCtaModal from "@/components/ui/EmailCtaModal";
 
 import Navbar from "@/components/layout/Navbar";
 import Footer from "@/components/layout/Footer";
@@ -28,8 +29,12 @@ const inter = Inter({
   weight: ["400", "500", "600", "700", "800"],
 });
 
+const SITE_URL =
+  process.env.NEXT_PUBLIC_SITE_URL ||
+  "https://alloypress-web.vercel.app";
+
 export const metadata: Metadata = {
-  metadataBase: new URL("https://alloypress.com"),
+  metadataBase: new URL(SITE_URL),
 
   title: {
     default: "AlloyPress — AI Info Simplified For Everyone",
@@ -66,6 +71,7 @@ export default function RootLayout({
         <main>{children}</main>
 
         <Footer />
+        <EmailCtaModal />
       </body>
     </html>
   );

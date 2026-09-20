@@ -12,7 +12,7 @@ import {
 // ============================================================
 
 export type Media = {
-  id?: string;
+  id?: string | number;
   url?: string;
   alt?: string;
   width?: number;
@@ -26,7 +26,7 @@ export type Media = {
 // ============================================================
 
 export type Author = {
-  id?: string;
+  id?: string | number;
   name?: string;
   email?: string;
 };
@@ -36,7 +36,7 @@ export type Author = {
 // ============================================================
 
 export type Category = {
-  id?: string;
+  id?: string | number;
   name?: string;
   title?: string;
   slug?: string;
@@ -47,7 +47,7 @@ export type Category = {
 // ============================================================
 
 export type Tag = {
-  id?: string;
+  id?: string | number;
   name?: string;
   title?: string;
   slug?: string;
@@ -184,7 +184,8 @@ export type Post = {
   // ----------------------------------------------------------
 
   legacy?: {
-    wordpressId?: number;
+    wordpressId?: number | string;
+    wordpressModifiedAt?: string;
   };
 };
 
@@ -233,27 +234,20 @@ export async function getPostBySlug(
     "published",
   );
 
-  params.set(
-    "depth",
-    "2",
-  );
+  params.set("limit", "1");
 
-  params.set(
-    "limit",
-    "1",
-  );
+  params.set("depth", "1");
 
-  const data = await payloadFetch<
-    PayloadResponse<Post>
-  >(
-    `/posts?${params.toString()}`,
-    {
-      next: {
-        revalidate: 60,
-        tags: [`post:${slug}`],
+  const data =
+    await payloadFetch<PayloadResponse<Post>>(
+      `/posts?${params.toString()}`,
+      {
+        next: {
+          revalidate: 300,
+          tags: [`post:${slug}`],
+        },
       },
-    },
-  );
+    );
 
   return data?.docs?.[0] ?? null;
 }
@@ -265,15 +259,23 @@ export async function getPostBySlug(
 export async function getPostById(
   id: string,
 ): Promise<Post | null> {
-  const data = await payloadFetch<Post>(
-    `/posts/${encodeURIComponent(id)}?depth=2`,
-    {
-      next: {
-        revalidate: 60,
-        tags: [`post:id:${id}`],
-      },
-    },
+  const params = new URLSearchParams();
+
+  params.set(
+    "depth",
+    "1",
   );
+
+  const data =
+    await payloadFetch<Post>(
+      `/posts/${encodeURIComponent(id)}?${params.toString()}`,
+      {
+        next: {
+          revalidate: 300,
+          tags: [`post:id:${id}`],
+        },
+      },
+    );
 
   return data ?? null;
 }

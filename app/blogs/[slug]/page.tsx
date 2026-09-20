@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-
+import { cache } from "react";
 import BlogPostView from "@/components/blogs/BlogPostView";
 import { payloadFetch } from "@/lib/payload";
 import {
@@ -43,19 +43,31 @@ type PostMeta = {
   title?: string;
   description?: string;
   canonicalURL?: string;
-
   robots?: RobotsMeta;
-
   image?: unknown;
-
   openGraph?: OpenGraphMeta;
-
   twitter?: TwitterMeta;
 };
 
 type PostWithMeta = Post & {
   meta?: PostMeta;
 };
+
+// ============================================================
+// MEDIA TYPES
+// ============================================================
+
+type Media = {
+  id: number | string;
+  url?: string | null;
+  filename?: string | null;
+  width?: number | null;
+  height?: number | null;
+  mimeType?: string | null;
+  alt?: string | null;
+};
+
+type MediaResponse = PayloadResponse<Media>;
 
 // ============================================================
 // MEDIA HELPERS
@@ -101,14 +113,6 @@ function imageUrl(value: unknown): string | null {
 // HYDRATE NESTED LEXICAL MEDIA
 // ============================================================
 
-/**
- * Payload depth normally populates media relations.
- *
- * Migrated content can still contain numeric media IDs inside
- * nested Lexical blocks, so hydrate those IDs on the server
- * before the client renderer receives the post.
- */
-
 async function hydrateContentMedia(
   content: unknown,
 ): Promise<unknown> {
@@ -148,10 +152,7 @@ async function hydrateContentMedia(
       children?: unknown[];
     };
 
-    // ----------------------------------------------------------
     // Lexical upload node
-    // ----------------------------------------------------------
-
     if (
       current.type === "upload" &&
       typeof current.value === "number"
@@ -159,10 +160,7 @@ async function hydrateContentMedia(
       ids.add(current.value);
     }
 
-    // ----------------------------------------------------------
     // Custom blocks
-    // ----------------------------------------------------------
-
     if (current.type === "block") {
       const fields = current.fields || {};
 
@@ -181,10 +179,7 @@ async function hydrateContentMedia(
       }
     }
 
-    // ----------------------------------------------------------
     // Nested children
-    // ----------------------------------------------------------
-
     if (Array.isArray(current.children)) {
       current.children.forEach(collect);
     }
@@ -197,33 +192,30 @@ async function hydrateContentMedia(
   }
 
   // ==========================================================
-  // FETCH MEDIA IN PARALLEL
+  // FETCH ALL MEDIA IN ONE REQUEST
   // ==========================================================
 
-  const entries = await Promise.all(
-    Array.from(ids).map(async (id) => {
-      const data = await payloadFetch<unknown>(
-        `/media/${id}?depth=1`,
-        {
-          next: {
-            revalidate: 300,
-            tags: [`media:${id}`],
-          },
-        },
-      );
+  const idList = Array.from(ids).join(",");
 
-      return [id, data] as const;
-    }),
+  const mediaData = await payloadFetch<MediaResponse>(
+    `/media?where[id][in]=${encodeURIComponent(idList)}&limit=${ids.size}&depth=0&select[id]=true&select[url]=true&select[filename]=true&select[width]=true&select[height]=true&select[mimeType]=true&select[alt]=true`,
+    {
+      next: {
+        revalidate: 300,
+        tags: Array.from(ids).map((id) => `media:${id}`),
+      },
+    },
   );
 
-  const mediaMap = new Map<number, unknown>(
-    entries.filter(
-      (
-        entry,
-      ): entry is [number, unknown] =>
-        entry[1] !== null,
-    ),
-  );
+  const mediaMap = new Map<number, Media>();
+
+  for (const media of mediaData?.docs ?? []) {
+    const numericId = Number(media.id);
+
+    if (Number.isFinite(numericId)) {
+      mediaMap.set(numericId, media);
+    }
+  }
 
   // ==========================================================
   // REPLACE MEDIA IDS
@@ -237,19 +229,13 @@ async function hydrateContentMedia(
       return node;
     }
 
-    const current = node as Record<
-      string,
-      unknown
-    >;
+    const current = node as Record<string, unknown>;
 
     const next: Record<string, unknown> = {
       ...current,
     };
 
-    // --------------------------------------------------------
     // Lexical upload
-    // --------------------------------------------------------
-
     if (
       next.type === "upload" &&
       typeof next.value === "number"
@@ -259,20 +245,14 @@ async function hydrateContentMedia(
         next.value;
     }
 
-    // --------------------------------------------------------
-    // Custom block
-    // --------------------------------------------------------
-
+    // Custom blocks
     if (next.type === "block") {
       const fields =
         typeof next.fields === "object" &&
-        next.fields !== null
+          next.fields !== null
           ? {
-              ...(next.fields as Record<
-                string,
-                unknown
-              >),
-            }
+            ...(next.fields as Record<string, unknown>),
+          }
           : {};
 
       if (
@@ -296,13 +276,9 @@ async function hydrateContentMedia(
       next.fields = fields;
     }
 
-    // --------------------------------------------------------
     // Nested children
-    // --------------------------------------------------------
-
     if (Array.isArray(next.children)) {
-      next.children =
-        next.children.map(replace);
+      next.children = next.children.map(replace);
     }
 
     return next;
@@ -312,8 +288,7 @@ async function hydrateContentMedia(
     ...(content as Record<string, unknown>),
     root: {
       ...root,
-      children:
-        root.children.map(replace),
+      children: root.children.map(replace),
     },
   };
 }
@@ -322,64 +297,70 @@ async function hydrateContentMedia(
 // GET POST BY SLUG
 // ============================================================
 
-async function getPost(
-  slug: string,
-): Promise<PostWithMeta | null> {
-  const params = new URLSearchParams();
+const getPost = cache(
+  async (
+    slug: string,
+  ): Promise<PostWithMeta | null> => {
+    const params = new URLSearchParams();
 
-  params.set(
-    "where[slug][equals]",
-    slug,
-  );
+    params.set(
+      "where[slug][equals]",
+      slug,
+    );
 
-  params.set(
-    "where[_status][equals]",
-    "published",
-  );
+    params.set(
+      "where[_status][equals]",
+      "published",
+    );
 
-  params.set(
-    "limit",
-    "1",
-  );
+    params.set("limit", "1");
+    params.set("depth", "1");
 
-  // Keep depth=5 because migrated Lexical content
-  // may contain nested media/relationships.
-  params.set(
-    "depth",
-    "5",
-  );
+    params.set("select[id]", "true");
+    params.set("select[title]", "true");
+    params.set("select[slug]", "true");
+    params.set("select[content]", "true");
+    params.set("select[excerpt]", "true");
+    params.set("select[featuredImage]", "true");
+    params.set("select[category]", "true");
+    params.set("select[tags]", "true");
+    params.set("select[publishedAt]", "true");
+    params.set("select[updatedAt]", "true");
+    params.set("select[legacy]", "true");
+    params.set("select[meta]", "true");
 
-  const data =
-    await payloadFetch<
-      PayloadResponse<PostWithMeta>
-    >(
-      `/posts?${params.toString()}`,
-      {
-        next: {
-          revalidate: 60,
-          tags: [`post:${slug}`],
+    const data =
+      await payloadFetch<
+        PayloadResponse<PostWithMeta>
+      >(
+        `/posts?${params.toString()}`,
+        {
+          next: {
+            revalidate: 300,
+            tags: [`post:${slug}`],
+          },
         },
-      },
-    );
+      );
 
-  const post =
-    data?.docs?.[0] ?? null;
+    const post =
+      data?.docs?.[0] ?? null;
 
-  if (!post) {
-    return null;
-  }
+    if (!post) {
+      return null;
+    }
 
-  const hydratedContent =
-    await hydrateContentMedia(
-      post.content,
-    );
+    const hydratedContent =
+      await hydrateContentMedia(
+        post.content,
+      );
 
-  return {
-    ...post,
-    content:
-      hydratedContent as Post["content"],
-  };
-}
+    return {
+      ...post,
+      content:
+        hydratedContent as Post["content"],
+    };
+  },
+);
 
 // ============================================================
 // GET RELATED POSTS
@@ -406,14 +387,28 @@ async function getRelatedPosts(
     "-publishedAt",
   );
 
+  params.set("limit", "3");
+
+  params.set("depth", "1");
+
   params.set(
-    "limit",
-    "5",
+    "select[title]",
+    "true",
   );
 
   params.set(
-    "depth",
-    "2",
+    "select[slug]",
+    "true",
+  );
+
+  params.set(
+    "select[featuredImage]",
+    "true",
+  );
+
+  params.set(
+    "select[category]",
+    "true",
   );
 
   const data =
@@ -423,9 +418,10 @@ async function getRelatedPosts(
       `/posts?${params.toString()}`,
       {
         next: {
-          revalidate: 120,
+          revalidate: 300,
           tags: [
             `category:${String(categoryId)}`,
+            "posts",
           ],
         },
       },
@@ -533,13 +529,13 @@ export async function generateMetadata({
 
       images: ogImage
         ? [
-            {
-              url: ogImage,
-              alt:
-                post.title ||
-                "AlloyPress article",
-            },
-          ]
+          {
+            url: ogImage,
+            alt:
+              post.title ||
+              "AlloyPress article",
+          },
+        ]
         : undefined,
     },
 
@@ -622,13 +618,13 @@ export default async function BlogPostPage({
 
   const categoryName =
     typeof post.category === "object" &&
-    post.category?.name
+      post.category?.name
       ? post.category.name
       : CATEGORY_LABEL;
 
   const categorySlugValue =
     typeof post.category === "object" &&
-    post.category?.slug
+      post.category?.slug
       ? post.category.slug
       : CATEGORY_SLUG;
 
@@ -638,9 +634,9 @@ export default async function BlogPostPage({
 
   const related = categoryId
     ? await getRelatedPosts(
-        categoryId,
-        post.id,
-      )
+      categoryId,
+      String(post.id),
+    )
     : [];
 
   // ==========================================================
@@ -655,24 +651,20 @@ export default async function BlogPostPage({
   // ==========================================================
 
   const jsonLd = {
-    "@context":
-      "https://schema.org",
+    "@context": "https://schema.org",
 
-    "@type":
-      "Article",
+    "@type": "Article",
 
-    headline:
-      post.title,
+    headline: post.title,
 
     description:
       post.meta?.description ||
       post.excerpt ||
       "",
 
-    image:
-      articleImage
-        ? [articleImage]
-        : undefined,
+    image: articleImage
+      ? [articleImage]
+      : undefined,
 
     datePublished:
       post.publishedAt ||
@@ -684,27 +676,18 @@ export default async function BlogPostPage({
       undefined,
 
     author: {
-      "@type":
-        "Organization",
-
-      name:
-        "AlloyPress",
+      "@type": "Organization",
+      name: "AlloyPress",
     },
 
     publisher: {
-      "@type":
-        "Organization",
-
-      name:
-        "AlloyPress",
+      "@type": "Organization",
+      name: "AlloyPress",
     },
 
     mainEntityOfPage: {
-      "@type":
-        "WebPage",
-
-      "@id":
-        `/blogs/${post.slug}`,
+      "@type": "WebPage",
+      "@id": `/blogs/${post.slug}`,
     },
   };
 
@@ -717,13 +700,23 @@ export default async function BlogPostPage({
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{
-          __html:
-            JSON.stringify(jsonLd),
+          __html: JSON.stringify(jsonLd),
         }}
       />
 
       <BlogPostView
-        post={post}
+        post={{
+          id: post.id,
+          title: post.title,
+          excerpt: post.excerpt,
+          content: post.content,
+          category: post.category,
+          featuredImage: post.featuredImage,
+          publishedAt: post.publishedAt,
+          updatedAt: post.updatedAt,
+          legacy: post.legacy,
+          tags: post.tags,
+        }}
         related={related}
         articleImage={articleImage}
         category={categorySlugValue}

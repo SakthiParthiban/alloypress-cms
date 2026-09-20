@@ -49,10 +49,10 @@ export default function ToolSubmissionCTA() {
             </p>
 
             <Link
-              href="/inclusion"
+              href="/get-featured"
               className="tool-cta-primary"
             >
-              See How Inclusion Works
+              Get featured
               <span>↗</span>
             </Link>
           </div>

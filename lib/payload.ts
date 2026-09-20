@@ -1,6 +1,6 @@
 const PAYLOAD_API_URL =
   process.env.PAYLOAD_API_URL ||
-  "http://localhost:3000/api";
+  "http://localhost:3001/api";
 
 type PayloadFetchOptions = RequestInit & {
   next?: {
@@ -9,35 +9,61 @@ type PayloadFetchOptions = RequestInit & {
   };
 };
 
+const DEFAULT_REVALIDATE = 300;
+
 export async function payloadFetch<T>(
   path: string,
-  options?: PayloadFetchOptions
+  options: PayloadFetchOptions = {},
 ): Promise<T | null> {
   try {
+    const {
+      next,
+      cache,
+      ...requestOptions
+    } = options;
+
+    const fetchOptions: RequestInit & {
+      next?: {
+        revalidate?: number | false;
+        tags?: string[];
+      };
+    } = {
+      ...requestOptions,
+    };
+
+    if (cache) {
+      fetchOptions.cache = cache;
+    }
+
+    if (cache !== "no-store") {
+      fetchOptions.next = {
+        revalidate: DEFAULT_REVALIDATE,
+        ...next,
+      };
+    } else if (next?.tags?.length) {
+      fetchOptions.next = {
+        tags: next.tags,
+      };
+    }
+
     const response = await fetch(
       `${PAYLOAD_API_URL}${path}`,
-      {
-        ...options,
-        next: {
-          revalidate: 60,
-          ...options?.next,
-        },
-      }
+      fetchOptions,
     );
 
     if (!response.ok) {
       console.error(
-        `Payload API error: ${response.status} ${response.statusText} - ${path}`
+        `[Payload] ${response.status} ${response.statusText} - ${path}`,
       );
 
       return null;
     }
 
-    return response.json();
+    return (await response.json()) as T;
   } catch (error) {
     console.error(
-      `Payload API request failed: ${path}`,
-      error
+      `[Payload] Request failed - ${path}`,
+      error,
     );
 
     return null;

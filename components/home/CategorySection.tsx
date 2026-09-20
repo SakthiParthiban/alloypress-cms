@@ -1,10 +1,15 @@
 import Link from "next/link";
 import type { ReactNode } from "react";
+import { cache } from "react";
+
+import { payloadFetch } from "@/lib/payload";
 
 type PayloadCategory = {
-  id: number;
-  name: string;
   slug: string;
+};
+
+type CategoryResponse = {
+  docs?: PayloadCategory[];
 };
 
 type CategoryDefinition = {
@@ -16,12 +21,8 @@ type CategoryDefinition = {
   icon: ReactNode;
 };
 
-const PAYLOAD_URL =
-  process.env.PAYLOAD_API_URL || "http://localhost:3001/api";
-
-
 /* =========================================================
-   CATEGORY PRESENTATION
+   CATEGORY CONFIGURATION
 ========================================================= */
 
 const categoryDefinitions: CategoryDefinition[] = [
@@ -209,53 +210,60 @@ const categoryDefinitions: CategoryDefinition[] = [
   },
 ];
 
-
 /* =========================================================
    FETCH REAL PAYLOAD CATEGORIES
+
+   Only fetch the five categories this component can render.
+
+   - depth=0
+   - slug only
+   - limit=5
+   - ISR: 5 minutes
+   - cached with React cache()
 ========================================================= */
 
-async function getCategories(): Promise<PayloadCategory[]> {
-  try {
-    const response = await fetch(
-      `${PAYLOAD_URL}/categories?limit=100`,
-      {
-        next: {
-          revalidate: 60,
-        },
-      }
-    );
+const getCategories = cache(
+  async (): Promise<PayloadCategory[]> => {
+    try {
+      const categoryData =
+        await payloadFetch<CategoryResponse>(
+          "/categories?where[slug][in]=blogs,reviews,news,alternatives,comparisons&limit=5&depth=0&select[slug]=true",
+          {
+            next: {
+              revalidate: 300,
+              tags: [
+                "categories",
+                "category:blogs",
+                "category:reviews",
+                "category:news",
+                "category:alternatives",
+                "category:comparisons",
+              ],
+            },
+          },
+        );
 
-    if (!response.ok) {
+      return Array.isArray(categoryData?.docs)
+        ? categoryData.docs
+        : [];
+    } catch (error) {
       console.error(
-        "[CategorySection] Categories API error:",
-        response.status
+        "[CategorySection] Failed to fetch categories:",
+        error,
       );
 
       return [];
     }
-
-    const data = await response.json();
-
-    return Array.isArray(data?.docs)
-      ? data.docs
-      : [];
-  } catch (error) {
-    console.error(
-      "[CategorySection] Failed to fetch categories:",
-      error
-    );
-
-    return [];
-  }
-}
-
+  },
+);
 
 /* =========================================================
    CATEGORY SECTION
 ========================================================= */
 
 export default async function CategorySection() {
-  const payloadCategories = await getCategories();
+  const payloadCategories =
+    await getCategories();
 
   /*
    * Match the frontend presentation config
@@ -264,16 +272,15 @@ export default async function CategorySection() {
 
   const availableSlugs = new Set(
     payloadCategories.map(
-      (category) => category.slug
-    )
+      (category) => category.slug,
+    ),
   );
 
   const categories =
     categoryDefinitions.filter(
       (category) =>
-        availableSlugs.has(category.slug)
+        availableSlugs.has(category.slug),
     );
-
 
   return (
     <section
@@ -287,9 +294,7 @@ export default async function CategorySection() {
         ================================================= */}
 
         <div className="category-header">
-
           <div>
-
             <div className="category-eyebrow">
               <span aria-hidden="true" />
               Explore by category
@@ -298,28 +303,21 @@ export default async function CategorySection() {
             <h2 id="category-section-title">
               Explore AI, your way.
             </h2>
-
           </div>
-
         </div>
-
 
         {/* =================================================
             CATEGORY CARDS
         ================================================= */}
 
         <div className="category-grid">
-
           {categories.map((category) => (
-
             <Link
               key={category.slug}
               href={category.href}
               className="category-card"
             >
-
               <div className="category-card-top">
-
                 <span className="category-number">
                   {category.number}
                 </span>
@@ -334,12 +332,9 @@ export default async function CategorySection() {
                 >
                   ↗
                 </span>
-
               </div>
 
-
               <div className="category-card-content">
-
                 <h3>
                   {category.title}
                 </h3>
@@ -347,21 +342,15 @@ export default async function CategorySection() {
                 <p>
                   {category.description}
                 </p>
-
               </div>
-
 
               <span
                 className="category-card-line"
                 aria-hidden="true"
               />
-
             </Link>
-
           ))}
-
         </div>
-
       </div>
     </section>
   );

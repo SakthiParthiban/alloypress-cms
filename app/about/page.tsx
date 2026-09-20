@@ -100,8 +100,8 @@ const workPaths = [
     label: "Article inclusion",
     title: "Get featured in a roundup",
     text: "Hands-on testing by our editorial team, evaluation against the criteria for that category, and a dedicated write-up based entirely on what we find. Position is based on test results, not payment.",
-    href: "/inclusion",
-    cta: "See how inclusion works",
+    href: "/get-featured",
+    cta: "Get featured",
     primary: true,
   },
   {

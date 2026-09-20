@@ -35,7 +35,7 @@ const resourceLinks = [
 const companyLinks = [
   { label: "About Us", href: "/about" },
   { label: "Contact", href: "/contact" },
-  { label: "Submit a Tool", href: "/inclusion" },
+  { label: "Feature Your Tool", href: "/get-featured" },
   {label: "Testing Partner", href:"/testing-partner"},
   {
     label: "Careers",

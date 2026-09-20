@@ -1,5 +1,6 @@
 "use client";
 import Image from "next/image";
+import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 import {
   Check,
@@ -1324,31 +1325,33 @@ export default function BlogPostView({
               ) : null}
 
               <div className="post-byline">
-                <span className="author-dot">
-                  <Image
-                    src="/ap-icon.png"
-                    alt="AlloyPress"
-                    width={32}
-                    height={32}
-                  />
-                </span>
-
-                <span>By AlloyPress Team</span>
-              </div>
-
-              <div className="post-share-row">
-                <button
-                  type="button"
-                  className="share-btn"
-                  onClick={() => setShareOpen(true)}
-                  aria-haspopup="dialog"
-                  aria-expanded={shareOpen}
+                <Link
+                  href="/author/alloypress-team"
+                  className="post-author-link"
                 >
-                  <Share2 aria-hidden="true" />
-                  <span>Share article</span>
-                </button>
+                  <span className="author-dot">
+                    <Image
+                      src="/ap-icon.png"
+                      alt="AlloyPress"
+                      width={32}
+                      height={32}
+                    />
+                  </span>
+
+                  <span>By AlloyPress Team</span>
+                </Link>
               </div>
 
+              {/* Date */}
+              <div className="post-date-row">
+                {showUpdatedDate ? (
+                  <span>Updated at : {updatedDate}</span>
+                ) : date ? (
+                  <span>Published at : {date}</span>
+                ) : null}
+              </div>
+
+              {/* Featured image */}
               {articleImage ? (
                 <figure className="hero-image">
                   <img
@@ -1361,11 +1364,6 @@ export default function BlogPostView({
                   />
                 </figure>
               ) : null}
-
-              <div className="post-date-row">
-                {date ? <span>Published at : {date}</span> : null}
-                {showUpdatedDate ? <span> Updated at : {updatedDate}</span> : null}
-              </div>
             </div>
           </div>
         </header>

@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { cache } from "react";
 import { payloadFetch } from "@/lib/payload";
 import "./search.css";
 
@@ -10,7 +11,6 @@ type Category = {
   id: number | string;
   slug?: string | null;
   name?: string | null;
-  updatedAt?: string | null;
 };
 
 type Post = {
@@ -19,12 +19,11 @@ type Post = {
   slug?: string | null;
   excerpt?: string | null;
   publishedAt?: string | null;
-  category?: Category | number | null;
+  category?: Category | number | string | null;
 };
 
 type PayloadResponse<T> = {
   docs?: T[];
-  totalDocs?: number;
 };
 
 const ALLOWED_CATEGORIES = new Set([
@@ -47,7 +46,7 @@ const SUGGESTED_SEARCHES = [
 ];
 
 function cleanText(value?: string | null) {
-  return value?.replace(/<[^>]*>/g, "").trim() || "";
+  return value?.replace(/<[^>]*>/g, "").replace(/\s+/g, " ").trim() || "";
 }
 
 function getCategory(post: Post): Category | null {
@@ -64,115 +63,102 @@ function isValidPost(post: Post) {
       post.slug &&
       post.title &&
       category?.slug &&
-      ALLOWED_CATEGORIES.has(category.slug)
+      ALLOWED_CATEGORIES.has(category.slug),
   );
 }
 
-async function getCategories(): Promise<Category[]> {
-  try {
-    const data = await payloadFetch<PayloadResponse<Category>>(
-      "/categories?limit=100&depth=0&select[id]=true&select[name]=true&select[slug]=true",
-      {
-        next: {
-          revalidate: 300,
-        },
-      }
-    );
-
-    return (data?.docs || []).filter(
-      (category) =>
-        category.slug && ALLOWED_CATEGORIES.has(category.slug)
-    );
-  } catch (error) {
-    console.error("AlloyPress category search error:", error);
-    return [];
-  }
-}
+const MAX_SEARCH_RESULTS = 20;
+const MAX_QUERY_LENGTH = 100;
 
 async function searchPosts(query: string): Promise<Post[]> {
-  if (!query.trim()) return [];
+  const normalizedQuery = query.trim().slice(
+    0,
+    MAX_QUERY_LENGTH,
+  );
 
-  try {
-    const categories = await getCategories();
-
-    const normalizedQuery = query.trim().toLowerCase();
-
-    const matchedCategories = categories.filter((category) => {
-      const name = category.name?.toLowerCase() || "";
-      const slug = category.slug?.toLowerCase() || "";
-
-      return (
-        name.includes(normalizedQuery) ||
-        slug.includes(normalizedQuery)
-      );
-    });
-
-    const params = new URLSearchParams();
-
-    params.set("where[_status][equals]", "published");
-    params.set("limit", "30");
-    params.set("depth", "1");
-    params.set("sort", "-publishedAt");
-
-    params.set(
-      "where[or][0][title][contains]",
-      query.trim()
-    );
-
-    params.set(
-      "where[or][1][excerpt][contains]",
-      query.trim()
-    );
-
-    matchedCategories.forEach((category, index) => {
-      params.set(
-        `where[or][${index + 2}][category][equals]`,
-        String(category.id)
-      );
-    });
-
-    const data = await payloadFetch<PayloadResponse<Post>>(
-      `/posts?${params.toString()}`,
-      {
-        next: {
-          revalidate: 60,
-        },
-      }
-    );
-
-    return (data?.docs || []).filter(isValidPost);
-  } catch (error) {
-    console.error("AlloyPress search error:", error);
+  if (!normalizedQuery) {
     return [];
   }
-}
 
-async function getSuggestedPosts(): Promise<Post[]> {
   try {
+    const params = new URLSearchParams();
+
+    params.set("q", normalizedQuery);
+    params.set("limit", String(MAX_SEARCH_RESULTS));
+
     const data = await payloadFetch<PayloadResponse<Post>>(
-      "/posts?where[_status][equals]=published&limit=8&depth=1&sort=-publishedAt&select[id]=true&select[title]=true&select[slug]=true&select[excerpt]=true&select[publishedAt]=true&select[category]=true",
+      `/posts/search?${params.toString()}`,
       {
         next: {
           revalidate: 300,
+          tags: ["search", "posts"],
         },
-      }
+      },
     );
 
     return (data?.docs || []).filter(isValidPost);
   } catch (error) {
-    console.error("AlloyPress suggested posts error:", error);
+    console.error(
+      "[AlloyPress Search] Search request failed:",
+      error,
+    );
+
     return [];
   }
 }
+
+const getSuggestedPosts = cache(
+  async (): Promise<Post[]> => {
+    try {
+      const data =
+        await payloadFetch<PayloadResponse<Post>>(
+          "/posts" +
+            "?where[workflowStatus][equals]=published" +
+            "&limit=8" +
+            "&depth=1" +
+            "&sort=-publishedAt" +
+            "&select[id]=true" +
+            "&select[title]=true" +
+            "&select[slug]=true" +
+            "&select[excerpt]=true" +
+            "&select[publishedAt]=true" +
+            "&select[category]=true",
+          {
+            next: {
+              revalidate: 300,
+              tags: ["posts"],
+            },
+          },
+        );
+
+      return (data?.docs || [])
+        .filter(isValidPost)
+        .slice(0, 6);
+    } catch (error) {
+      console.error(
+        "[AlloyPress Search] Suggested posts failed:",
+        error,
+      );
+
+      return [];
+    }
+  },
+);
 
 function formatDate(value?: string | null) {
   if (!value) return "";
+
+  const date = new Date(value);
+
+  if (Number.isNaN(date.getTime())) {
+    return "";
+  }
 
   return new Intl.DateTimeFormat("en-US", {
     month: "short",
     day: "numeric",
     year: "numeric",
-  }).format(new Date(value));
+  }).format(date);
 }
 
 export default async function SearchPage({
@@ -181,12 +167,32 @@ export default async function SearchPage({
   searchParams: SearchParams;
 }) {
   const { q = "" } = await searchParams;
-  const query = q.trim();
 
-  const [results, suggestedPosts] = await Promise.all([
-    searchPosts(query),
-    getSuggestedPosts(),
-  ]);
+  const query = q
+    .trim()
+    .slice(0, MAX_QUERY_LENGTH);
+
+  /*
+   * Important network optimisation:
+   *
+   * Search mode:
+   *   -> fetch search results only
+   *
+   * Empty mode:
+   *   -> fetch latest content only
+   *
+   * We no longer run both requests on every page visit.
+   */
+
+  const [results, suggestedPosts] =
+    await Promise.all([
+      query
+        ? searchPosts(query)
+        : Promise.resolve([]),
+      query
+        ? Promise.resolve([])
+        : getSuggestedPosts(),
+    ]);
 
   return (
     <main className="search-page">
@@ -228,6 +234,8 @@ export default async function SearchPage({
               placeholder="Search AI tools, reviews, news..."
               aria-label="Search AlloyPress"
               autoComplete="off"
+              enterKeyHint="search"
+              spellCheck={false}
             />
 
             <button type="submit">
@@ -252,18 +260,22 @@ export default async function SearchPage({
             </div>
 
             <div className="search-suggestions">
-              {SUGGESTED_SEARCHES.map((suggestion) => (
-                <Link
-                  key={suggestion}
-                  href={`/search?q=${encodeURIComponent(
-                    suggestion
-                  )}`}
-                  className="search-suggestion"
-                >
-                  <span>{suggestion}</span>
-                  <span aria-hidden="true">→</span>
-                </Link>
-              ))}
+              {SUGGESTED_SEARCHES.map(
+                (suggestion) => (
+                  <Link
+                    key={suggestion}
+                    href={`/search?q=${encodeURIComponent(
+                      suggestion,
+                    )}`}
+                    className="search-suggestion"
+                  >
+                    <span>{suggestion}</span>
+                    <span aria-hidden="true">
+                      →
+                    </span>
+                  </Link>
+                ),
+              )}
             </div>
 
             {suggestedPosts.length > 0 && (
@@ -273,55 +285,71 @@ export default async function SearchPage({
 
                   <Link href="/blogs">
                     View all
-                    <span aria-hidden="true">→</span>
+                    <span aria-hidden="true">
+                      →
+                    </span>
                   </Link>
                 </div>
 
                 <div className="search-suggested-grid">
-                  {suggestedPosts.slice(0, 6).map((post) => {
-                    const category = getCategory(post);
+                  {suggestedPosts
+                    .slice(0, 6)
+                    .map((post) => {
+                      const category =
+                        getCategory(post);
 
-                    if (!category?.slug) return null;
+                      if (
+                        !category?.slug ||
+                        !post.slug
+                      ) {
+                        return null;
+                      }
 
-                    return (
-                      <Link
-                        key={post.id}
-                        href={`/${category.slug}/${post.slug}`}
-                        className="search-suggested-card"
-                      >
-                        <div className="search-suggested-meta">
-                          <span>
-                            {category.name || category.slug}
-                          </span>
-
-                          {post.publishedAt && (
+                      return (
+                        <Link
+                          key={post.id}
+                          href={`/${category.slug}/${post.slug}`}
+                          className="search-suggested-card"
+                        >
+                          <div className="search-suggested-meta">
                             <span>
-                              {formatDate(post.publishedAt)}
+                              {category.name ||
+                                category.slug}
                             </span>
-                          )}
-                        </div>
 
-                        <h3>{post.title}</h3>
-
-                        {post.excerpt && (
-                          <p>
-                            {cleanText(post.excerpt).slice(
-                              0,
-                              120
+                            {post.publishedAt && (
+                              <span>
+                                {formatDate(
+                                  post.publishedAt,
+                                )}
+                              </span>
                             )}
-                            {cleanText(post.excerpt).length > 120
-                              ? "..."
-                              : ""}
-                          </p>
-                        )}
+                          </div>
 
-                        <span className="search-read-link">
-                          Read article
-                          <span aria-hidden="true">→</span>
-                        </span>
-                      </Link>
-                    );
-                  })}
+                          <h3>{post.title}</h3>
+
+                          {post.excerpt && (
+                            <p>
+                              {cleanText(
+                                post.excerpt,
+                              ).slice(0, 120)}
+                              {cleanText(
+                                post.excerpt,
+                              ).length > 120
+                                ? "..."
+                                : ""}
+                            </p>
+                          )}
+
+                          <span className="search-read-link">
+                            Read article
+                            <span aria-hidden="true">
+                              →
+                            </span>
+                          </span>
+                        </Link>
+                      );
+                    })}
                 </div>
               </div>
             )}
@@ -331,18 +359,28 @@ export default async function SearchPage({
             <div className="search-results-heading">
               <span>
                 {results.length} result
-                {results.length === 1 ? "" : "s"}
+                {results.length === 1
+                  ? ""
+                  : "s"}
               </span>
 
-              <strong>for “{query}”</strong>
+              <strong>
+                for “{query}”
+              </strong>
             </div>
 
             {results.length > 0 ? (
               <div className="search-results-list">
                 {results.map((post) => {
-                  const category = getCategory(post);
+                  const category =
+                    getCategory(post);
 
-                  if (!category?.slug) return null;
+                  if (
+                    !category?.slug ||
+                    !post.slug
+                  ) {
+                    return null;
+                  }
 
                   return (
                     <Link
@@ -352,12 +390,16 @@ export default async function SearchPage({
                     >
                       <div className="search-result-meta">
                         <span>
-                          {category.name || category.slug}
+                          {category.name ||
+                            category.slug}
                         </span>
 
                         {post.publishedAt && (
                           <span>
-                            · {formatDate(post.publishedAt)}
+                            ·{" "}
+                            {formatDate(
+                              post.publishedAt,
+                            )}
                           </span>
                         )}
                       </div>
@@ -366,13 +408,17 @@ export default async function SearchPage({
 
                       {post.excerpt && (
                         <p>
-                          {cleanText(post.excerpt)}
+                          {cleanText(
+                            post.excerpt,
+                          )}
                         </p>
                       )}
 
                       <span className="search-result-link">
                         Read article
-                        <span aria-hidden="true">→</span>
+                        <span aria-hidden="true">
+                          →
+                        </span>
                       </span>
                     </Link>
                   );
@@ -388,16 +434,23 @@ export default async function SearchPage({
                     stroke="currentColor"
                     strokeWidth="1.8"
                   >
-                    <circle cx="11" cy="11" r="7" />
+                    <circle
+                      cx="11"
+                      cy="11"
+                      r="7"
+                    />
                     <path d="m20 20-4-4" />
                   </svg>
                 </div>
 
-                <h2>No results found for “{query}”</h2>
+                <h2>
+                  No results found for “{query}”
+                </h2>
 
                 <p>
-                  We couldn't find an exact match. Try another
-                  keyword or explore one of the topics below.
+                  We couldn't find a direct match.
+                  Try another keyword or explore
+                  one of the topics below.
                 </p>
               </div>
             )}
@@ -408,84 +461,29 @@ export default async function SearchPage({
                   TRY THESE
                 </span>
 
-                <h2>Explore related topics</h2>
+                <h2>
+                  Explore related topics
+                </h2>
               </div>
 
               <div className="search-suggestions">
-                {SUGGESTED_SEARCHES.map((suggestion) => (
-                  <Link
-                    key={suggestion}
-                    href={`/search?q=${encodeURIComponent(
-                      suggestion
-                    )}`}
-                    className="search-suggestion"
-                  >
-                    <span>{suggestion}</span>
-                    <span aria-hidden="true">→</span>
-                  </Link>
-                ))}
-              </div>
-
-              {suggestedPosts.length > 0 && (
-                <div className="search-suggested-posts">
-                  <div className="search-subsection-heading">
-                    <span>Latest content</span>
-
-                    <Link href="/blogs">
-                      View all
-                      <span aria-hidden="true">→</span>
+                {SUGGESTED_SEARCHES.map(
+                  (suggestion) => (
+                    <Link
+                      key={suggestion}
+                      href={`/search?q=${encodeURIComponent(
+                        suggestion,
+                      )}`}
+                      className="search-suggestion"
+                    >
+                      <span>{suggestion}</span>
+                      <span aria-hidden="true">
+                        →
+                      </span>
                     </Link>
-                  </div>
-
-                  <div className="search-suggested-grid">
-                    {suggestedPosts.slice(0, 6).map((post) => {
-                      const category = getCategory(post);
-
-                      if (!category?.slug) return null;
-
-                      return (
-                        <Link
-                          key={post.id}
-                          href={`/${category.slug}/${post.slug}`}
-                          className="search-suggested-card"
-                        >
-                          <div className="search-suggested-meta">
-                            <span>
-                              {category.name || category.slug}
-                            </span>
-
-                            {post.publishedAt && (
-                              <span>
-                                {formatDate(post.publishedAt)}
-                              </span>
-                            )}
-                          </div>
-
-                          <h3>{post.title}</h3>
-
-                          {post.excerpt && (
-                            <p>
-                              {cleanText(post.excerpt).slice(
-                                0,
-                                120
-                              )}
-                              {cleanText(post.excerpt).length >
-                              120
-                                ? "..."
-                                : ""}
-                            </p>
-                          )}
-
-                          <span className="search-read-link">
-                            Read article
-                            <span aria-hidden="true">→</span>
-                          </span>
-                        </Link>
-                      );
-                    })}
-                  </div>
-                </div>
-              )}
+                  ),
+                )}
+              </div>
             </section>
           </section>
         )}

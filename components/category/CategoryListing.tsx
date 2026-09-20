@@ -2,6 +2,7 @@ import "./CategoryListing.css";
 
 import ArticleGrid from "./ArticleGrid";
 import Link from "next/link";
+import { cache } from "react";
 
 import {
   payloadFetch,
@@ -9,7 +10,6 @@ import {
 } from "@/lib/payload";
 
 import type {
-  Category,
   PayloadResponse,
 } from "@/lib/cms";
 
@@ -28,7 +28,7 @@ type CategoryListingProps = {
 // ============================================================
 
 type Media = {
-  id?: number;
+  id?: number | string;
   url?: string | null;
   alt?: string | null;
   width?: number;
@@ -37,8 +37,6 @@ type Media = {
 
 type ListingCategory = {
   id: number | string;
-  name: string;
-  slug: string;
 };
 
 type Post = {
@@ -49,9 +47,12 @@ type Post = {
   publishedAt?: string | null;
   featuredImage?: number | Media | null;
   category?: number | ListingCategory | null;
-  author?: {
-    name?: string | null;
-  } | number | null;
+  author?:
+    | {
+        name?: string | null;
+      }
+    | number
+    | null;
   workflowStatus?: string | null;
 };
 
@@ -100,7 +101,10 @@ function getImageUrl(
   featuredImage: Post["featuredImage"],
   index = 0,
 ): string {
+  // ----------------------------------------------------------
   // Populated media object
+  // ----------------------------------------------------------
+
   if (
     typeof featuredImage === "object" &&
     featuredImage !== null &&
@@ -110,16 +114,25 @@ function getImageUrl(
     return featuredImage.url;
   }
 
+  // ----------------------------------------------------------
   // Numeric media ID
+  // ----------------------------------------------------------
+
   if (typeof featuredImage === "number") {
     const cmsUrl =
       PAYLOAD_API_URL ||
       "http://localhost:3000/api";
 
-    return `${cmsUrl.replace(/\/api$/, "")}/api/media/${featuredImage}`;
+    return `${cmsUrl.replace(
+      /\/api$/,
+      "",
+    )}/api/media/${featuredImage}`;
   }
 
+  // ----------------------------------------------------------
   // Fallback image
+  // ----------------------------------------------------------
+
   return FALLBACK_IMAGES[
     index % FALLBACK_IMAGES.length
   ];
@@ -148,7 +161,9 @@ function cleanTitle(
 // POST VALIDATION
 // ============================================================
 
-function isUsefulPost(post: Post): boolean {
+function isUsefulPost(
+  post: Post,
+): boolean {
   const title = cleanTitle(post.title);
 
   if (!title) {
@@ -189,21 +204,30 @@ function formatDate(
 
   const parsed = new Date(date);
 
-  if (Number.isNaN(parsed.getTime())) {
+  if (
+    Number.isNaN(
+      parsed.getTime(),
+    )
+  ) {
     return "Recently";
   }
 
-  return new Intl.DateTimeFormat("en-US", {
-    month: "short",
-    year: "numeric",
-  }).format(parsed);
+  return new Intl.DateTimeFormat(
+    "en-US",
+    {
+      month: "short",
+      year: "numeric",
+    },
+  ).format(parsed);
 }
 
 // ============================================================
 // EXCERPT
 // ============================================================
 
-function getExcerpt(post: Post): string {
+function getExcerpt(
+  post: Post,
+): string {
   if (post.excerpt?.trim()) {
     return post.excerpt.trim();
   }
@@ -215,9 +239,12 @@ function getExcerpt(post: Post): string {
 // AUTHOR
 // ============================================================
 
-function getAuthor(post: Post): string {
+function getAuthor(
+  post: Post,
+): string {
   if (
-    typeof post.author === "object" &&
+    typeof post.author ===
+      "object" &&
     post.author !== null &&
     post.author.name
   ) {
@@ -230,96 +257,151 @@ function getAuthor(post: Post): string {
 // ============================================================
 // GET CATEGORY + POSTS
 // ============================================================
+//
+// PERFORMANCE / ISR STRATEGY
+//
+// 1. React cache()
+//    - Deduplicates identical requests during the same render.
+//    - Prevents duplicate category/post fetches when this function
+//      is called more than once in the same server render.
+//
+// 2. Payload/Next.js revalidate = 300
+//    - Allows ISR/data caching for 5 minutes.
+//    - Avoids repeatedly hitting Payload + Neon on every request.
+//
+// 3. depth=0 for category
+//    - We only need category.id.
+//    - No relationship population is required.
+//
+// 4. select on category
+//    - Only return the category ID.
+//
+// 5. depth=1 for posts
+//    - Required because the UI renders featuredImage and author.
+//
+// 6. select on posts
+//    - Prevents Payload from returning the entire Post document.
+//    - This is one of the most important network-transfer fixes.
+//
+// 7. limit=100
+//    - Kept intentionally for current UI behavior.
+//    - The category page currently displays all fetched articles.
+//    - Reducing this to 12/20 would silently hide articles.
+//
+// Long-term:
+//    Replace limit=100 with pagination/load-more once the UI supports
+//    it. That is the proper solution for very large categories.
+//
+// ============================================================
 
-async function getCategoryPosts(
-  slug: string,
-): Promise<{
-  category: ListingCategory | null;
-  posts: Post[];
-}> {
-  try {
-    // ========================================================
-    // 1. GET CATEGORY
-    // ========================================================
+const getCategoryPosts = cache(
+  async (
+    slug: string,
+  ): Promise<{
+    category: ListingCategory | null;
+    posts: Post[];
+  }> => {
+    try {
+      // ========================================================
+      // 1. GET CATEGORY
+      // ========================================================
 
-    const categoryData =
-      await payloadFetch<
-        PayloadResponse<ListingCategory>
-      >(
-        `/categories?where[slug][equals]=${encodeURIComponent(
-          slug,
-        )}&limit=1`,
-        {
-          next: {
-            revalidate: 60,
-            tags: [`category:${slug}`],
+      const categoryData =
+        await payloadFetch<
+          PayloadResponse<ListingCategory>
+        >(
+          `/categories?where[slug][equals]=${encodeURIComponent(
+            slug,
+          )}&limit=1&depth=0&select[id]=true`,
+          {
+            next: {
+              revalidate: 300,
+              tags: [
+                `category:${slug}`,
+                "categories",
+              ],
+            },
           },
-        },
+        );
+
+      const category =
+        categoryData?.docs?.[0];
+
+      if (!category) {
+        return {
+          category: null,
+          posts: [],
+        };
+      }
+
+      // ========================================================
+      // 2. GET PUBLISHED POSTS
+      // ========================================================
+      //
+      // IMPORTANT:
+      // Keep workflowStatus because this is the actual field used
+      // by the current AlloyPress Payload schema.
+      //
+      // Do NOT change this to `_status` unless the Payload schema
+      // is explicitly migrated to use that field.
+      //
+      // ========================================================
+
+      const postsData =
+        await payloadFetch<
+          PayloadResponse<Post>
+        >(
+          `/posts` +
+            `?where[workflowStatus][equals]=published` +
+            `&where[category][equals]=${encodeURIComponent(
+              String(category.id),
+            )}` +
+            `&sort=-publishedAt` +
+            `&limit=100` +
+            `&depth=1` +
+            `&select[id]=true` +
+            `&select[title]=true` +
+            `&select[slug]=true` +
+            `&select[excerpt]=true` +
+            `&select[publishedAt]=true` +
+            `&select[featuredImage]=true` +
+            `&select[author]=true`,
+          {
+            next: {
+              revalidate: 300,
+              tags: [
+                `category:${slug}`,
+                "posts",
+              ],
+            },
+          },
+        );
+
+      // ========================================================
+      // 3. FILTER POSTS
+      // ========================================================
+
+      const posts =
+        (postsData?.docs ?? [])
+          .filter(isUsefulPost);
+
+      return {
+        category,
+        posts,
+      };
+    } catch (error) {
+      console.error(
+        `CategoryListing fetch error for "${slug}":`,
+        error,
       );
 
-    const category =
-      categoryData?.docs?.[0];
-
-    if (!category) {
       return {
         category: null,
         posts: [],
       };
     }
-
-    // ========================================================
-    // 2. GET PUBLISHED POSTS
-    // ----------------------------------------------------------
-    // FIX (Bug 1): limit was hardcoded to 13, which silently cut
-    // off any category with more than 13 published posts at the
-    // API level (blogs has 30 in WP). Bumped to 100 so every post
-    // for a category is fetched. This is a band-aid, not real
-    // pagination — once any single category crosses ~100 posts,
-    // switch this to page/limit query params + a "Load more" /
-    // page number UI instead of raising the number again.
-    // ========================================================
-
-    const postsData =
-      await payloadFetch<
-        PayloadResponse<Post>
-      >(
-        `/posts?where[workflowStatus][equals]=published&where[category][equals]=${encodeURIComponent(
-          String(category.id),
-        )}&sort=-publishedAt&limit=100&depth=1`,
-        {
-          next: {
-            revalidate: 60,
-            tags: [`category:${slug}`],
-          },
-        },
-      );
-
-    // ========================================================
-    // 3. FILTER POSTS
-    // ----------------------------------------------------------
-    // FIX (Bug 1): removed the `.slice(0, 13)` re-truncation that
-    // was capping the already-limited result a second time.
-    // ========================================================
-
-    const posts = (postsData?.docs ?? [])
-      .filter(isUsefulPost);
-
-    return {
-      category,
-      posts,
-    };
-  } catch (error) {
-    console.error(
-      `CategoryListing fetch error for "${slug}":`,
-      error,
-    );
-
-    return {
-      category: null,
-      posts: [],
-    };
-  }
-}
+  },
+);
 
 // ============================================================
 // CATEGORY LISTING
@@ -345,12 +427,15 @@ export default async function CategoryListing({
 
   const sectionIndex =
     NAV_CATEGORIES.findIndex(
-      (item) => item.slug === slug,
+      (item) =>
+        item.slug === slug,
     ) + 1;
 
   const sectionNumber =
     String(
-      sectionIndex > 0 ? sectionIndex : 1,
+      sectionIndex > 0
+        ? sectionIndex
+        : 1,
     ).padStart(2, "0");
 
   // ==========================================================
@@ -383,7 +468,9 @@ export default async function CategoryListing({
             </div>
 
             <div className="category-hero-index">
-              <span>SECTION</span>
+              <span>
+                SECTION
+              </span>
 
               <strong>
                 {sectionNumber}
@@ -412,7 +499,8 @@ export default async function CategoryListing({
                 >
                   {item.label}
 
-                  {item.slug === slug && (
+                  {item.slug ===
+                    slug && (
                     <span>
                       •
                     </span>
@@ -430,7 +518,6 @@ export default async function CategoryListing({
 
       <section className="category-content">
         <div className="category-content-inner">
-
           {/* ==================================================
               FEATURED ARTICLE
           ================================================== */}
@@ -466,8 +553,12 @@ export default async function CategoryListing({
                         "object" &&
                       featuredPost.featuredImage !==
                         null &&
-                      featuredPost.featuredImage.alt
-                        ? featuredPost.featuredImage.alt
+                      featuredPost
+                        .featuredImage
+                        .alt
+                        ? featuredPost
+                            .featuredImage
+                            .alt
                         : cleanTitle(
                             featuredPost.title,
                           )
@@ -575,14 +666,19 @@ export default async function CategoryListing({
                 </div>
 
                 <span className="article-count">
-                  {remainingPosts.length}{" "}
+                  {
+                    remainingPosts.length
+                  }{" "}
                   ARTICLES
                 </span>
               </div>
 
               <ArticleGrid>
                 {remainingPosts.map(
-                  (post, index) => (
+                  (
+                    post,
+                    index,
+                  ) => (
                     <Link
                       key={post.id}
                       href={`/${slug}/${post.slug}`}
@@ -599,8 +695,12 @@ export default async function CategoryListing({
                               "object" &&
                             post.featuredImage !==
                               null &&
-                            post.featuredImage.alt
-                              ? post.featuredImage.alt
+                            post
+                              .featuredImage
+                              .alt
+                              ? post
+                                  .featuredImage
+                                  .alt
                               : cleanTitle(
                                   post.title,
                                 )
@@ -609,13 +709,6 @@ export default async function CategoryListing({
                           decoding="async"
                         />
 
-                        {/*
-                          FIX (Bug 2): was `index + 1`, which
-                          restarted numbering at 01 and collided
-                          with the Featured post's own "01" label.
-                          Featured post occupies slot 1, so the
-                          grid now continues from 2.
-                        */}
                         <span className="article-card-number">
                           {String(
                             index + 2,
