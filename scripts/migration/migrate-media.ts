@@ -1,7 +1,9 @@
 import dotenv from 'dotenv'
 import fs from 'fs/promises'
-import os from 'os'
 import path from 'path'
+import { createWriteStream } from 'fs'
+import { Readable } from 'stream'
+import { pipeline } from 'stream/promises'
 import { getPayload } from 'payload'
 
 // ==========================================================
@@ -18,16 +20,12 @@ dotenv.config({
 
 type WordPressMedia = {
   id: number
-
   date?: string
   modified?: string
-
   slug: string
-
   type?: string
   media_type?: string
   mime_type?: string
-
   link?: string
 
   title?: {
@@ -43,7 +41,6 @@ type WordPressMedia = {
   }
 
   alt_text?: string
-
   source_url?: string
 
   media_details?: {
@@ -51,7 +48,6 @@ type WordPressMedia = {
     height?: number
     file?: string
     filesize?: number
-
     sizes?: Record<
       string,
       {
@@ -65,6 +61,12 @@ type WordPressMedia = {
   }
 }
 
+type FailedMedia = {
+  wordpressId: number
+  filename: string
+  error: string
+}
+
 // ==========================================================
 // CONFIG
 // ==========================================================
@@ -74,6 +76,17 @@ const WORDPRESS_API_URL =
   'https://staging1.alloypress.com/wp-json/wp/v2'
 
 const PER_PAGE = 100
+
+// Keep this conservative. Increase only after testing.
+const CONCURRENCY = Number(process.env.MEDIA_MIGRATION_CONCURRENCY || 5)
+
+const MAX_RETRIES = Number(process.env.MEDIA_MIGRATION_RETRIES || 3)
+
+const REQUEST_TIMEOUT_MS = Number(
+  process.env.MEDIA_MIGRATION_TIMEOUT_MS || 60_000,
+)
+
+const USER_AGENT = 'AlloyPress-Migration/2.0'
 
 // ==========================================================
 // HTML DECODE
@@ -97,11 +110,7 @@ function decodeHtml(value = ''): string {
 function getFilenameFromUrl(url: string): string {
   try {
     const parsed = new URL(url)
-
-    const pathname = decodeURIComponent(
-      parsed.pathname,
-    )
-
+    const pathname = decodeURIComponent(parsed.pathname)
     const filename = path.basename(pathname)
 
     if (filename) {
@@ -118,9 +127,7 @@ function getFilenameFromUrl(url: string): string {
 // CHECK SUPPORTED MIME TYPE
 // ==========================================================
 
-function isSupportedMimeType(
-  mimeType?: string,
-): boolean {
+function isSupportedMimeType(mimeType?: string): boolean {
   if (!mimeType) {
     return false
   }
@@ -141,14 +148,55 @@ function isSupportedMimeType(
 }
 
 // ==========================================================
+// SLEEP
+// ==========================================================
+
+function sleep(ms: number): Promise<void> {
+  return new Promise((resolve) => setTimeout(resolve, ms))
+}
+
+// ==========================================================
+// RETRY HELPER
+// ==========================================================
+
+async function withRetry<T>(
+  operation: () => Promise<T>,
+  label: string,
+  retries = MAX_RETRIES,
+): Promise<T> {
+  let lastError: unknown
+
+  for (let attempt = 1; attempt <= retries + 1; attempt++) {
+    try {
+      return await operation()
+    } catch (error) {
+      lastError = error
+
+      if (attempt > retries) {
+        break
+      }
+
+      const delay = Math.min(1_000 * 2 ** (attempt - 1), 8_000)
+
+      console.warn(
+        `  ↻ ${label} failed. Retry ${attempt}/${retries} in ${delay}ms...`,
+      )
+
+      await sleep(delay)
+    }
+  }
+
+  throw lastError instanceof Error
+    ? lastError
+    : new Error(String(lastError))
+}
+
+// ==========================================================
 // FETCH ALL WORDPRESS MEDIA
 // ==========================================================
 
-async function fetchAllMedia(): Promise<
-  WordPressMedia[]
-> {
+async function fetchAllMedia(): Promise<WordPressMedia[]> {
   const media: WordPressMedia[] = []
-
   let page = 1
 
   while (true) {
@@ -159,16 +207,18 @@ async function fetchAllMedia(): Promise<
       `&orderby=id` +
       `&order=asc`
 
-    console.log(
-      `Fetching WordPress media page ${page}...`,
-    )
+    console.log(`Fetching WordPress media page ${page}...`)
 
-    const response = await fetch(url, {
-      headers: {
-        Accept: 'application/json',
-        'User-Agent': 'AlloyPress-Migration/1.0',
-      },
-    })
+    const response = await withRetry(
+      () =>
+        fetch(url, {
+          headers: {
+            Accept: 'application/json',
+            'User-Agent': USER_AGENT,
+          },
+        }),
+      `WordPress media page ${page}`,
+    )
 
     // WordPress returns 400 when page does not exist.
     if (response.status === 400) {
@@ -177,13 +227,11 @@ async function fetchAllMedia(): Promise<
 
     if (!response.ok) {
       throw new Error(
-        `Failed to fetch WordPress media. ` +
-          `HTTP ${response.status} ${response.statusText}`,
+        `Failed to fetch WordPress media. HTTP ${response.status} ${response.statusText}`,
       )
     }
 
-    const data =
-      (await response.json()) as WordPressMedia[]
+    const data = (await response.json()) as WordPressMedia[]
 
     if (!Array.isArray(data) || data.length === 0) {
       break
@@ -192,8 +240,7 @@ async function fetchAllMedia(): Promise<
     media.push(...data)
 
     const totalPages = Number(
-      response.headers.get('X-WP-TotalPages') ||
-        page,
+      response.headers.get('X-WP-TotalPages') || page,
     )
 
     console.log(
@@ -211,62 +258,241 @@ async function fetchAllMedia(): Promise<
 }
 
 // ==========================================================
-// DOWNLOAD WORDPRESS FILE
+// STREAM WORDPRESS FILE TO TEMP FILE
 // ==========================================================
 
 async function downloadFile(
   url: string,
   destination: string,
 ): Promise<void> {
-  const response = await fetch(url, {
-    headers: {
-      'User-Agent': 'AlloyPress-Migration/1.0',
+  await withRetry(
+    async () => {
+      const controller = new AbortController()
+      const timeout = setTimeout(
+        () => controller.abort(),
+        REQUEST_TIMEOUT_MS,
+      )
+
+      try {
+        const response = await fetch(url, {
+          headers: {
+            Accept: '*/*',
+            'User-Agent': USER_AGENT,
+          },
+          signal: controller.signal,
+        })
+
+        if (!response.ok) {
+          throw new Error(
+            `Failed to download file. HTTP ${response.status} ${response.statusText}`,
+          )
+        }
+
+        if (!response.body) {
+          throw new Error('WordPress response has no readable body')
+        }
+
+        await pipeline(
+          Readable.fromWeb(response.body as any),
+          createWriteStream(destination),
+        )
+      } finally {
+        clearTimeout(timeout)
+      }
     },
-  })
-
-  if (!response.ok) {
-    throw new Error(
-      `Failed to download file. ` +
-        `HTTP ${response.status} ${response.statusText}`,
-    )
-  }
-
-  const arrayBuffer =
-    await response.arrayBuffer()
-
-  await fs.writeFile(
-    destination,
-    Buffer.from(arrayBuffer),
+    `Download ${path.basename(destination)}`,
   )
 }
 
 // ==========================================================
-// CHECK EXISTING PAYLOAD MEDIA
+// LOAD EXISTING PAYLOAD MEDIA IN ONE QUERY
+// ==========================================================
+//
+// IMPORTANT:
+// This checks Media records already present in the NEW DB.
+// It does NOT inspect orphaned objects that may already exist
+// in R2 without a corresponding Payload Media record.
+//
 // ==========================================================
 
-async function findExistingMedia(
-  payload: Awaited<
-    ReturnType<typeof getPayload>
-  >,
-  wordpressId: number,
-) {
+async function findExistingMediaIds(
+  payload: Awaited<ReturnType<typeof getPayload>>,
+  wordpressIds: number[],
+): Promise<Set<number>> {
+  const existingIds = new Set<number>()
+
+  if (wordpressIds.length === 0) {
+    return existingIds
+  }
+
   const result = await payload.find({
     collection: 'media',
 
     where: {
       wordpressId: {
-        equals: wordpressId,
+        in: wordpressIds,
       },
     },
 
-    limit: 1,
+    limit: wordpressIds.length,
 
     depth: 0,
 
     overrideAccess: true,
   })
 
-  return result.docs[0] || null
+  // Payload's generated Media type may not include custom migration fields
+  // in every generated-types state. Read wordpressId defensively.
+  for (const doc of result.docs) {
+    const wordpressId = (doc as unknown as {
+      wordpressId?: unknown
+    }).wordpressId
+
+    if (typeof wordpressId === 'number') {
+      existingIds.add(wordpressId)
+    }
+  }
+
+  return existingIds
+}
+
+// ==========================================================
+// PROCESS ONE MEDIA ITEM
+// ==========================================================
+
+async function processMediaItem(params: {
+  payload: Awaited<ReturnType<typeof getPayload>>
+  item: WordPressMedia
+  tempDirectory: string
+  position: number
+  total: number
+}): Promise<'created' | 'failed' | 'unsupported'> {
+  const {
+    payload,
+    item,
+    tempDirectory,
+    position,
+    total,
+  } = params
+
+  const wordpressId = item.id
+  const sourceUrl = item.source_url
+  const mimeType = item.mime_type || ''
+
+  const title = decodeHtml(item.title?.rendered || '')
+  const caption = decodeHtml(item.caption?.rendered || '')
+  const description = decodeHtml(item.description?.rendered || '')
+
+  const filename = sourceUrl
+    ? getFilenameFromUrl(sourceUrl)
+    : `wordpress-media-${wordpressId}`
+
+  const prefix = `[${position}/${total}] ${filename}`
+
+  if (!sourceUrl) {
+    console.error(`  ✗ ${prefix} — no source_url`)
+    return 'failed'
+  }
+
+  if (!isSupportedMimeType(mimeType)) {
+    console.log(`  ↳ ${prefix} — unsupported MIME: ${mimeType}`)
+    return 'unsupported'
+  }
+
+  const safeFilename = filename.replace(/[<>:"/\\|?*\x00-\x1F]/g, '_')
+  const tempFilePath = path.join(
+    tempDirectory,
+    `${wordpressId}-${safeFilename}`,
+  )
+
+  try {
+    console.log(`  → ${prefix} — downloading`)
+
+    await downloadFile(sourceUrl, tempFilePath)
+
+    const alt =
+      item.alt_text?.trim() ||
+      title ||
+      filename
+
+    console.log(`  → ${prefix} — Payload → R2`)
+
+    const created = await withRetry(
+      () =>
+        payload.create({
+          collection: 'media',
+
+          data: {
+            wordpressId,
+            originalUrl: sourceUrl,
+            alt,
+            title: title || filename,
+            caption: caption || '',
+            description: description || '',
+          },
+
+          filePath: tempFilePath,
+
+          overrideAccess: true,
+        }),
+      `Create Payload media ${wordpressId}`,
+    )
+
+    console.log(
+      `  ✓ ${prefix} — created Payload ID: ${created.id}`,
+    )
+
+    return 'created'
+  } catch (error) {
+    const message =
+      error instanceof Error
+        ? error.message
+        : String(error)
+
+    console.error(`  ✗ ${prefix} — ${message}`)
+
+    return 'failed'
+  } finally {
+    await fs.rm(tempFilePath, {
+      force: true,
+    }).catch(() => undefined)
+  }
+}
+
+// ==========================================================
+// CONCURRENCY WORKER
+// ==========================================================
+
+async function runWithConcurrency<T>(
+  items: T[],
+  concurrency: number,
+  worker: (item: T, index: number) => Promise<void>,
+): Promise<void> {
+  let nextIndex = 0
+
+  async function runWorker(): Promise<void> {
+    while (true) {
+      const index = nextIndex++
+
+      if (index >= items.length) {
+        return
+      }
+
+      await worker(items[index], index)
+    }
+  }
+
+  const workerCount = Math.min(
+    Math.max(1, concurrency),
+    items.length,
+  )
+
+  await Promise.all(
+    Array.from(
+      { length: workerCount },
+      () => runWorker(),
+    ),
+  )
 }
 
 // ==========================================================
@@ -276,23 +502,13 @@ async function findExistingMedia(
 export async function migrateMedia() {
   console.log('')
   console.log('========================================')
-  console.log(' Starting Media Migration')
+  console.log(' Optimized AlloyPress Media Migration')
   console.log('========================================')
+  console.log(`Concurrency: ${CONCURRENCY}`)
+  console.log(`Retries: ${MAX_RETRIES}`)
   console.log('')
 
-  // ========================================================
-  // IMPORTANT
-  // ========================================================
-  //
-  // Payload config is dynamically imported AFTER .env
-  // has been loaded.
-  //
-  // This prevents:
-  //
-  // "missing secret key"
-  //
-  // ========================================================
-
+  // Payload config is dynamically imported AFTER .env.
   const { default: config } = await import(
     '../../src/payload.config'
   )
@@ -319,307 +535,121 @@ export async function migrateMedia() {
   }
 
   // ========================================================
+  // FILTER SUPPORTED MEDIA FIRST
+  // ========================================================
+
+  const supportedMedia = media.filter(
+    (item) =>
+      Boolean(item.source_url) &&
+      isSupportedMimeType(item.mime_type),
+  )
+
+  const unsupportedCount =
+    media.length - supportedMedia.length
+
+  // ========================================================
+  // ONE DATABASE QUERY FOR EXISTING MEDIA
+  // ========================================================
+
+  console.log(
+    `Checking ${supportedMedia.length} media records already in Payload...`,
+  )
+
+  const existingIds = await findExistingMediaIds(
+    payload,
+    supportedMedia.map((item) => item.id),
+  )
+
+  const pendingMedia = supportedMedia.filter(
+    (item) => !existingIds.has(item.id),
+  )
+
+  console.log(
+    `  ↳ Existing: ${existingIds.size}`,
+  )
+
+  console.log(
+    `  ↳ Pending migration: ${pendingMedia.length}`,
+  )
+
+  console.log(
+    `  ↳ Unsupported: ${unsupportedCount}`,
+  )
+
+  if (pendingMedia.length === 0) {
+    console.log('')
+    console.log('Nothing to migrate.')
+    return
+  }
+
+  // ========================================================
   // TEMP DIRECTORY
   // ========================================================
 
-  const tempDirectory =
-    await fs.mkdtemp(
-      path.join(
-        os.tmpdir(),
-        'alloypress-tmp-',
-      ),
-    )
-
-  console.log(
-    `Temporary directory: ${tempDirectory}`,
+  const tempDirectory = await fs.mkdtemp(
+    path.join(
+      process.env.TMPDIR || process.env.TEMP || '/tmp',
+      'alloypress-media-',
+    ),
   )
 
   console.log('')
+  console.log(
+    `Temporary directory: ${tempDirectory}`,
+  )
+  console.log('')
 
   // ========================================================
-  // MIGRATION COUNTERS
+  // COUNTERS
   // ========================================================
 
   let createdCount = 0
-  let skippedCount = 0
-  let unsupportedCount = 0
   let failedCount = 0
 
-  const failedMedia: Array<{
-    wordpressId: number
-    filename: string
-    error: string
-  }> = []
+  const failedMedia: FailedMedia[] = []
 
   // ========================================================
-  // PROCESS MEDIA ONE BY ONE
+  // CONCURRENT MIGRATION
   // ========================================================
 
-  for (
-    let index = 0;
-    index < media.length;
-    index++
-  ) {
-    const item = media[index]
-
-    const wordpressId = item.id
-
-    const sourceUrl = item.source_url
-
-    const mimeType = item.mime_type || ''
-
-    const title = decodeHtml(
-      item.title?.rendered || '',
-    )
-
-    const caption = decodeHtml(
-      item.caption?.rendered || '',
-    )
-
-    const description = decodeHtml(
-      item.description?.rendered || '',
-    )
-
-    const filename = sourceUrl
-      ? getFilenameFromUrl(sourceUrl)
-      : `wordpress-media-${wordpressId}`
-
-    console.log(
-      `[${index + 1}/${media.length}] ${filename}`,
-    )
-
-    console.log(
-      `  ↳ WordPress ID: ${wordpressId}`,
-    )
-
-    console.log(
-      `  ↳ MIME type: ${mimeType || 'unknown'}`,
-    )
-
-    // ======================================================
-    // SOURCE URL CHECK
-    // ======================================================
-
-    if (!sourceUrl) {
-      failedCount++
-
-      const error =
-        'WordPress media has no source_url'
-
-      failedMedia.push({
-        wordpressId,
-        filename,
-        error,
+  await runWithConcurrency(
+    pendingMedia,
+    CONCURRENCY,
+    async (item, index) => {
+      const result = await processMediaItem({
+        payload,
+        item,
+        tempDirectory,
+        position: index + 1,
+        total: pendingMedia.length,
       })
 
-      console.error(
-        `  ✗ ${error}`,
-      )
-
-      console.log('')
-
-      continue
-    }
-
-    // ======================================================
-    // MIME TYPE CHECK
-    // ======================================================
-
-    if (!isSupportedMimeType(mimeType)) {
-      unsupportedCount++
-
-      console.log(
-        `  ↳ Skipped unsupported MIME type: ${mimeType}`,
-      )
-
-      console.log('')
-
-      continue
-    }
-
-    // ======================================================
-    // CHECK EXISTING MEDIA
-    // ======================================================
-
-    try {
-      const existing =
-        await findExistingMedia(
-          payload,
-          wordpressId,
-        )
-
-      if (existing) {
-        skippedCount++
-
-        console.log(
-          `  ↳ Already exists. Payload ID: ${existing.id}`,
-        )
-
-        console.log('')
-
-        continue
+      if (result === 'created') {
+        createdCount++
       }
-    } catch (error) {
-      failedCount++
 
-      const errorMessage =
-        error instanceof Error
-          ? error.message
-          : String(error)
+      if (result === 'failed') {
+        failedCount++
 
-      failedMedia.push({
-        wordpressId,
-        filename,
-        error: errorMessage,
-      })
-
-      console.error(
-        `  ✗ Existing-media check failed: ${errorMessage}`,
-      )
-
-      console.log('')
-
-      continue
-    }
-
-    // ======================================================
-    // TEMP FILE PATH
-    // ======================================================
-
-    const tempFilePath = path.join(
-      tempDirectory,
-      `${wordpressId}-${filename}`,
-    )
-
-    try {
-      // ====================================================
-      // DOWNLOAD
-      // ====================================================
-
-      console.log(
-        '  ↳ Downloading original file...',
-      )
-
-      await downloadFile(
-        sourceUrl,
-        tempFilePath,
-      )
-
-      // ====================================================
-      // ALT TEXT
-      // ====================================================
-
-      const alt =
-        item.alt_text?.trim() ||
-        title ||
-        filename
-
-      // ====================================================
-      // CREATE PAYLOAD MEDIA
-      // ====================================================
-
-      console.log(
-        '  ↳ Uploading through Payload → R2...',
-      )
-
-      const created =
-        await payload.create({
-          collection: 'media',
-
-          data: {
-            wordpressId,
-
-            originalUrl: sourceUrl,
-
-            alt,
-
-            title: title || filename,
-
-            caption: caption || '',
-
-            description:
-              description || '',
-          },
-
-          filePath: tempFilePath,
-
-          overrideAccess: true,
+        failedMedia.push({
+          wordpressId: item.id,
+          filename: item.source_url
+            ? getFilenameFromUrl(item.source_url)
+            : `wordpress-media-${item.id}`,
+          error: 'Migration failed. See log above.',
         })
-
-      createdCount++
-
-      console.log(
-        `  ✓ Created Payload media ID: ${created.id}`,
-      )
-
-      console.log(
-        `  ✓ Stored filename: ${created.filename}`,
-      )
-
-      // ====================================================
-      // CLEAN TEMP FILE
-      // ====================================================
-
-      await fs.rm(
-        tempFilePath,
-        {
-          force: true,
-        },
-      )
-
-      console.log('')
-    } catch (error) {
-      failedCount++
-
-      const errorMessage =
-        error instanceof Error
-          ? error.message
-          : String(error)
-
-      failedMedia.push({
-        wordpressId,
-        filename,
-        error: errorMessage,
-      })
-
-      console.error(
-        `  ✗ Migration failed: ${errorMessage}`,
-      )
-
-      // ====================================================
-      // CLEAN TEMP FILE AFTER FAILURE
-      // ====================================================
-
-      try {
-        await fs.rm(
-          tempFilePath,
-          {
-            force: true,
-          },
-        )
-      } catch {
-        // Ignore cleanup errors
       }
-
-      console.log('')
-    }
-  }
+    },
+  )
 
   // ========================================================
   // CLEAN TEMP DIRECTORY
   // ========================================================
 
-  try {
-    await fs.rm(
-      tempDirectory,
-      {
-        recursive: true,
-        force: true,
-      },
-    )
-  } catch {
-    // Ignore cleanup errors
-  }
+  await fs.rm(tempDirectory, {
+    recursive: true,
+    force: true,
+  }).catch(() => undefined)
 
   // ========================================================
   // FINAL SUMMARY
@@ -635,11 +665,11 @@ export async function migrateMedia() {
   )
 
   console.log(
-    `Created: ${createdCount}`,
+    `Already existed: ${existingIds.size}`,
   )
 
   console.log(
-    `Skipped / already exists: ${skippedCount}`,
+    `Created: ${createdCount}`,
   )
 
   console.log(
@@ -658,33 +688,17 @@ export async function migrateMedia() {
   // ========================================================
 
   if (failedMedia.length > 0) {
-    console.log(
-      'Failed Media',
-    )
-
-    console.log(
-      '----------------------------------------',
-    )
+    console.log('Failed Media')
+    console.log('----------------------------------------')
 
     for (const failed of failedMedia) {
-      console.log(
-        `WP ID: ${failed.wordpressId}`,
-      )
-
-      console.log(
-        `Filename: ${failed.filename}`,
-      )
-
-      console.log(
-        `Error: ${failed.error}`,
-      )
-
+      console.log(`WP ID: ${failed.wordpressId}`)
+      console.log(`Filename: ${failed.filename}`)
+      console.log(`Error: ${failed.error}`)
       console.log('')
     }
 
-    console.log(
-      '----------------------------------------',
-    )
+    console.log('----------------------------------------')
   }
 }
 
@@ -692,14 +706,13 @@ export async function migrateMedia() {
 // RUN MIGRATION
 // ==========================================================
 
-migrateMedia()
-  .catch((error) => {
-    console.error('')
-    console.error('========================================')
-    console.error(' Media Migration Failed')
-    console.error('========================================')
-    console.error(error)
-    console.error('')
+migrateMedia().catch((error) => {
+  console.error('')
+  console.error('========================================')
+  console.error(' Media Migration Failed')
+  console.error('========================================')
+  console.error(error)
+  console.error('')
 
-    process.exit(1)
-  })
+  process.exit(1)
+})

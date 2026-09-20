@@ -1,4 +1,6 @@
 import type { Access, CollectionConfig } from 'payload'
+import type { PayloadRequest } from 'payload'
+import { sql } from '@payloadcms/db-postgres/drizzle'
 
 import {
   BlocksFeature,
@@ -12,10 +14,6 @@ import {
 } from '@payloadcms/richtext-lexical'
 import { textStateConfig } from '@/fields/textStateConfig'
 
-// ============================================================
-// ROLE HELPERS
-// ============================================================
-
 const isEditorOrAdmin: Access = ({ req }) => {
   const role = req.user?.role
 
@@ -23,46 +21,215 @@ const isEditorOrAdmin: Access = ({ req }) => {
 }
 
 const isAdmin: Access = ({ req }) => {
-  return req.user?.role === 'admin'
+  const role = req.user?.role
+
+  return role === 'admin'
 }
 
-// ============================================================
-// POSTS COLLECTION
-// ============================================================
+const SEARCH_MAX_RESULTS = 20
+const SEARCH_MAX_QUERY_LENGTH = 80
+const SEARCH_MAX_TERMS = 6
+const SEARCH_WORD_SIMILARITY_THRESHOLD = 0.45
+
+const SEARCH_ALLOWED_CATEGORY_SLUGS = [
+  'blogs',
+  'reviews',
+  'news',
+  'alternatives',
+  'comparisons',
+] as const
+
+const SEARCH_STOP_WORDS = new Set([
+  'the',
+  'a',
+  'an',
+  'and',
+  'or',
+  'for',
+  'to',
+  'of',
+  'in',
+  'on',
+  'with',
+  'is',
+  'are',
+])
+
+type SearchResultRow = {
+  id: string | number
+  title: string | null
+  slug: string | null
+  excerpt: string | null
+  publishedAt: string | null
+  category: {
+    id: string | number
+    name: string | null
+    slug: string | null
+  } | null
+  score: number | string
+}
+
+function escapeLikePattern(value: string) {
+  return value.replace(/[\\%_]/g, (match) => `\\${match}`)
+}
+
+function normalizeSearchQuery(value: string) {
+  const normalized = value
+    .trim()
+    .toLowerCase()
+    .slice(0, SEARCH_MAX_QUERY_LENGTH)
+
+  const terms = [
+    ...new Set(
+      normalized
+        .replace(/[^\p{L}\p{N}]+/gu, ' ')
+        .split(/\s+/)
+        .map((term) => term.trim())
+        .filter(
+          (term) =>
+            term.length >= 2 && !SEARCH_STOP_WORDS.has(term),
+        ),
+    ),
+  ].slice(0, SEARCH_MAX_TERMS)
+
+  return {
+    normalized,
+    terms,
+  }
+}
+
+async function searchPostsWithSimilarity(
+  req: PayloadRequest,
+  query: string,
+  requestedLimit: number,
+): Promise<SearchResultRow[]> {
+  const { normalized, terms } = normalizeSearchQuery(query)
+
+  if (!normalized || terms.length === 0) {
+    return []
+  }
+
+  const limit = Math.min(
+    Math.max(Number.isFinite(requestedLimit) ? requestedLimit : 20, 1),
+    SEARCH_MAX_RESULTS,
+  )
+
+  const candidateConditions = terms.map((term) => {
+    const partial = `%${escapeLikePattern(term)}%`
+
+    return sql`
+      (
+        ${term} <% p.title
+        OR ${term} <% p.slug
+        OR ${term} <% p.excerpt
+        OR ${term} <% c.name
+        OR ${term} <% c.slug
+        OR p.title ILIKE ${partial}
+        OR p.slug ILIKE ${partial}
+        OR p.excerpt ILIKE ${partial}
+        OR c.name ILIKE ${partial}
+        OR c.slug ILIKE ${partial}
+      )
+    `
+  })
+
+  const scoreParts = terms.map((term) => {
+    const shortTermWeight = term.length <= 2
+      ? 0.35
+      : term.length === 3
+        ? 0.65
+        : 1
+
+    return sql`
+      GREATEST(
+        word_similarity(${term}, COALESCE(p.title, '')) * 1.00,
+        word_similarity(${term}, COALESCE(p.slug, '')) * 0.90,
+        word_similarity(${term}, COALESCE(p.excerpt, '')) * 0.45,
+        word_similarity(${term}, COALESCE(c.name, '')) * 0.65,
+        word_similarity(${term}, COALESCE(c.slug, '')) * 0.65
+      ) * ${shortTermWeight}
+    `
+  })
+
+  const scoreExpression = sql.join(
+    scoreParts.map((part) => sql`(${part})`),
+    sql` + `,
+  )
+
+  const exactPhraseBoost = sql`
+    CASE
+      WHEN p.title ILIKE ${`%${escapeLikePattern(normalized)}%`} THEN 4
+      ELSE 0
+    END
+  `
+
+  const titlePrefixBoost = sql`
+    CASE
+      WHEN p.title ILIKE ${`${escapeLikePattern(terms[0])}%`} THEN 1.5
+      ELSE 0
+    END
+  `
+
+  const result = await req.payload.db.drizzle.transaction(async (tx) => {
+    await tx.execute(
+      sql.raw(
+        `SET LOCAL pg_trgm.word_similarity_threshold = ${SEARCH_WORD_SIMILARITY_THRESHOLD}`,
+      ),
+    )
+
+    return tx.execute(sql`
+      SELECT
+        p.id AS "id",
+        p.title AS "title",
+        p.slug AS "slug",
+        p.excerpt AS "excerpt",
+        p.published_at AS "publishedAt",
+        jsonb_build_object(
+          'id', c.id,
+          'name', c.name,
+          'slug', c.slug
+        ) AS "category",
+        (
+          ${scoreExpression}
+          + ${exactPhraseBoost}
+          + ${titlePrefixBoost}
+        ) AS "score"
+      FROM posts AS p
+      INNER JOIN categories AS c
+        ON c.id = p.category_id
+      WHERE
+        p._status = 'published'
+        AND c.slug IN (${sql.join(
+      SEARCH_ALLOWED_CATEGORY_SLUGS.map((slug) => sql`${slug}`),
+      sql`, `,
+    )})
+        AND (
+          ${sql.join(candidateConditions, sql` OR `)}
+        )
+      ORDER BY
+        "score" DESC,
+        p.published_at DESC NULLS LAST
+      LIMIT ${limit}
+    `)
+  })
+
+  return (result.rows || []) as unknown as SearchResultRow[]
+}
 
 export const Posts: CollectionConfig = {
   slug: 'posts',
 
-  // ==========================================================
-  // ACCESS CONTROL
-  // ==========================================================
-
   access: {
-    // Admin + Editor + Viewer can view posts
     read: () => true,
-
-    // Admin + Editor can create
     create: isEditorOrAdmin,
-
-    // Admin + Editor can edit
     update: isEditorOrAdmin,
-
-    // Admin only can delete
     delete: isAdmin,
   },
 
-  // ==========================================================
-  // PUBLISH LIFECYCLE
-  // ==========================================================
-  // Keep Payload's built-in status, the custom workflow status,
-  // and publishedAt consistent without overwriting historical
-  // WordPress publication dates restored by migration.
   hooks: {
     beforeChange: [
       async ({ data }) => {
         if (data._status === 'published') {
-          // Only assign a date when a published document does not
-          // already have one. This preserves migrated WP dates.
           if (!data.publishedAt) {
             data.publishedAt = new Date().toISOString()
           }
@@ -73,13 +240,128 @@ export const Posts: CollectionConfig = {
         return data
       },
     ],
+
+    afterChange: [
+      async ({ doc, req }) => {
+        if (doc._status !== 'published' || !doc.slug) {
+          return
+        }
+
+        const webUrl = process.env.WEB_REVALIDATION_URL
+        const secret = process.env.REVALIDATION_SECRET
+
+        if (!webUrl || !secret) {
+          req.payload.logger.warn(
+            'Revalidation skipped: WEB_REVALIDATION_URL or REVALIDATION_SECRET is missing.',
+          )
+          return
+        }
+
+        try {
+          let categorySlug: string | undefined
+
+          if (doc.category) {
+            const categoryId =
+              typeof doc.category === 'object' && doc.category !== null
+                ? doc.category.id
+                : doc.category
+
+            const category = (await req.payload.findByID({
+              collection: 'categories',
+              id: categoryId,
+              depth: 0,
+            })) as { slug?: unknown } | null
+
+            if (typeof category?.slug === 'string') {
+              categorySlug = category.slug
+            }
+          }
+
+          const authorSlug = 'alloypress-team'
+
+          const response = await fetch(webUrl, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'x-revalidate-secret': secret,
+            },
+            body: JSON.stringify({
+              slug: doc.slug,
+              categorySlug,
+              authorSlug,
+            }),
+          })
+
+          if (!response.ok) {
+            const responseText = await response.text().catch(() => '')
+
+            req.payload.logger.error(
+              `Web revalidation returned ${response.status}: ${responseText || response.statusText}`,
+            )
+          }
+        } catch (error) {
+          req.payload.logger.error(
+            `Failed to trigger web revalidation for post: ${doc.slug} - ${error instanceof Error ? error.message : String(error)
+            }`,
+          )
+        }
+      },
+    ],
   },
 
-  // ==========================================================
-  // CUSTOM ENDPOINTS
-  // ==========================================================
-
   endpoints: [
+    {
+      path: '/search',
+      method: 'get',
+
+      handler: async (req) => {
+        if (!req.url) {
+          return Response.json({
+            docs: [],
+            totalDocs: 0,
+          })
+        }
+
+        const url = new URL(req.url)
+        const query = url.searchParams.get('q')?.trim() || ''
+        const requestedLimit = Number(url.searchParams.get('limit') || '20')
+
+        if (!query) {
+          return Response.json({
+            docs: [],
+            totalDocs: 0,
+          })
+        }
+
+        try {
+          const docs = await searchPostsWithSimilarity(
+            req,
+            query,
+            requestedLimit,
+          )
+
+          return Response.json({
+            docs,
+            totalDocs: docs.length,
+          })
+        } catch (error) {
+          req.payload.logger.error(
+            `Post search failed for "${query}": ${error instanceof Error ? error.message : String(error)
+            }`,
+          )
+
+          return Response.json(
+            {
+              docs: [],
+              totalDocs: 0,
+              error: 'Search failed',
+            },
+            { status: 500 },
+          )
+        }
+      },
+    },
+
     {
       path: '/sitemap-posts',
       method: 'get',
@@ -168,10 +450,6 @@ export const Posts: CollectionConfig = {
     },
   ],
 
-  // ==========================================================
-  // ADMIN UI
-  // ==========================================================
-
   admin: {
     useAsTitle: 'title',
 
@@ -208,26 +486,19 @@ export const Posts: CollectionConfig = {
     },
   },
 
-  // ==========================================================
-  // DRAFTS / AUTOSAVE / SCHEDULE
-  // ==========================================================
-
   versions: {
+    maxPerDoc: 20,
+
     drafts: {
-      autosave: true,
+      autosave: {
+        interval: 10000,
+        showSaveDraftButton: true,
+      },
       schedulePublish: true,
     },
   },
 
-  // ==========================================================
-  // FIELDS
-  // ==========================================================
-
   fields: [
-    // ========================================================
-    // TITLE
-    // ========================================================
-
     {
       name: 'title',
       type: 'text',
@@ -239,10 +510,6 @@ export const Posts: CollectionConfig = {
           'The main title of the blog post.',
       },
     },
-
-    // ========================================================
-    // SLUG
-    // ========================================================
 
     {
       name: 'slug',
@@ -258,10 +525,6 @@ export const Posts: CollectionConfig = {
       },
     },
 
-    // ========================================================
-    // CONTENT
-    // ========================================================
-
     {
       name: 'content',
       type: 'richText',
@@ -274,19 +537,6 @@ export const Posts: CollectionConfig = {
 
           FixedToolbarFeature(),
 
-          // ==================================================
-          // TEXT COLOR / FONT / SIZE / STYLE
-          // ==================================================
-          //
-          // NOTE: the migration script's snapBackgroundColors()
-          // snaps arbitrary inline background-color styles to the
-          // named swatches: green / yellow / blue / red / gray.
-          // Make sure textStateConfig.backgroundColor (in
-          // '@/fields/textStateConfig') defines exactly those
-          // swatch names, or migrated background colors won't be
-          // recognized by the editor/frontend.
-          // ==================================================
-
           TextStateFeature({
             state: {
               color: textStateConfig.color,
@@ -297,10 +547,6 @@ export const Posts: CollectionConfig = {
               decoration: textStateConfig.decoration,
             },
           }),
-
-          // ==================================================
-          // LINKS
-          // ==================================================
 
           LinkFeature({
             fields: ({ defaultFields }) => [
@@ -358,14 +604,6 @@ export const Posts: CollectionConfig = {
             ],
           }),
 
-          // ==================================================
-          // MEDIA / IMAGE UPLOADS
-          // ==================================================
-          // Explicitly enable Payload upload nodes for content images.
-          // The migration script uses data-lexical-upload-id and
-          // data-lexical-upload-relation-to="media".
-          // ==================================================
-
           UploadFeature({
             collections: {
               media: {
@@ -374,16 +612,8 @@ export const Posts: CollectionConfig = {
             },
           }),
 
-          // ==================================================
-          // BLOCKS
-          // ==================================================
-
           BlocksFeature({
             blocks: [
-              // =================================================
-              // CODE BLOCK
-              // =================================================
-
               CodeBlock({
                 languages: {
                   plaintext: 'Plain Text',
@@ -398,10 +628,6 @@ export const Posts: CollectionConfig = {
                   sql: 'SQL',
                 },
               }),
-
-              // =================================================
-              // VIDEO / EMBED (YouTube, Vimeo, other iframes)
-              // =================================================
 
               {
                 slug: 'videoEmbed',
@@ -448,17 +674,6 @@ export const Posts: CollectionConfig = {
                 ],
               },
 
-              // =================================================
-              // ⬇ NEW — SELF-HOSTED VIDEO FILE
-              // =================================================
-              // The migration script's video pass (self-hosted
-              // <video src="..."> tags, as opposed to <iframe>
-              // embeds) emits blockType: 'videoFile' with a
-              // `video` upload relation + `caption`. This block
-              // was referenced by the script but never registered
-              // here, so those videos would fail to save.
-              // =================================================
-
               {
                 slug: 'videoFile',
 
@@ -489,10 +704,6 @@ export const Posts: CollectionConfig = {
                   },
                 ],
               },
-
-              // =================================================
-              // AUDIO
-              // =================================================
 
               {
                 slug: 'audio',
@@ -540,20 +751,6 @@ export const Posts: CollectionConfig = {
                   },
                 ],
               },
-
-              // =================================================
-              // ⬇ NEW — STYLED BOX (bordered / highlighted callout)
-              // =================================================
-              // extractStyledBoxes() in the migration script
-              // detects WordPress <div>/<section>/<blockquote>
-              // elements with an inline border and/or
-              // background-color (FAQ boxes, quote boxes, "Alloy
-              // Pick" cards, etc.) and emits blockType:
-              // 'styledBox' with heading/text/backgroundColor/
-              // borderColor/borderWidth. The script's own comment
-              // warned this block was required but not yet
-              // registered — added here.
-              // =================================================
 
               {
                 slug: 'styledBox',
@@ -628,17 +825,6 @@ export const Posts: CollectionConfig = {
                 ],
               },
 
-              // =================================================
-              // ⬇ NEW — CTA BUTTON
-              // =================================================
-              // extractButtons() in the migration script detects
-              // WordPress button elements (Divi et_pb_button,
-              // Gutenberg wp-block-button__link, .button/.btn) and
-              // emits blockType: 'ctaButton' with label + url.
-              // This block was referenced but never registered —
-              // added here.
-              // =================================================
-
               {
                 slug: 'ctaButton',
 
@@ -666,10 +852,6 @@ export const Posts: CollectionConfig = {
             ],
           }),
 
-          // ==================================================
-          // TABLE
-          // ==================================================
-
           EXPERIMENTAL_TableFeature(),
         ],
       }),
@@ -679,10 +861,6 @@ export const Posts: CollectionConfig = {
           'Main article content. Add formatted text, links, images, videos, audio, styled boxes, buttons, code and tables.',
       },
     },
-
-    // ========================================================
-    // EXCERPT
-    // ========================================================
 
     {
       name: 'excerpt',
@@ -695,20 +873,12 @@ export const Posts: CollectionConfig = {
       },
     },
 
-    // ========================================================
-    // FEATURED IMAGE
-    // ========================================================
-
     {
       name: 'featuredImage',
       type: 'upload',
       relationTo: 'media',
       label: 'Featured Image',
     },
-
-    // ========================================================
-    // IMAGE POSITION
-    // ========================================================
 
     {
       name: 'imagePosition',
@@ -732,10 +902,6 @@ export const Posts: CollectionConfig = {
       ],
     },
 
-    // ========================================================
-    // CATEGORY
-    // ========================================================
-
     {
       name: 'category',
       type: 'relationship',
@@ -745,10 +911,6 @@ export const Posts: CollectionConfig = {
       label: 'Category',
     },
 
-    // ========================================================
-    // TAGS
-    // ========================================================
-
     {
       name: 'tags',
       type: 'relationship',
@@ -756,10 +918,6 @@ export const Posts: CollectionConfig = {
       hasMany: true,
       label: 'Tags',
     },
-
-    // ========================================================
-    // AUTHOR
-    // ========================================================
 
     {
       name: 'author',
@@ -770,13 +928,10 @@ export const Posts: CollectionConfig = {
       label: 'Author',
     },
 
-    // ========================================================
-    // PUBLISHED DATE
-    // ========================================================
-
     {
       name: 'publishedAt',
       type: 'date',
+      index: true,
       label: 'Published Date',
 
       admin: {
@@ -786,13 +941,10 @@ export const Posts: CollectionConfig = {
       },
     },
 
-    // ========================================================
-    // WORKFLOW STATUS
-    // ========================================================
-
     {
       name: 'workflowStatus',
       type: 'select',
+      index: true,
       label: 'Workflow Status',
       defaultValue: 'draft',
 
@@ -817,10 +969,6 @@ export const Posts: CollectionConfig = {
       },
     },
 
-    // ========================================================
-    // CORNERSTONE
-    // ========================================================
-
     {
       name: 'cornerstone',
       type: 'checkbox',
@@ -832,10 +980,6 @@ export const Posts: CollectionConfig = {
           'Marks this article as important pillar content for internal linking priority.',
       },
     },
-
-    // ========================================================
-    // SITEMAP
-    // ========================================================
 
     {
       name: 'includeInSitemap',
@@ -849,10 +993,6 @@ export const Posts: CollectionConfig = {
       },
     },
 
-    // ========================================================
-    // PREVIOUS URL
-    // ========================================================
-
     {
       name: 'redirectFrom',
       type: 'text',
@@ -863,10 +1003,6 @@ export const Posts: CollectionConfig = {
           'Optional previous URL/slug that should redirect to this post after a URL change.',
       },
     },
-
-    // ========================================================
-    // MIGRATION / INTERNAL
-    // ========================================================
 
     {
       name: 'legacy',
@@ -887,9 +1023,6 @@ export const Posts: CollectionConfig = {
           label: 'WordPress ID',
         },
 
-        // ⬇ NEW — preserves the ORIGINAL WordPress post.modified date
-        // for migrated posts, separate from Payload's own updatedAt.
-        // Empty for posts created directly in Payload.
         {
           name: 'wordpressModifiedAt',
           type: 'date',

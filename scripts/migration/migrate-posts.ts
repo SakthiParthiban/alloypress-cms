@@ -57,6 +57,12 @@ type WPPost = {
 
   sticky?: boolean
   meta?: unknown
+
+  // Rank Math data may be exposed either inside REST `meta`
+  // or as top-level REST fields depending on the WordPress setup.
+  rank_math?: Record<string, unknown>
+  rank_math_migration?: Record<string, unknown>
+
   _embedded?: {
     'wp:featuredmedia'?: Array<{
       source_url?: string
@@ -104,7 +110,7 @@ type MigrationStats = {
 
 const WORDPRESS_API_URL =
   process.env.WORDPRESS_API_URL ||
-  'https://staging1.alloypress.com/wp-json/wp/v2'
+  'https://alloypress.com/wp-json/wp/v2'
 
 // ============================================================
 // ⬇ NEW — WORDPRESS AUTH (needed to see draft/pending/private posts)
@@ -165,6 +171,203 @@ function cleanText(value: string | undefined): string {
     .replace(/&#8221;/gi, '”')
     .replace(/\s+/g, ' ')
     .trim()
+}
+
+// ============================================================
+// RANK MATH / PAYLOAD SEO HELPERS
+// ============================================================
+//
+// IMPORTANT:
+// - Reads Rank Math values from the WordPress REST response.
+// - Supports both `meta.rank_math_*` and top-level `rank_math` /
+//   `rank_math_migration` shapes.
+// - Does not change the existing content/media migration flow.
+// - SEO images reuse the existing Payload media map first and only
+//   upload from WordPress when a mapping is genuinely missing.
+// ============================================================
+
+type WPRankMath = Record<string, unknown>
+
+type PayloadRobotsMeta = {
+  index: boolean
+  follow: boolean
+  noArchive: boolean
+  noImageIndex: boolean
+  noSnippet: boolean
+}
+
+type PayloadAdvancedRobotsMeta = {
+  maxSnippet: number
+  maxVideoPreview: number
+  maxImagePreview: 'none' | 'standard' | 'large'
+}
+
+function getRankMathData(post: WPPost): WPRankMath {
+  // Prefer the dedicated top-level Rank Math migration object when
+  // WordPress exposes it.
+  if (
+    post.rank_math_migration &&
+    typeof post.rank_math_migration === 'object' &&
+    !Array.isArray(post.rank_math_migration)
+  ) {
+    return post.rank_math_migration
+  }
+
+  if (
+    post.rank_math &&
+    typeof post.rank_math === 'object' &&
+    !Array.isArray(post.rank_math)
+  ) {
+    return post.rank_math
+  }
+
+  // Most WordPress REST configurations expose registered Rank Math
+  // post meta inside the normal `meta` object.
+  if (
+    post.meta &&
+    typeof post.meta === 'object' &&
+    !Array.isArray(post.meta)
+  ) {
+    return post.meta as WPRankMath
+  }
+
+  return {}
+}
+
+function getRankMathString(
+  rankMath: WPRankMath,
+  key: string,
+): string | undefined {
+  const value = rankMath[key]
+
+  if (typeof value === 'string') {
+    const trimmed = value.trim()
+    return trimmed || undefined
+  }
+
+  if (typeof value === 'number') {
+    return String(value)
+  }
+
+  if (Array.isArray(value)) {
+    const values = value
+      .filter(
+        (item): item is string | number =>
+          typeof item === 'string' || typeof item === 'number',
+      )
+      .map(String)
+      .map((item) => item.trim())
+      .filter(Boolean)
+
+    return values.length ? values.join(',') : undefined
+  }
+
+  return undefined
+}
+
+function getRankMathStringArray(
+  rankMath: WPRankMath,
+  key: string,
+): string[] {
+  const value = rankMath[key]
+
+  if (Array.isArray(value)) {
+    return value
+      .filter(
+        (item): item is string | number =>
+          typeof item === 'string' || typeof item === 'number',
+      )
+      .map(String)
+      .map((item) => item.trim())
+      .filter(Boolean)
+  }
+
+  if (typeof value === 'string') {
+    return value
+      .split(',')
+      .map((item) => item.trim())
+      .filter(Boolean)
+  }
+
+  return []
+}
+
+function parseRankMathRobots(rankMath: WPRankMath): {
+  robots: PayloadRobotsMeta
+  advancedRobots: PayloadAdvancedRobotsMeta
+} {
+  const tokens = getRankMathStringArray(
+    rankMath,
+    'rank_math_robots',
+  ).map((value) => value.toLowerCase())
+
+  const has = (value: string) =>
+    tokens.includes(value.toLowerCase())
+
+  const getDirective = (name: string): string | undefined => {
+    const prefix = `${name}:`
+    const token = tokens.find((item) => item.startsWith(prefix))
+    return token?.slice(prefix.length).trim()
+  }
+
+  const robots: PayloadRobotsMeta = {
+    index: !has('noindex'),
+    follow: !has('nofollow'),
+    noArchive: has('noarchive'),
+    noImageIndex: has('noimageindex'),
+    noSnippet: has('nosnippet'),
+  }
+
+  const advancedRobots: PayloadAdvancedRobotsMeta = {
+    maxSnippet: -1,
+    maxVideoPreview: -1,
+    maxImagePreview: 'large',
+  }
+
+  const maxSnippet = getDirective('max-snippet')
+  if (maxSnippet !== undefined && Number.isFinite(Number(maxSnippet))) {
+    advancedRobots.maxSnippet = Number(maxSnippet)
+  }
+
+  const maxVideoPreview = getDirective('max-video-preview')
+  if (
+    maxVideoPreview !== undefined &&
+    Number.isFinite(Number(maxVideoPreview))
+  ) {
+    advancedRobots.maxVideoPreview = Number(maxVideoPreview)
+  }
+
+  const maxImagePreview = getDirective('max-image-preview')
+
+  if (
+    maxImagePreview === 'none' ||
+    maxImagePreview === 'standard' ||
+    maxImagePreview === 'large'
+  ) {
+    advancedRobots.maxImagePreview = maxImagePreview
+  }
+
+  return {
+    robots,
+    advancedRobots,
+  }
+}
+
+async function resolveRankMathImageId(
+  value: unknown,
+  mediaMaps: MediaMaps,
+  payload: any,
+): Promise<number | undefined> {
+  if (typeof value !== 'string' || !value.trim()) {
+    return undefined
+  }
+
+  const sourceUrl = resolveWordPressAssetUrl(value)
+
+  return (
+    findMediaId(sourceUrl, mediaMaps) ||
+    (await ensureMediaUploaded(sourceUrl, mediaMaps, payload))
+  )
 }
 
 // ============================================================
@@ -2195,6 +2398,8 @@ export async function migratePosts() {
 
       const rawContent = post.content?.rendered || '<p></p>'
 
+      
+
       try {
         content = await convertToLexical(
           rawContent,
@@ -2271,15 +2476,176 @@ export async function migratePosts() {
           ? post.date || undefined
           : undefined
 
-      const wpMeta =
-        post.meta && typeof post.meta === 'object'
-          ? (post.meta as Record<string, any>)
-          : {}
+      // ============================================================
+      // RANK MATH SEO → PAYLOAD META
+      // ============================================================
+      //
+      // Existing post/content/media/workflow migration remains unchanged.
+      // This block only builds the Posts `meta` object from the original
+      // WordPress Rank Math values.
+      // ============================================================
 
-      const ogImage =
-        typeof wpMeta.rank_math_facebook_image === 'string'
-          ? findMediaId(wpMeta.rank_math_facebook_image, mediaMaps)
-          : undefined
+      const rankMath = getRankMathData(post)
+
+      const seoTitle =
+        getRankMathString(rankMath, 'rank_math_title') || title
+
+      const seoDescription =
+        getRankMathString(rankMath, 'rank_math_description') || excerpt
+
+      const focusKeyword =
+        getRankMathString(rankMath, 'rank_math_focus_keyword')
+
+      const canonicalURL =
+        getRankMathString(rankMath, 'rank_math_canonical_url')
+
+      const breadcrumbTitle =
+        getRankMathString(rankMath, 'rank_math_breadcrumb_title')
+
+      const ogTitle =
+        getRankMathString(rankMath, 'rank_math_facebook_title') ||
+        seoTitle
+
+      const ogDescription =
+        getRankMathString(
+          rankMath,
+          'rank_math_facebook_description',
+        ) || seoDescription
+
+      const twitterTitle = getRankMathString(
+        rankMath,
+        'rank_math_twitter_title',
+      )
+
+      const twitterDescription = getRankMathString(
+        rankMath,
+        'rank_math_twitter_description',
+      )
+
+      // ------------------------------------------------------------
+      // OPEN GRAPH IMAGE
+      // ------------------------------------------------------------
+      // Prefer the original WordPress media ID mapping first.
+      // If Rank Math only stores the image URL, reuse the existing
+      // media URL/path/filename mapping. If still missing, upload it
+      // on demand using the existing media upload flow.
+      // ------------------------------------------------------------
+
+      let payloadOgImageId: number | undefined
+
+      const wordpressOgImageId = getRankMathString(
+        rankMath,
+        'rank_math_facebook_image_id',
+      )
+
+      if (wordpressOgImageId) {
+        const wpMediaId = Number(wordpressOgImageId)
+
+        if (Number.isFinite(wpMediaId)) {
+          payloadOgImageId =
+            mediaMaps.byWordPressId.get(wpMediaId)
+        }
+      }
+
+      if (!payloadOgImageId) {
+        payloadOgImageId = await resolveRankMathImageId(
+          rankMath.rank_math_facebook_image,
+          mediaMaps,
+          payload,
+        )
+      }
+
+      // ------------------------------------------------------------
+      // TWITTER IMAGE
+      // ------------------------------------------------------------
+
+      const payloadTwitterImageId =
+        await resolveRankMathImageId(
+          rankMath.rank_math_twitter_image,
+          mediaMaps,
+          payload,
+        )
+
+      // ------------------------------------------------------------
+      // ROBOTS
+      // ------------------------------------------------------------
+
+      const { robots, advancedRobots } =
+        parseRankMathRobots(rankMath)
+
+      // ------------------------------------------------------------
+      // FINAL PAYLOAD SEO OBJECT
+      // ------------------------------------------------------------
+
+      const seoMeta = {
+        title: cleanText(seoTitle),
+
+        description: cleanText(seoDescription),
+
+        ...(payloadFeaturedImageId
+          ? {
+              image: payloadFeaturedImageId,
+            }
+          : {}),
+
+        ...(focusKeyword
+          ? {
+              focusKeyword,
+            }
+          : {}),
+
+        ...(canonicalURL
+          ? {
+              canonicalURL,
+            }
+          : {}),
+
+        ...(breadcrumbTitle
+          ? {
+              breadcrumbTitle: cleanText(breadcrumbTitle),
+            }
+          : {}),
+
+        robots,
+
+        advancedRobots,
+
+        openGraph: {
+          title: cleanText(ogTitle),
+
+          description: cleanText(ogDescription),
+
+          ...(payloadOgImageId
+            ? {
+                image: payloadOgImageId,
+              }
+            : payloadFeaturedImageId
+              ? {
+                  image: payloadFeaturedImageId,
+                }
+              : {}),
+        },
+
+        twitter: {
+          ...(twitterTitle
+            ? {
+                title: cleanText(twitterTitle),
+              }
+            : {}),
+
+          ...(twitterDescription
+            ? {
+                description: cleanText(twitterDescription),
+              }
+            : {}),
+
+          ...(payloadTwitterImageId
+            ? {
+                image: payloadTwitterImageId,
+              }
+            : {}),
+        },
+      } as any
 
       const data = {
         title,
@@ -2315,6 +2681,8 @@ export async function migratePosts() {
         ...(payloadFeaturedImageId
           ? { featuredImage: payloadFeaturedImageId }
           : {}),
+
+        meta: seoMeta,
       } as any
 
       if (
@@ -2434,6 +2802,25 @@ export async function migratePosts() {
       if (payloadFeaturedImageId) {
         console.log(`  ↳ Featured Image: ${payloadFeaturedImageId}`)
       }
+
+      console.log(
+        `  ↳ SEO Title: ${seoMeta.title || 'none'}`,
+      )
+      console.log(
+        `  ↳ SEO Description: ${seoMeta.description ? 'yes' : 'none'}`,
+      )
+      console.log(
+        `  ↳ Canonical URL: ${seoMeta.canonicalURL || 'none'}`,
+      )
+      console.log(
+        `  ↳ Focus Keyword: ${seoMeta.focusKeyword || 'none'}`,
+      )
+      console.log(
+        `  ↳ OG Image: ${payloadOgImageId || payloadFeaturedImageId || 'none'}`,
+      )
+      console.log(
+        `  ↳ Twitter Image: ${payloadTwitterImageId || 'none'}`,
+      )
 
       console.log(`  ↳ Status: ${post.status} → ${workflowStatus}`)
       console.log('')
