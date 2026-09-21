@@ -42,3 +42,5 @@ next-env.d.ts
 /dist/
 .vinext/
 .wrangler/
+
+package-lock.json
