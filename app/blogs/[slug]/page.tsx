@@ -1,4 +1,6 @@
 import type { Metadata } from "next";
+import { draftMode } from "next/headers";
+import { notFound } from "next/navigation";
 import { cache } from "react";
 import BlogPostView from "@/components/blogs/BlogPostView";
 import BlogLivePreview from "@/components/blogs/BlogLivePreview";
@@ -572,18 +574,24 @@ export default async function BlogPostPage({
 
   const post = await getPost(slug);
 
+  const { isEnabled: isDraft } = await draftMode();
+
   // ==========================================================
   // 404
   // ==========================================================
 
   if (!post) {
-    return (
-      <BlogLivePreview
-        initialData={null}
-        related={[]}
-        slug={slug}
-      />
-    );
+    if (isDraft) {
+      return (
+        <BlogLivePreview
+          initialData={null}
+          related={[]}
+          slug={slug}
+        />
+      );
+    }
+
+    return notFound();
   }
 
   // ==========================================================
@@ -683,11 +691,32 @@ export default async function BlogPostPage({
         }}
       />
 
-      <BlogLivePreview
-        initialData={post}
-        related={related}
-        slug={slug}
-      />
+      {isDraft ? (
+        <BlogLivePreview
+          initialData={post}
+          related={related}
+          slug={slug}
+        />
+      ) : (
+        <BlogPostView
+          post={{
+            id: post.id,
+            title: post.title,
+            excerpt: post.excerpt,
+            content: post.content,
+            category: post.category,
+            featuredImage: post.featuredImage,
+            publishedAt: post.publishedAt,
+            updatedAt: post.updatedAt,
+            legacy: post.legacy,
+            tags: post.tags,
+          }}
+          related={related}
+          articleImage={articleImage}
+          category={categorySlugValue}
+          categoryLabel={categoryName}
+        />
+      )}
     </>
   );
 }
