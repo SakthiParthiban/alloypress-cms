@@ -1,4 +1,4 @@
-import type { Access, CollectionConfig } from 'payload'
+import type { Access, Block, CollectionConfig } from 'payload'
 import type { PayloadRequest } from 'payload'
 import { sql } from '@payloadcms/db-postgres/drizzle'
 
@@ -214,6 +214,45 @@ async function searchPostsWithSimilarity(
   })
 
   return (result.rows || []) as unknown as SearchResultRow[]
+}
+
+/* -------------------------------------------------------------------------- */
+/* Code block with Code / Preview toggle in the admin editor                   */
+/* -------------------------------------------------------------------------- */
+
+const baseCodeBlock = CodeBlock({
+  languages: {
+    plaintext: 'Plain Text',
+    js: 'JavaScript',
+    ts: 'TypeScript',
+    jsx: 'JSX',
+    tsx: 'TSX',
+    html: 'HTML',
+    css: 'CSS',
+    json: 'JSON',
+    bash: 'Bash',
+    sql: 'SQL',
+  },
+})
+
+// Same built-in block (slug, header, language dropdown, copy button unchanged);
+// only the `code` field gets the custom Code / Preview wrapper.
+const CodeBlockWithPreview: Block = {
+  ...baseCodeBlock,
+  fields: baseCodeBlock.fields.map((f: any) =>
+    f.name === 'code'
+      ? {
+          ...f,
+          admin: {
+            ...f.admin,
+            components: {
+              ...f.admin?.components,
+              Field: '/components/admin/CodePreviewField#CodePreviewField',
+            },
+          },
+        }
+      : f,
+  ) as Block['fields'],
 }
 
 export const Posts: CollectionConfig = {
@@ -475,21 +514,18 @@ export const Posts: CollectionConfig = {
 
     livePreview: {
       url: ({ data }) => {
-        const slug = data?.slug;
+        const slug =
+          typeof data?.slug === "string" && data.slug.trim()
+            ? data.slug.trim()
+            : "__preview__";
 
-        const category =
-          typeof data?.category === "object" &&
-            data.category !== null &&
-            "slug" in data.category &&
-            typeof data.category.slug === "string"
-            ? data.category.slug
-            : "blogs";
+        const id =
+          data?.id !== undefined && data?.id !== null
+            ? String(data.id)
+            : "";
 
-        if (!slug) {
-          return "https://alloypress-web.vercel.app/blogs?preview=1";
-        }
-
-        return `https://alloypress-web.vercel.app/${category}/${slug}?preview=1`;
+        return `https://alloypress-web.vercel.app/preview/blogs/${slug}${id ? `?id=${encodeURIComponent(id)}` : ""
+          }`;
       },
     },
   },
@@ -622,20 +658,7 @@ export const Posts: CollectionConfig = {
 
           BlocksFeature({
             blocks: [
-              CodeBlock({
-                languages: {
-                  plaintext: 'Plain Text',
-                  js: 'JavaScript',
-                  ts: 'TypeScript',
-                  jsx: 'JSX',
-                  tsx: 'TSX',
-                  html: 'HTML',
-                  css: 'CSS',
-                  json: 'JSON',
-                  bash: 'Bash',
-                  sql: 'SQL',
-                },
-              }),
+              CodeBlockWithPreview,
 
               {
                 slug: 'videoEmbed',
