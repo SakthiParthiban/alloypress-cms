@@ -6,16 +6,11 @@ import { useLivePreview } from "@payloadcms/live-preview-react";
 import BlogPostView from "@/components/blogs/BlogPostView";
 import type { Post } from "@/lib/cms";
 
-const CATEGORY_LABELS: Record<string, string> = {
-  blogs: "Blogs",
-  reviews: "Reviews",
-  news: "News",
-  alternatives: "Alternatives",
-  comparisons: "Comparisons",
-};
+const PAYLOAD_URL =
+  "https://alloypress-cms.vercel.app";
 
 type Props = {
-  initialData: Post | null;
+  initialData: Post;
   related: Post[];
   slug: string;
 };
@@ -27,15 +22,12 @@ function imageUrl(value: unknown): string | null {
     "url" in value
   ) {
     const url = (value as { url?: unknown }).url;
+
     return typeof url === "string" ? url : null;
   }
 
   if (typeof value === "number") {
-    const cmsUrl =
-      process.env.NEXT_PUBLIC_PAYLOAD_URL ||
-      "https://alloypress-cms.vercel.app";
-
-    return `${cmsUrl.replace(/\/$/, "")}/api/media/${value}`;
+    return `${PAYLOAD_URL}/api/media/${value}`;
   }
 
   return null;
@@ -46,65 +38,43 @@ export default function BlogLivePreview({
   related,
   slug,
 }: Props) {
-  const fallbackData = {
-    ...(initialData ?? {}),
-    slug,
-  } as Post;
-
   const { data } = useLivePreview<Post>({
-    serverURL:
-      process.env.NEXT_PUBLIC_PAYLOAD_URL ||
-      "https://alloypress-cms.vercel.app",
-
-    initialData: fallbackData,
-
+    serverURL: PAYLOAD_URL,
+    initialData,
     depth: 1,
   });
 
-  if (!data?.title) {
-    return (
-      <main
-        style={{
-          minHeight: "70vh",
-          display: "grid",
-          placeItems: "center",
-          padding: 40,
-        }}
-      >
-        <p>Loading preview...</p>
-      </main>
-    );
-  }
+  const post = data || initialData;
 
   const category =
-    typeof data.category === "object" &&
-    data.category?.slug
-      ? data.category.slug
+    typeof post.category === "object" &&
+    post.category?.slug
+      ? post.category.slug
       : "blogs";
 
   const categoryLabel =
-    typeof data.category === "object" &&
-    data.category?.name
-      ? data.category.name
-      : CATEGORY_LABELS[category] || "Blogs";
+    typeof post.category === "object" &&
+    post.category?.name
+      ? post.category.name
+      : "Blogs";
 
   const articleImage = imageUrl(
-    data.featuredImage,
+    post.featuredImage,
   );
 
   return (
     <BlogPostView
       post={{
-        id: data.id,
-        title: data.title,
-        excerpt: data.excerpt,
-        content: data.content,
-        category: data.category,
-        featuredImage: data.featuredImage,
-        publishedAt: data.publishedAt,
-        updatedAt: data.updatedAt,
-        legacy: data.legacy,
-        tags: data.tags,
+        id: post.id,
+        title: post.title || "Live Preview",
+        excerpt: post.excerpt || "",
+        content: post.content,
+        category: post.category,
+        featuredImage: post.featuredImage,
+        publishedAt: post.publishedAt,
+        updatedAt: post.updatedAt,
+        legacy: post.legacy,
+        tags: post.tags,
       }}
       related={related}
       articleImage={articleImage}
