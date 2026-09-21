@@ -4,6 +4,8 @@ import { notFound } from "next/navigation";
 
 import { cache } from "react";
 
+import BlogLivePreview from "@/components/blogs/BlogLivePreview";
+
 import BlogPostView from "@/components/blogs/BlogPostView";
 
 import { payloadFetch } from "@/lib/payload";
@@ -51,6 +53,10 @@ const CATEGORY_LABELS: Record<
 type Params = Promise<{
   category: string;
   slug: string;
+}>;
+
+type SearchParams = Promise<{
+  preview?: string;
 }>;
 
 // ============================================================
@@ -864,7 +870,7 @@ const getRelatedPosts = cache(
     params.set(
       "select[featuredImage]",
       "true",
-    );
+    ); 
 
     params.set(
       "select[author]",
@@ -1060,19 +1066,61 @@ export async function generateMetadata({
 
 export default async function CategoryPostPage({
   params,
+  searchParams,
 }: {
   params: Params;
+  searchParams: SearchParams;
 }) {
   const {
     category,
     slug,
   } = await params;
 
-  const post =
-    await getPost(
-      category,
+  const {
+    preview,
+  } = await searchParams;
+
+  // ----------------------------------------------------------
+  // LIVE PREVIEW
+  // ----------------------------------------------------------
+
+  if (preview === "1") {
+    const previewSeed = {
+      id: "preview",
+      title: "",
       slug,
+      excerpt: "",
+      content: null,
+
+      category: {
+        id: "preview-category",
+        slug: category,
+        name:
+          CATEGORY_LABELS[category] ||
+          category,
+      },
+
+      featuredImage: null,
+      publishedAt: null,
+      updatedAt: null,
+      legacy: {},
+      tags: [],
+      author: null,
+    } as unknown as Post;
+
+    return (
+      <BlogLivePreview
+        initialData={previewSeed}
+        related={[]}
+        slug={slug}
+      />
     );
+  }
+
+  const post = await getPost(
+    category,
+    slug,
+  );
 
   if (!post) {
     notFound();

@@ -581,18 +581,33 @@ export default async function BlogPostPage({
   // ==========================================================
 
   if (!post) {
-    if (isDraft) {
-      return (
-        <BlogLivePreview
-          initialData={null}
-          related={[]}
-          slug={slug}
-        />
-      );
-    }
+  if (isDraft) {
+    const previewSeed = {
+      id: "preview",
+      title: "",
+      slug,
+      excerpt: "",
+      content: null,
+      category: null,
+      featuredImage: null,
+      publishedAt: null,
+      updatedAt: null,
+      legacy: {},
+      tags: [],
+      author: null,
+    } as unknown as Post;
 
-    return notFound();
+    return (
+      <BlogLivePreview
+        initialData={previewSeed}
+        related={[]}
+        slug={slug}
+      />
+    );
   }
+
+  return notFound();
+}
 
   // ==========================================================
   // CATEGORY
