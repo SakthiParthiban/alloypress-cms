@@ -473,18 +473,25 @@ export const Posts: CollectionConfig = {
       '_status',
     ],
 
-   livePreview: {
-  url: ({ data }) => {
-    const slug = data?.slug;
-    const base = "https://alloypress-web.vercel.app";
+    livePreview: {
+      url: ({ data }) => {
+        const slug = data?.slug;
 
-    if (!slug) {
-      return `${base}/blogs`;
-    }
+        const category =
+          typeof data?.category === "object" &&
+            data.category !== null &&
+            "slug" in data.category &&
+            typeof data.category.slug === "string"
+            ? data.category.slug
+            : "blogs";
 
-    return `${base}/api/preview?secret=${process.env.PREVIEW_SECRET}&slug=${slug}`;
-  },
-},
+        if (!slug) {
+          return "https://alloypress-web.vercel.app/blogs?preview=1";
+        }
+
+        return `https://alloypress-web.vercel.app/${category}/${slug}?preview=1`;
+      },
+    },
   },
 
   versions: {
