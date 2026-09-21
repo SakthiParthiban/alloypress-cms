@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { cache } from "react";
 import BlogPostView from "@/components/blogs/BlogPostView";
+import BlogLivePreview from "@/components/blogs/BlogLivePreview";
 import { payloadFetch } from "@/lib/payload";
 import {
   type Post,
@@ -577,33 +578,11 @@ export default async function BlogPostPage({
 
   if (!post) {
     return (
-      <main
-        style={{
-          minHeight: "70vh",
-          display: "grid",
-          placeItems: "center",
-          padding: 40,
-        }}
-      >
-        <div>
-          <p
-            style={{
-              color: "#18b968",
-              fontWeight: 700,
-            }}
-          >
-            404 · ARTICLE NOT FOUND
-          </p>
-
-          <h1>
-            We couldn't find this article.
-          </h1>
-
-          <a href="/blogs">
-            ← Back to Blogs
-          </a>
-        </div>
-      </main>
+      <BlogLivePreview
+        initialData={null}
+        related={[]}
+        slug={slug}
+      />
     );
   }
 
@@ -704,23 +683,10 @@ export default async function BlogPostPage({
         }}
       />
 
-      <BlogPostView
-        post={{
-          id: post.id,
-          title: post.title,
-          excerpt: post.excerpt,
-          content: post.content,
-          category: post.category,
-          featuredImage: post.featuredImage,
-          publishedAt: post.publishedAt,
-          updatedAt: post.updatedAt,
-          legacy: post.legacy,
-          tags: post.tags,
-        }}
+      <BlogLivePreview
+        initialData={post}
         related={related}
-        articleImage={articleImage}
-        category={categorySlugValue}
-        categoryLabel={categoryName}
+        slug={slug}
       />
     </>
   );
