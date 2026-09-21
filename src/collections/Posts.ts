@@ -475,13 +475,13 @@ export const Posts: CollectionConfig = {
 
     livePreview: {
       url: ({ data }) => {
-        const slug = data?.slug
+        const slug = data?.slug;
 
         if (!slug) {
-          return 'https://alloypress-web.vercel.app/blogs'
+          return "https://alloypress-web.vercel.app/blogs";
         }
 
-        return `https://alloypress-web.vercel.app/blogs/${slug}`
+        return `https://alloypress-web.vercel.app/blogs/${slug}`;
       },
     },
   },
