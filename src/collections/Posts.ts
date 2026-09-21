@@ -478,10 +478,10 @@ export const Posts: CollectionConfig = {
         const slug = data?.slug
 
         if (!slug) {
-          return 'http://localhost:3000/blogs'
+          return 'https://alloypress-web.vercel.app/blogs'
         }
 
-        return `http://localhost:3000/blogs/${slug}`
+        return `https://alloypress-web.vercel.app/blogs/${slug}`
       },
     },
   },
