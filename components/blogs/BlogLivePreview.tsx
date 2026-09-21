@@ -6,11 +6,10 @@ import { useLivePreview } from "@payloadcms/live-preview-react";
 import BlogPostView from "@/components/blogs/BlogPostView";
 import type { Post } from "@/lib/cms";
 
-const PAYLOAD_URL =
-  "https://alloypress-cms.vercel.app";
+const PAYLOAD_URL = "https://alloypress-cms.vercel.app";
 
 type Props = {
-  initialData: Post;
+  initialData: Post | null;
   related: Post[];
   slug: string;
 };
@@ -38,13 +37,32 @@ export default function BlogLivePreview({
   related,
   slug,
 }: Props) {
+  // Always provide a non-null initialData object to useLivePreview.
+  const previewInitialData = (
+    initialData ?? {
+      id: "preview",
+      title: "",
+      slug,
+      excerpt: "",
+      content: null,
+      category: null,
+      featuredImage: null,
+      publishedAt: null,
+      updatedAt: null,
+      legacy: {},
+      tags: [],
+      author: null,
+    }
+  ) as Post;
+
   const { data } = useLivePreview<Post>({
     serverURL: PAYLOAD_URL,
-    initialData,
+    initialData: previewInitialData,
     depth: 1,
   });
 
-  const post = data || initialData;
+  // data will contain the latest Payload live-preview state.
+  const post = data ?? previewInitialData;
 
   const category =
     typeof post.category === "object" &&
