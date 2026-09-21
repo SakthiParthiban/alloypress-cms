@@ -76,6 +76,11 @@ export default buildConfig({
 
   },
 
+  cors: [
+    "https://alloypress-web.vercel.app",
+    "http://localhost:3000",
+  ],
+
 
   // =========================================================
   // ROUTES
