@@ -1,16 +1,14 @@
 "use client";
 
 import React from "react";
-
-import {
-  useLivePreview,
-} from "@payloadcms/live-preview-react";
+import { useLivePreview } from "@payloadcms/live-preview-react";
 
 import BlogPostView from "@/components/blogs/BlogPostView";
 import type { Post } from "@/lib/cms";
 
 const PAYLOAD_URL =
-  "https://alloypress-cms.vercel.app";
+  process.env.NEXT_PUBLIC_PAYLOAD_URL ||
+  "http://localhost:3001";
 
 type Props = {
   initialData: Post;
@@ -18,22 +16,15 @@ type Props = {
   slug: string;
 };
 
-function imageUrl(
-  value: unknown,
-): string | null {
+function imageUrl(value: unknown): string | null {
   if (
     typeof value === "object" &&
     value !== null &&
     "url" in value
   ) {
-    const url =
-      (value as {
-        url?: unknown;
-      }).url;
+    const url = (value as { url?: unknown }).url;
 
-    return typeof url === "string"
-      ? url
-      : null;
+    return typeof url === "string" ? url : null;
   }
 
   if (typeof value === "number") {
@@ -46,16 +37,16 @@ function imageUrl(
 export default function BlogLivePreview({
   initialData,
   related,
-  slug,
 }: Props) {
-  const { data } =
-    useLivePreview<Post>({
-      initialData,
-      serverURL: PAYLOAD_URL,
-      depth: 1,
-    });
+  const { data } = useLivePreview<Post>({
+    initialData,
+    serverURL: PAYLOAD_URL,
+    apiRoute: "/api",
+    depth: 1,
+  });
 
-  const post = data;
+  // Always keep something available for rendering
+  const post = data ?? initialData;
 
   const category =
     typeof post.category === "object" &&
@@ -71,54 +62,28 @@ export default function BlogLivePreview({
     "name" in post.category &&
     typeof post.category.name === "string"
       ? post.category.name
-      : category;
+      : category || "Blogs";
 
-  const articleImage =
-    imageUrl(
-      post.featuredImage,
-    );
+  const articleImage = imageUrl(post.featuredImage);
 
   return (
     <BlogPostView
       post={{
         id: post.id,
-        title:
-          post.title ||
-          "Live Preview",
-
-        excerpt:
-          post.excerpt ||
-          "",
-
-        content:
-          post.content,
-
-        category:
-          post.category,
-
-        featuredImage:
-          post.featuredImage,
-
-        publishedAt:
-          post.publishedAt,
-
-        updatedAt:
-          post.updatedAt,
-
-        legacy:
-          post.legacy,
-
-        tags:
-          post.tags,
+        title: post.title || "Live Preview",
+        excerpt: post.excerpt || "",
+        content: post.content,
+        category: post.category,
+        featuredImage: post.featuredImage,
+        publishedAt: post.publishedAt,
+        updatedAt: post.updatedAt,
+        legacy: post.legacy,
+        tags: post.tags,
       }}
       related={related}
-      articleImage={
-        articleImage
-      }
+      articleImage={articleImage}
       category={category}
-      categoryLabel={
-        categoryLabel
-      }
+      categoryLabel={categoryLabel}
     />
   );
 }

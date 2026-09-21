@@ -4941,17 +4941,29 @@ html[data-theme="dark"] .single-post .ai-panel {
 
 
 
-.post-author-link {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  color: inherit;
-  text-decoration: none;
-  transition:
-    color 0.2s ease,
-    opacity 0.2s ease;
+.post-live-code {
+  width: 100%;
+  margin: 24px 0;
+  overflow: hidden;
+  border: 1px solid rgba(0, 255, 100, 0.2);
+  border-radius: 12px;
+  background: #fff;
 }
 
-.post-author-link:hover {
-  color: var(--green);
+.post-live-code-frame {
+  display: block;
+  width: 100%;
+  min-height: 360px;
+  border: 0;
+  background: #fff;
+}
+
+@media (max-width: 768px) {
+  .post-live-code {
+    margin: 20px 0;
+  }
+
+  .post-live-code-frame {
+    min-height: 300px;
+  }
 }

@@ -632,7 +632,7 @@ function RenderNode({
   }
 
   /* ---------------------------------------------------------------------- */
-  /* Code                                                                    */
+  /* Executable Code (native Lexical code node)                              */
   /* ---------------------------------------------------------------------- */
 
   if (
@@ -642,14 +642,115 @@ function RenderNode({
     const fields = node.fields || node;
 
     const code =
-      fields.code ||
-      textFromNodes(node.children || []);
+      typeof fields.code === "string"
+        ? fields.code
+        : textFromNodes(node.children || []);
+
+    const language = String(
+      fields.language ||
+      node.language ||
+      fields.lang ||
+      node.lang ||
+      "plaintext"
+    ).toLowerCase();
+
+    if (!code.trim()) {
+      return null;
+    }
+
+    const normalizedLanguage =
+      language === "html5"
+        ? "html"
+        : language === "htmlmixed"
+          ? "html"
+          : language === "javascript"
+            ? "js"
+            : language === "ecmascript"
+              ? "js"
+              : language === "typescript"
+                ? "ts"
+                : language;
+
+    const isExecutable =
+      normalizedLanguage === "html" ||
+      normalizedLanguage === "css" ||
+      normalizedLanguage === "js";
+
+    if (!isExecutable) {
+      return (
+        <div className="post-code">
+          <pre>
+            <code>{code}</code>
+          </pre>
+        </div>
+      );
+    }
+
+    let srcDoc = "";
+
+    if (normalizedLanguage === "html") {
+      srcDoc = code;
+    }
+
+    if (normalizedLanguage === "css") {
+      srcDoc = `
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8" />
+<style>
+${code}
+</style>
+</head>
+<body>
+  <div class="alloypress-css-preview">
+    CSS Preview
+  </div>
+</body>
+</html>
+`;
+    }
+
+    if (normalizedLanguage === "js") {
+      srcDoc = `
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8" />
+<style>
+html, body {
+  margin: 0;
+  padding: 16px;
+  font-family: system-ui, sans-serif;
+}
+</style>
+</head>
+<body>
+  <div id="app"></div>
+
+  <script>
+  try {
+    ${code}
+  } catch (error) {
+    document.body.innerHTML =
+      '<pre style="color:red;white-space:pre-wrap;">' +
+      String(error?.stack || error) +
+      '</pre>';
+  }
+  </script>
+</body>
+</html>
+`;
+    }
 
     return (
-      <div className="post-code">
-        <pre>
-          <code>{code}</code>
-        </pre>
+      <div className="post-live-code">
+        <iframe
+          title={`Live ${normalizedLanguage} preview`}
+          srcDoc={srcDoc}
+          sandbox="allow-scripts"
+          className="post-live-code-frame"
+        />
       </div>
     );
   }
@@ -776,6 +877,151 @@ function RenderNode({
             </div>
           ) : null}
         </aside>
+      );
+    }
+
+    /* Raw code / HTML / CSS / JS block (FIXED: now a sibling check, not
+       nested and unreachable inside styledBox; Payload's built-in
+       CodeBlock saves blockType as "Code" with capital C) */
+    if (String(blockType).toLowerCase() === "code") {
+      const code =
+        typeof fields.code === "string"
+          ? fields.code
+          : typeof node.code === "string"
+            ? node.code
+            : textFromNodes(node.children || []);
+
+      const rawLanguage =
+        fields.language ||
+        node.language ||
+        fields.lang ||
+        node.lang ||
+        "plaintext";
+
+      const language = String(rawLanguage)
+        .toLowerCase()
+        .trim();
+
+      if (!code.trim()) {
+        return null;
+      }
+
+      /*
+       * HTML
+       */
+      if (
+        language === "html" ||
+        language === "html5" ||
+        language === "htmlmixed"
+      ) {
+        return (
+          <div className="post-live-code">
+            <iframe
+              title="HTML preview"
+              className="post-live-code-frame"
+              sandbox="allow-scripts"
+              srcDoc={code}
+            />
+          </div>
+        );
+      }
+
+      /*
+       * CSS
+       */
+      if (language === "css") {
+        return (
+          <div className="post-live-code">
+            <iframe
+              title="CSS preview"
+              className="post-live-code-frame"
+              sandbox="allow-scripts"
+              srcDoc={`
+<!doctype html>
+<html>
+<head>
+<meta charset="UTF-8" />
+<style>
+${code}
+</style>
+</head>
+
+<body>
+  <div class="alloypress-css-preview">
+    CSS Preview
+  </div>
+</body>
+</html>
+          `}
+            />
+          </div>
+        );
+      }
+
+      /*
+       * JavaScript
+       */
+      if (
+        language === "js" ||
+        language === "javascript" ||
+        language === "ecmascript"
+      ) {
+        return (
+          <div className="post-live-code">
+            <iframe
+              title="JavaScript preview"
+              className="post-live-code-frame"
+              sandbox="allow-scripts"
+              srcDoc={`
+<!doctype html>
+<html>
+<head>
+<meta charset="UTF-8" />
+<style>
+html,
+body {
+  margin: 0;
+  padding: 16px;
+  font-family: system-ui, sans-serif;
+}
+
+body {
+  background: #ffffff;
+  color: #111111;
+}
+</style>
+</head>
+
+<body>
+  <div id="app"></div>
+
+  <script>
+    try {
+      ${code}
+    } catch (error) {
+      document.body.innerHTML =
+        "<pre style='color:red;white-space:pre-wrap;'>" +
+        String(error?.stack || error) +
+        "</pre>";
+    }
+  </script>
+</body>
+</html>
+          `}
+            />
+          </div>
+        );
+      }
+
+      /*
+       * Other languages → normal code display
+       */
+      return (
+        <div className="post-code">
+          <pre>
+            <code>{code}</code>
+          </pre>
+        </div>
       );
     }
 
