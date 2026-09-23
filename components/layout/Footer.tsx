@@ -1,9 +1,12 @@
+"use client";
+
+import { useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
+import { Check, Copy } from "lucide-react";
 import {
   FaYoutube,
   FaInstagram,
-  FaFacebookF,
   FaXTwitter,
 } from "react-icons/fa6";
 
@@ -16,7 +19,6 @@ const navigateLinks = [
   { label: "Comparisons", href: "/comparisons" },
 ];
 
-
 const resourceLinks = [
   { label: "AI Image Generators", href: "/blogs/best-ai-image-generator" },
   { label: "AI Website Builders", href: "/blogs/best-ai-website-builders" },
@@ -24,8 +26,14 @@ const resourceLinks = [
     label: "AI Background Removers",
     href: "/blogs/best-ai-background-remover-tools",
   },
-  { label: "AI Voice Generators", href: "/blogs/best-ai-voice-generators" },
-  { label: "AI Blog Writers", href: "/blogs/best-ai-blog-writing-tools" },
+  {
+    label: "AI Voice Generators",
+    href: "/blogs/best-ai-voice-generators",
+  },
+  {
+    label: "AI Blog Writers",
+    href: "/blogs/best-ai-blog-writing-tools",
+  },
   {
     label: "AI Logo Generators",
     href: "/blogs/best-ai-logo-generators",
@@ -37,7 +45,7 @@ const companyLinks = [
   { label: "About Us", href: "/about" },
   { label: "Contact", href: "/contact" },
   { label: "Feature Your Tool", href: "/get-featured" },
-  {label: "Testing Partner", href:"/testing-partner"},
+  { label: "Testing Partner", href: "/testing-partner" },
   {
     label: "Careers",
     href: "https://nvdigital.in/careers/",
@@ -46,11 +54,26 @@ const companyLinks = [
 ];
 
 const learnLinks = [
-  { label: "What is AI?", href: "/blogs/artificial-intelligence" },
-  { label: "AI Hallucinations", href: "/blogs/ai-hallucinations-explained" },
-  { label: "AI vs Humans", href: "/blogs/ai-vs-human-intelligence" },
-  { label: "AI Writing Prompts", href: "/blogs/ai-writing-prompts-for-every-task" },
-  { label: "AI Resume Builders", href: "/blogs/list-of-top-ai-resume-builders" },
+  {
+    label: "What is AI?",
+    href: "/blogs/artificial-intelligence",
+  },
+  {
+    label: "AI Hallucinations",
+    href: "/blogs/ai-hallucinations-explained",
+  },
+  {
+    label: "AI vs Humans",
+    href: "/blogs/ai-vs-human-intelligence",
+  },
+  {
+    label: "AI Writing Prompts",
+    href: "/blogs/ai-writing-prompts-for-every-task",
+  },
+  {
+    label: "AI Resume Builders",
+    href: "/blogs/list-of-top-ai-resume-builders",
+  },
 ];
 
 const popularLinks = [
@@ -77,7 +100,7 @@ const popularLinks = [
   {
     category: "COMPARISONS",
     label: "Invideo vs Synthesia",
-    href: "comparisons/invideo-vs-synthesia",
+    href: "/comparisons/invideo-vs-synthesia",
   },
 ];
 
@@ -132,7 +155,9 @@ function FooterColumn({
                   {link.label}
 
                   {link.popular && (
-                    <span className="footer-popular">Popular</span>
+                    <span className="footer-popular">
+                      Popular
+                    </span>
                   )}
                 </a>
               ) : (
@@ -140,7 +165,9 @@ function FooterColumn({
                   {link.label}
 
                   {link.popular && (
-                    <span className="footer-popular">Popular</span>
+                    <span className="footer-popular">
+                      Popular
+                    </span>
                   )}
                 </Link>
               )}
@@ -153,11 +180,39 @@ function FooterColumn({
 }
 
 export default function Footer() {
+  const [badgeCopied, setBadgeCopied] = useState(false);
+
+  const footerBadgeCode = `<a href="https://alloypress.com"
+   target="_blank"
+   rel="noopener noreferrer"
+   aria-label="Featured on AlloyPress">
+  <img src="https://alloypress.com/ap-icon.png"
+       alt="Featured on AlloyPress"
+       width="44"
+       height="44">
+</a>`;
+
+  async function copyFooterBadgeCode() {
+    try {
+      await navigator.clipboard.writeText(footerBadgeCode);
+
+      setBadgeCopied(true);
+
+      window.setTimeout(() => {
+        setBadgeCopied(false);
+      }, 1800);
+    } catch {
+      setBadgeCopied(false);
+    }
+  }
+
   return (
     <footer className="site-footer">
       <div className="footer-main">
         <div className="container">
           <div className="footer-grid">
+
+            {/* Brand */}
             <div className="footer-brand">
               <Link href="/" className="footer-logo">
                 <Image
@@ -169,9 +224,11 @@ export default function Footer() {
               </Link>
 
               <p>
-                Honest AI tool reviews, comparisons and alternatives-based on hands on testing.
+                Honest AI tool reviews, comparisons and alternatives-based on
+                hands on testing.
               </p>
 
+              {/* Social Icons */}
               <div className="footer-socials">
                 <SocialIcon
                   label="YouTube"
@@ -194,18 +251,79 @@ export default function Footer() {
                   <FaXTwitter aria-hidden="true" />
                 </SocialIcon>
               </div>
+
+              {/* Featured Badge */}
+              <div className="footer-featured-badge">
+                <span className="footer-featured-label">
+                  Featured on AlloyPress
+                </span>
+
+                <div className="footer-featured-row">
+                  <a
+                    href="https://alloypress.com"
+                    className="footer-featured-card"
+                    aria-label="Featured on AlloyPress"
+                  >
+                    <span className="footer-featured-icon">
+                      <Image
+                        src="/ap-icon.png"
+                        alt=""
+                        width={28}
+                        height={28}
+                      />
+                    </span>
+
+                    <span className="footer-featured-text">
+                      <span>Featured on</span>
+                      <strong>AlloyPress</strong>
+                    </span>
+
+                    <span
+                      className="footer-featured-check"
+                      aria-hidden="true"
+                    >
+                      ✓
+                    </span>
+                  </a>
+
+                  <button
+                    type="button"
+                    className="footer-featured-copy"
+                    onClick={copyFooterBadgeCode}
+                    aria-label={
+                      badgeCopied
+                        ? "Badge code copied"
+                        : "Copy badge code"
+                    }
+                    title={
+                      badgeCopied
+                        ? "Badge code copied"
+                        : "Copy badge code"
+                    }
+                  >
+                    {badgeCopied ? (
+                      <Check aria-hidden="true" />
+                    ) : (
+                      <Copy aria-hidden="true" />
+                    )}
+                  </button>
+                </div>
+              </div>
             </div>
 
+            {/* Navigate */}
             <FooterColumn
               title="Navigate"
               links={navigateLinks}
             />
 
+            {/* Top Resources */}
             <FooterColumn
               title="Top Resources"
               links={resourceLinks}
             />
 
+            {/* Company */}
             <FooterColumn
               title="Company"
               links={[
@@ -220,6 +338,7 @@ export default function Footer() {
               ]}
             />
 
+            {/* Learn */}
             <FooterColumn
               title="Learn"
               links={learnLinks}
@@ -228,6 +347,7 @@ export default function Footer() {
         </div>
       </div>
 
+      {/* Popular Links */}
       <div className="footer-popular-section">
         <div className="container">
           <div className="footer-popular-grid">
@@ -245,6 +365,7 @@ export default function Footer() {
         </div>
       </div>
 
+      {/* Source */}
       <div className="footer-source">
         <div className="container">
           <Link
@@ -256,6 +377,7 @@ export default function Footer() {
         </div>
       </div>
 
+      {/* Brand Wordmark */}
       <div
         className="footer-brand-wordmark"
         aria-hidden="true"
@@ -263,6 +385,7 @@ export default function Footer() {
         ALLOYPRESS
       </div>
 
+      {/* Footer Bottom */}
       <div className="footer-bottom">
         <div className="container footer-bottom-inner">
           <nav

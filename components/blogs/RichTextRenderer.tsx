@@ -11,7 +11,6 @@ type RichTextRendererProps = {
 
 /**
  * AlloyPress Rich Text Renderer
- *
  * This renderer is intentionally aligned with the Posts collection:
  *
  * - Payload Lexical default nodes

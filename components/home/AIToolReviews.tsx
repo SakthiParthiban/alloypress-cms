@@ -28,19 +28,19 @@ export type ReviewPost = {
   publishedAt?: string | null;
 
   author?:
-    | string
-    | {
-        name?: string | null;
-      }
-    | null;
+  | string
+  | {
+    name?: string | null;
+  }
+  | null;
 
   featuredImage?:
-    | {
-        url?: string | null;
-        alt?: string | null;
-      }
-    | number
-    | null;
+  | {
+    url?: string | null;
+    alt?: string | null;
+  }
+  | number
+  | null;
 };
 
 type CategoryResponse = {
@@ -295,16 +295,18 @@ export default async function AIToolReviews() {
 
     const imageAlt =
       typeof post.featuredImage === "object" &&
-      post.featuredImage !== null
+        post.featuredImage !== null
         ? post.featuredImage.alt ||
-          post.title
+        post.title
         : post.title;
 
     return {
       id: post.id,
       title: post.title,
       slug: post.slug,
-      excerpt: post.excerpt || "",
+      excerpt: (post.excerpt || "")
+        .replace(/^TL;DR\s*:\s*/i, "")
+        .trim(),
       publishedAt: formatDate(
         post.publishedAt,
       ),

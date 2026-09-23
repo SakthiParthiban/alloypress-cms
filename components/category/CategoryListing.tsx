@@ -225,16 +225,21 @@ function formatDate(
 // EXCERPT
 // ============================================================
 
-function getExcerpt(
-  post: Post,
-): string {
-  if (post.excerpt?.trim()) {
-    return post.excerpt.trim();
+function getExcerpt(post: Post): string {
+  const excerpt = post.excerpt?.trim();
+
+  if (!excerpt) {
+    return "Practical insights, testing, and analysis from AlloyPress.";
   }
 
-  return "Practical insights, testing, and analysis from AlloyPress.";
+  return excerpt
+    .replace(/^TL;DR\s*:?\s*/i, "")
+    .replace(/^TLDR\s*:?\s*/i, "")
+    .replace(/\s*📋\s*Copied!.*$/i, "")
+    .replace(/\s*Press Ctrl\+V.*$/i, "")
+    .replace(/\s*Press Cmd\+V.*$/i, "")
+    .trim();
 }
-
 // ============================================================
 // AUTHOR
 // ============================================================

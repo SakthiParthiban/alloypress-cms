@@ -269,19 +269,19 @@ export default async function LearnAboutAI() {
     .map((post) => {
       const category =
         typeof post.category === "object" &&
-        post.category !== null
+          post.category !== null
           ? post.category
           : null;
 
       const author =
         typeof post.author === "object" &&
-        post.author !== null
+          post.author !== null
           ? post.author
           : null;
 
       const featuredImage =
         typeof post.featuredImage === "object" &&
-        post.featuredImage !== null
+          post.featuredImage !== null
           ? post.featuredImage
           : null;
 
@@ -289,7 +289,9 @@ export default async function LearnAboutAI() {
         id: String(post.id),
         title: post.title,
         slug: post.slug,
-        excerpt: getExcerpt(post.excerpt),
+        excerpt: getExcerpt(post.excerpt || "")
+          .replace(/^TL;DR\s*:\s*/i, "")
+          .trim(),
         date: formatDate(post.publishedAt),
         author:
           author?.name || "AlloyPress Team",

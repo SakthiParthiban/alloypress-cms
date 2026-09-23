@@ -1342,6 +1342,8 @@ export default function BlogPostView({
   const [copied, setCopied] =
     useState(false);
 
+  const [badgeCopied, setBadgeCopied] = useState(false);
+
   const [articleUrl, setArticleUrl] =
     useState("");
 
@@ -1405,82 +1407,82 @@ export default function BlogPostView({
   }, []);
 
   useEffect(() => {
-  const updateMobileTools = () => {
-    const isMobile = window.matchMedia(
-      "(max-width: 820px)"
-    ).matches;
+    const updateMobileTools = () => {
+      const isMobile = window.matchMedia(
+        "(max-width: 820px)"
+      ).matches;
 
-    if (!isMobile) {
-      setMobileToolsVisible(true);
-      return;
-    }
+      if (!isMobile) {
+        setMobileToolsVisible(true);
+        return;
+      }
 
-    const start = document.getElementById(
-      "mobile-tools-start"
-    );
+      const start = document.getElementById(
+        "mobile-tools-start"
+      );
 
-    const end = document.getElementById(
-      "article-tools-end"
-    );
+      const end = document.getElementById(
+        "article-tools-end"
+      );
 
-    if (!start || !end) return;
+      if (!start || !end) return;
 
-    const startTop =
-      start.getBoundingClientRect().top;
+      const startTop =
+        start.getBoundingClientRect().top;
 
-    const endTop =
-      end.getBoundingClientRect().top;
+      const endTop =
+        end.getBoundingClientRect().top;
 
-    /*
-     * Show only after hero has completely ended,
-     * and while article content is still active.
-     */
-    const heroFinished = startTop <= 0;
-    const articleFinished = endTop <= 0;
+      /*
+       * Show only after hero has completely ended,
+       * and while article content is still active.
+       */
+      const heroFinished = startTop <= 0;
+      const articleFinished = endTop <= 0;
 
-    setMobileToolsVisible(
-      heroFinished && !articleFinished
-    );
-  };
+      setMobileToolsVisible(
+        heroFinished && !articleFinished
+      );
+    };
 
-  updateMobileTools();
+    updateMobileTools();
 
-  let ticking = false;
+    let ticking = false;
 
-  const handleScroll = () => {
-    if (ticking) return;
+    const handleScroll = () => {
+      if (ticking) return;
 
-    ticking = true;
+      ticking = true;
 
-    window.requestAnimationFrame(() => {
-      updateMobileTools();
-      ticking = false;
-    });
-  };
+      window.requestAnimationFrame(() => {
+        updateMobileTools();
+        ticking = false;
+      });
+    };
 
-  window.addEventListener(
-    "scroll",
-    handleScroll,
-    { passive: true }
-  );
-
-  window.addEventListener(
-    "resize",
-    updateMobileTools
-  );
-
-  return () => {
-    window.removeEventListener(
+    window.addEventListener(
       "scroll",
-      handleScroll
+      handleScroll,
+      { passive: true }
     );
 
-    window.removeEventListener(
+    window.addEventListener(
       "resize",
       updateMobileTools
     );
-  };
-}, []);
+
+    return () => {
+      window.removeEventListener(
+        "scroll",
+        handleScroll
+      );
+
+      window.removeEventListener(
+        "resize",
+        updateMobileTools
+      );
+    };
+  }, []);
 
   useEffect(() => {
     const sentinel = document.getElementById("article-tools-end");
@@ -1593,6 +1595,36 @@ export default function BlogPostView({
     }
 
     setShareOpen(false);
+  }
+
+  const badgeArticleUrl = `https://alloypress.com/reviews/${post?.slug || ""}`;
+
+  const badgeToolName =
+    typeof post?.title === "string" && post.title.trim()
+      ? post.title.trim()
+      : "This tool";
+
+  const badgeEmbedCode = `<a href="${badgeArticleUrl}"
+   target="_blank"
+   rel="noopener noreferrer"
+   aria-label="Featured on AlloyPress — ${badgeToolName}">
+  <img src="https://alloypress.com/badges/featured.svg"
+       alt="Featured on AlloyPress"
+       width="160"
+       height="44">
+</a>`;
+
+  async function copyBadgeEmbedCode() {
+    try {
+      await navigator.clipboard.writeText(badgeEmbedCode);
+      setBadgeCopied(true);
+
+      window.setTimeout(() => {
+        setBadgeCopied(false);
+      }, 1800);
+    } catch {
+      setBadgeCopied(false);
+    }
   }
 
   async function copyArticleLink() {
@@ -1973,6 +2005,56 @@ export default function BlogPostView({
                     <Share2 aria-hidden="true" />
                     Share
                   </span>
+                </button>
+              </div>
+
+              <div className="sidebar-card alloypress-badge-card">
+                <div className="side-label">AlloyPress badge</div>
+
+                <div className="alloypress-badge-preview">
+                  <div className="alloypress-badge-icon">
+                    <Image
+                      src="/ap-icon.png"
+                      alt="AlloyPress"
+                      width={32}
+                      height={32}
+                    />
+                  </div>
+
+                  <div className="alloypress-badge-copy">
+                    <span className="alloypress-badge-label">
+                      Featured on
+                    </span>
+
+                    <strong>AlloyPress</strong>
+                  </div>
+
+                  <div className="alloypress-badge-status" aria-hidden="true">
+                    ✓
+                  </div>
+                </div>
+
+                <p className="alloypress-badge-text">
+                  Copy this badge and add it to your website to show that
+                  this tool is featured on AlloyPress.
+                </p>
+
+                <button
+                  type="button"
+                  className="alloypress-badge-button"
+                  onClick={copyBadgeEmbedCode}
+                >
+                  {badgeCopied ? (
+                    <>
+                      <Check aria-hidden="true" />
+                      Copied!
+                    </>
+                  ) : (
+                    <>
+                      <Copy aria-hidden="true" />
+                      Get badge code
+                    </>
+                  )}
                 </button>
               </div>
 

@@ -62,11 +62,11 @@
 }
 
 .post-title {
-  max-width: 860px;
+  max-width: 760px;
   margin: 0 auto;
   color: var(--ink);
-  font: 800 clamp(40px, 5vw, 68px)/1.03 var(--font-ui, "Sora", sans-serif);
-  letter-spacing: -.055em;
+  font: 800 clamp(40px, 4.4vw, 60px)/1.03 var(--font-ui, "Sora", sans-serif);
+  letter-spacing: -.045em;
   text-wrap: balance;
 }
 
@@ -4988,9 +4988,9 @@ html[data-theme="dark"] .single-post .ai-panel {
 
 .single-post .post-hero-grid {
   display: grid;
-  grid-template-columns: minmax(0, 1.02fr) minmax(460px, 0.98fr);
+  grid-template-columns: minmax(0, 1.05fr) minmax(460px, 0.95fr);
   align-items: center;
-  gap: 64px;
+  gap: 32px;
 }
 
 .single-post .post-hero-copy {
@@ -5332,5 +5332,127 @@ html[data-theme="dark"] .single-post .ai-panel {
       opacity .2s ease,
       transform .2s ease,
       visibility .2s ease !important;
+  }
+}
+
+
+/* -------------------------------------------------------------------------- */
+/* AlloyPress Featured Badge                                                   */
+/* -------------------------------------------------------------------------- */
+
+.single-post .alloypress-badge-card {
+  padding: 15px;
+}
+
+.single-post .alloypress-badge-preview {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  min-height: 52px;
+  padding: 8px 9px;
+   border: 1px solid rgba(0, 216, 74, .55);
+  background: rgba(0, 216, 74, .06);
+  box-shadow: 0 0 0 1px rgba(0, 216, 74, .06),
+              0 6px 18px rgba(0, 216, 74, .06);
+  border-radius: 10px;
+  background: var(--surface);
+}
+
+.single-post .alloypress-badge-icon {
+  width: 34px;
+  height: 34px;
+  flex: 0 0 34px;
+  display: grid;
+  place-items: center;
+  overflow: hidden;
+  border: 1px solid rgba(0, 216, 74, .35);
+  border-radius: 8px;
+  background: var(--brand-soft);
+}
+
+.single-post .alloypress-badge-icon img {
+  display: block;
+  width: 26px;
+  height: 26px;
+  object-fit: contain;
+}
+
+.single-post .alloypress-badge-copy {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.single-post .alloypress-badge-label {
+  color: var(--text-muted);
+  font: 500 9px/1.1 var(--font-mono, "DM Mono", monospace);
+}
+
+.single-post .alloypress-badge-copy strong {
+  color: var(--text-primary);
+  font: 700 11px/1.2 var(--font-ui, "Sora", sans-serif);
+}
+
+.single-post .alloypress-badge-status {
+  width: 24px;
+  height: 24px;
+  margin-left: auto;
+  flex: 0 0 24px;
+  display: grid;
+  place-items: center;
+  border: 1px solid rgba(0, 216, 74, .4);
+  border-radius: 7px;
+  color: var(--green);
+  font: 700 12px/1 var(--font-ui, "Sora", sans-serif);
+}
+
+.single-post .alloypress-badge-text {
+  margin: 10px 0 12px;
+  color: var(--text-secondary);
+  font: 400 11px/1.55 var(--font-body, "Lora", serif);
+}
+
+.single-post .alloypress-badge-button {
+  width: 100%;
+  min-height: 40px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  padding: 0 12px;
+  border: 1px solid var(--green);
+  border-radius: var(--radius-sm);
+  background: var(--brand-soft);
+  color: var(--green);
+  cursor: pointer;
+  font: 700 10px/1 var(--font-ui, "Sora", sans-serif);
+  transition:
+    background-color .18s ease,
+    color .18s ease,
+    transform .18s ease,
+    box-shadow .18s ease;
+}
+
+.single-post .alloypress-badge-button svg {
+  width: 14px;
+  height: 14px;
+}
+
+.single-post .alloypress-badge-button:hover {
+  background: var(--green);
+  color: #fff;
+  transform: translateY(-1px);
+  box-shadow: 0 8px 22px rgba(0, 216, 74, .18);
+}
+
+.single-post .alloypress-badge-button:active {
+  transform: translateY(0);
+}
+
+
+@media (max-width: 820px) {
+  .single-post .article-sidebar .alloypress-badge-card {
+    display: none !important;
   }
 }
