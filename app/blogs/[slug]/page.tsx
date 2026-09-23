@@ -336,6 +336,7 @@ const getPost = cache(
     params.set("select[tags]", "true");
     params.set("select[publishedAt]", "true");
     params.set("select[updatedAt]", "true");
+    params.set("select[author]", "true");
     params.set("select[legacy]", "true");
     params.set("select[meta]", "true");
 
