@@ -11,7 +11,20 @@ const isAdmin: Access = ({ req }) => {
 const canRead: Access = ({ req }) => {
   const role = req.user?.role
 
-  return role === 'admin' || role === 'editor' || role === 'viewer'
+  // Logged-in admin/editor/viewer users can see everything,
+  // including drafts (e.g. for the admin UI / live preview).
+  if (role === 'admin' || role === 'editor' || role === 'viewer') {
+    return true
+  }
+
+  // Public / unauthenticated requests (the Next.js frontend,
+  // generateMetadata, sitemap, etc.) can only read PUBLISHED
+  // pages. Without this, every public read gets a 403.
+  return {
+    status: {
+      equals: 'published',
+    },
+  }
 }
 
 // ==========================================================
