@@ -15,6 +15,9 @@ import type {
   PayloadResponse,
 } from "@/lib/cms";
 
+import { buildArticleMetadata } from "@/lib/seo/metadata";
+import { createArticleSchema } from "@/lib/seo/schema";
+
 // ============================================================
 // SITE
 // ============================================================
@@ -951,113 +954,34 @@ export async function generateMetadata({
   const meta =
     post.meta ?? {};
 
-  const title =
-    meta.title ||
-    post.title ||
-    "AlloyPress";
+  return buildArticleMetadata({
+    title: meta.title || post.title,
+    description: meta.description || post.excerpt,
 
-  const description =
-    meta.description ||
-    post.excerpt ||
-    "";
+    canonicalPath: `/${category}/${post.slug}`,
+    canonicalUrl: meta.canonicalURL,
 
-  const ogImage =
-    mediaUrl(
-      meta.openGraph?.image,
-    ) ||
-    mediaUrl(meta.image) ||
-    mediaUrl(
-      post.featuredImage,
-    );
+    imageUrl:
+      mediaUrl(meta.image) ||
+      mediaUrl(post.featuredImage),
+    imageAlt: post.title,
 
-  const canonical =
-    meta.canonicalURL ||
-    `${SITE_URL}/${category}/${post.slug}`;
+    publishedTime: post.publishedAt,
+    modifiedTime: post.updatedAt,
 
-  return {
-    title,
-
-    description,
-
-    alternates: {
-      canonical,
-    },
-
-    robots: {
-      index:
-        meta.robots?.index !==
-        false,
-
-      follow:
-        meta.robots?.follow !==
-        false,
-
-      noarchive:
-        meta.robots?.noArchive ===
-        true,
-
-      noimageindex:
-        meta.robots
-          ?.noImageIndex ===
-        true,
-
-      nosnippet:
-        meta.robots?.noSnippet ===
-        true,
-    },
+    robots: meta.robots,
 
     openGraph: {
-      type: "article",
-
-      title:
-        meta.openGraph?.title ||
-        title,
-
-      description:
-        meta.openGraph
-          ?.description ||
-        description,
-
-      publishedTime:
-        post.publishedAt ||
-        undefined,
-
-      modifiedTime:
-        post.updatedAt ||
-        undefined,
-
-      url: canonical,
-
-      images: ogImage
-        ? [
-            {
-              url: ogImage,
-
-              alt:
-                post.title ||
-                "AlloyPress article",
-            },
-          ]
-        : undefined,
+      title: meta.openGraph?.title,
+      description: meta.openGraph?.description,
+      imageUrl: mediaUrl(meta.openGraph?.image),
     },
 
     twitter: {
-      card:
-        "summary_large_image",
-
-      title:
-        meta.twitter?.title ||
-        title,
-
-      description:
-        meta.twitter?.description ||
-        description,
-
-      images: ogImage
-        ? [ogImage]
-        : undefined,
+      title: meta.twitter?.title,
+      description: meta.twitter?.description,
     },
-  };
+  });
 }
 
 // ============================================================
@@ -1174,57 +1098,20 @@ export default async function CategoryPostPage({
     `${SITE_URL}/${category}/${post.slug}`;
 
   const jsonLd = {
-    "@context":
-      "https://schema.org",
-
-    "@type":
-      "Article",
-
-    headline:
-      post.title,
-
-    description:
-      post.meta?.description ||
-      post.excerpt ||
-      "",
-
-    image:
-      articleImage
-        ? [articleImage]
-        : undefined,
-
-    datePublished:
-      post.publishedAt ||
-      undefined,
-
-    dateModified:
-      post.updatedAt ||
-      post.publishedAt ||
-      undefined,
-
-    author: {
-      "@type":
-        "Organization",
-
-      name:
-        "AlloyPress",
-    },
-
-    publisher: {
-      "@type":
-        "Organization",
-
-      name:
-        "AlloyPress",
-    },
-
-    mainEntityOfPage: {
-      "@type":
-        "WebPage",
-
-      "@id":
-        articleUrl,
-    },
+    "@context": "https://schema.org",
+    ...createArticleSchema({
+      url: articleUrl,
+      title: post.title || "",
+      description: post.meta?.description || post.excerpt,
+      image: articleImage,
+      publishedAt: post.publishedAt,
+      modifiedAt: post.updatedAt || post.publishedAt,
+      category: categoryLabel,
+      // Real CMS author (Payload `author` relationship) — falls
+      // back to the AlloyPress Organization inside
+      // createArticleSchema() when a post has no author set.
+      authorName: post.author?.name,
+    }),
   };
 
   // ==========================================================

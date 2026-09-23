@@ -203,12 +203,12 @@ export default function Navbar() {
 
           {/* Search */}
           <Link
-  href="/search"
-  className="header-icon-button"
-  aria-label="Search AlloyPress"
->
-  <SearchIcon />
-</Link>
+            href="/search"
+            className="header-icon-button"
+            aria-label="Search AlloyPress"
+          >
+            <SearchIcon />
+          </Link>
 
           {/* Theme */}
           <button
@@ -245,6 +245,16 @@ export default function Navbar() {
 
         {/* Mobile Actions */}
         <div className="mobile-actions">
+
+          {/* Search */}
+          <Link
+            href="/search"
+            className="header-icon-button"
+            aria-label="Search AlloyPress"
+            onClick={closeMobileMenu}
+          >
+            <SearchIcon />
+          </Link>
 
           <button
             type="button"

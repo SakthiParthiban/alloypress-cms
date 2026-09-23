@@ -11,6 +11,8 @@ import {
   Share2,
   Sparkles,
   Send,
+  CalendarDays,
+  Clock3,
   X as LucideX,
 } from "lucide-react";
 
@@ -231,6 +233,8 @@ function cleanEditorialText(value: unknown): string {
     .replace(/&quot;/gi, '"')
     .replace(/&#39;/gi, "'")
     .replace(/&hellip;/gi, "…")
+    .replace(/&#038;/gi, "&")
+    .replace(/&#38;/gi, "&")
     .replace(/\s+/g, " ")
     .trim();
 
@@ -1341,9 +1345,12 @@ export default function BlogPostView({
   const [articleUrl, setArticleUrl] =
     useState("");
 
+  const AI_ENABLED = false;
+
   const [tocOpen, setTocOpen] = useState(false);
   const [desktopTocOpen, setDesktopTocOpen] = useState(true);
   const [isDesktop, setIsDesktop] = useState(false);
+  const [mobileToolsVisible, setMobileToolsVisible] = useState(false);
 
   useEffect(() => {
     setArticleUrl(window.location.href);
@@ -1397,6 +1404,107 @@ export default function BlogPostView({
     };
   }, []);
 
+  useEffect(() => {
+  const updateMobileTools = () => {
+    const isMobile = window.matchMedia(
+      "(max-width: 820px)"
+    ).matches;
+
+    if (!isMobile) {
+      setMobileToolsVisible(true);
+      return;
+    }
+
+    const start = document.getElementById(
+      "mobile-tools-start"
+    );
+
+    const end = document.getElementById(
+      "article-tools-end"
+    );
+
+    if (!start || !end) return;
+
+    const startTop =
+      start.getBoundingClientRect().top;
+
+    const endTop =
+      end.getBoundingClientRect().top;
+
+    /*
+     * Show only after hero has completely ended,
+     * and while article content is still active.
+     */
+    const heroFinished = startTop <= 0;
+    const articleFinished = endTop <= 0;
+
+    setMobileToolsVisible(
+      heroFinished && !articleFinished
+    );
+  };
+
+  updateMobileTools();
+
+  let ticking = false;
+
+  const handleScroll = () => {
+    if (ticking) return;
+
+    ticking = true;
+
+    window.requestAnimationFrame(() => {
+      updateMobileTools();
+      ticking = false;
+    });
+  };
+
+  window.addEventListener(
+    "scroll",
+    handleScroll,
+    { passive: true }
+  );
+
+  window.addEventListener(
+    "resize",
+    updateMobileTools
+  );
+
+  return () => {
+    window.removeEventListener(
+      "scroll",
+      handleScroll
+    );
+
+    window.removeEventListener(
+      "resize",
+      updateMobileTools
+    );
+  };
+}, []);
+
+  useEffect(() => {
+    const sentinel = document.getElementById("article-tools-end");
+
+    if (!sentinel) return;
+
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        setMobileToolsVisible(!entry.isIntersecting);
+      },
+      {
+        root: null,
+        threshold: 0,
+        rootMargin: "0px 0px -70px 0px",
+      }
+    );
+
+    observer.observe(sentinel);
+
+    return () => {
+      observer.disconnect();
+    };
+  }, []);
+
   const nodes =
     post?.content?.root?.children || [];
 
@@ -1409,8 +1517,12 @@ export default function BlogPostView({
   const headingIds = headingIndex.idsByNode;
 
   const excerpt = useMemo(
-    () => cleanEditorialText(post?.excerpt),
-    [post?.excerpt]
+    () =>
+      cleanEditorialText(
+        post?.meta?.description ||
+        post?.excerpt
+      ),
+    [post?.meta?.description, post?.excerpt]
   );
 
   const summary = useMemo(
@@ -1420,6 +1532,20 @@ export default function BlogPostView({
       ),
     [nodes, excerpt]
   );
+
+  const readingTime = useMemo(() => {
+    const articleText = textFromNodes(nodes).trim();
+
+    if (!articleText) {
+      return 1;
+    }
+
+    const wordCount = articleText
+      .split(/\s+/)
+      .filter(Boolean).length;
+
+    return Math.max(1, Math.ceil(wordCount / 200));
+  }, [nodes]);
 
   const categoryName =
     typeof post?.category === "object"
@@ -1555,64 +1681,107 @@ export default function BlogPostView({
         <header className="post-hero">
           <div className="post-shell">
             <div className="post-hero-inner">
-              <div className="post-kicker">
-                <i />
-                {categoryName} · AlloyPress
-              </div>
 
-              <h1 className="post-title">
-                {post?.title}
-              </h1>
+              <div className="post-hero-grid">
 
-              {excerpt ? (
-                <p className="post-excerpt">
-                  {excerpt}
-                </p>
-              ) : null}
+                {/* LEFT — editorial content */}
+                <div className="post-hero-copy">
 
-              <div className="post-byline">
-                <Link
-                  href="/author/alloypress-team"
-                  className="post-author-link"
-                >
-                  <span className="author-dot">
-                    <Image
-                      src="/ap-icon.png"
-                      alt="AlloyPress"
-                      width={32}
-                      height={32}
+                  <div className="post-hero-badges">
+                    <span className="post-hero-badge post-hero-badge-primary">
+                      {categoryLabel}
+                    </span>
+
+                    {Array.isArray(post?.tags) &&
+                      post.tags.length > 0 ? (
+                      <span className="post-hero-badge">
+                        {typeof post.tags[0] === "string"
+                          ? post.tags[0]
+                          : post.tags[0]?.name ||
+                          post.tags[0]?.slug ||
+                          "AI TOOLS"}
+                      </span>
+                    ) : null}
+                  </div>
+
+                  <h1 className="post-title">
+                    {post?.title}
+                  </h1>
+
+                  {excerpt ? (
+                    <p className="post-excerpt">
+                      {excerpt}
+                    </p>
+                  ) : null}
+
+                  <div className="post-meta-row">
+
+                    <Link
+                      href="/author/alloypress-team"
+                      className="post-author-link"
+                    >
+                      <span className="author-dot">
+                        <Image
+                          src="/ap-icon.png"
+                          alt="AlloyPress"
+                          width={32}
+                          height={32}
+                        />
+                      </span>
+
+                      <span>By AlloyPress Team</span>
+                    </Link>
+
+                    <span className="post-meta-divider" aria-hidden="true" />
+
+                    {date ? (
+                      <span className="post-meta-item">
+                        <CalendarDays
+                          aria-hidden="true"
+                        />
+                        {showUpdatedDate
+                          ? `Updated ${updatedDate}`
+                          : date}
+                      </span>
+                    ) : null}
+
+                    <span
+                      className="post-meta-divider"
+                      aria-hidden="true"
                     />
-                  </span>
 
-                  <span>By AlloyPress Team</span>
-                </Link>
-              </div>
+                    <span className="post-meta-item">
+                      <Clock3 aria-hidden="true" />
+                      {readingTime} min read
+                    </span>
 
-              {/* Date */}
-              <div className="post-date-row">
-                {showUpdatedDate ? (
-                  <span>Updated at : {updatedDate}</span>
-                ) : date ? (
-                  <span>Published at : {date}</span>
+                  </div>
+                </div>
+
+                {/* RIGHT — featured image */}
+                {articleImage ? (
+                  <figure className="hero-image">
+                    <img
+                      src={articleImage}
+                      alt={
+                        post?.featuredImage?.alt ||
+                        post?.title ||
+                        "AlloyPress article image"
+                      }
+                    />
+                  </figure>
                 ) : null}
-              </div>
 
-              {/* Featured image */}
-              {articleImage ? (
-                <figure className="hero-image">
-                  <img
-                    src={articleImage}
-                    alt={
-                      post?.featuredImage?.alt ||
-                      post?.title ||
-                      "AlloyPress article image"
-                    }
-                  />
-                </figure>
-              ) : null}
+              </div>
             </div>
           </div>
         </header>
+
+        <div
+          id="mobile-tools-start"
+          className="mobile-tools-sentinel"
+          aria-hidden="true"
+        />
 
         {/* ---------------------------------------------------------------- */}
         {/* Main three-column reading workspace                               */}
@@ -1740,10 +1909,6 @@ export default function BlogPostView({
             </aside>
             {/* Center: article */}
             <article className="article-column">
-              <div className="summary-box">
-                <h3>ALLOYPRESS AI SUMMARY</h3>
-                <p>{summary}</p>
-              </div>
 
               <ArticleRenderer
                 content={post?.content}
@@ -1771,9 +1936,28 @@ export default function BlogPostView({
 
             {/* Right: trust / share / AI tools */}
             <aside
-              className="article-sidebar"
+              className={`article-sidebar${mobileToolsVisible ? "" : " mobile-tools-hidden"
+                }`}
               aria-label="Article tools"
             >
+
+              <div className="sidebar-card mobile-toc-card">
+                <div className="side-label">Article navigation</div>
+
+                <button
+                  type="button"
+                  className="mobile-toc-trigger"
+                  aria-haspopup="dialog"
+                  aria-expanded={tocOpen}
+                  aria-controls="mobile-article-toc"
+                  onClick={() => setTocOpen(true)}
+                >
+                  <span className="mobile-toc-trigger-label">
+                    <FileText aria-hidden="true" />
+                    <span>TOC</span>
+                  </span>
+                </button>
+              </div>
 
               <div className="sidebar-card">
                 <div className="side-label">Share article</div>
@@ -1792,40 +1976,32 @@ export default function BlogPostView({
                 </button>
               </div>
 
-              <div className="sidebar-card ai-tools-card">
-                <div className="side-label">AI tools</div>
+              {AI_ENABLED && (
+                <div className="sidebar-card ai-tools-card">
+                  <div className="side-label">AI tools</div>
 
-                <div className="ai-options">
-                  <button
-                    type="button"
-                    className="ai-option"
-                    onClick={() => setAiOpen(true)}
-                  >
-                    <span>Ask AI</span>
-                    <Sparkles aria-hidden="true" />
-                  </button>
+                  <div className="ai-options">
+                    <button
+                      type="button"
+                      className="ai-option"
+                      onClick={() => setAiOpen(true)}
+                    >
+                      <span>Ask AI</span>
+                      <Sparkles aria-hidden="true" />
+                    </button>
+                  </div>
                 </div>
-              </div>
-              <div className="sidebar-card mobile-toc-card">
-                <div className="side-label">Article navigation</div>
+              )}
 
-                <button
-                  type="button"
-                  className="mobile-toc-trigger"
-                  aria-haspopup="dialog"
-                  aria-expanded={tocOpen}
-                  aria-controls="mobile-article-toc"
-                  onClick={() => setTocOpen(true)}
-                >
-                  <span className="mobile-toc-trigger-label">
-                    <FileText aria-hidden="true" />
-                    <span>TOC</span>
-                  </span>
-                </button>
-              </div>
             </aside>
           </div>
         </div >
+
+        <div
+          id="article-tools-end"
+          className="article-tools-end-sentinel"
+          aria-hidden="true"
+        />
 
         {/* ---------------------------------------------------------------- */}
         {/* Related articles                                                 */}
@@ -1893,7 +2069,7 @@ export default function BlogPostView({
         {/* Desktop AI launcher                                               */}
         {/* ---------------------------------------------------------------- */}
 
-        {isDesktop ? (
+        {/* {isDesktop ? (
           <button
             type="button"
             className="desktop-ai-fab"
@@ -1911,8 +2087,9 @@ export default function BlogPostView({
             <span className="desktop-ai-fab-label">
               Ask AI
             </span>
-          </button>
-        ) : null}
+          </button> 
+        ) : null} 
+         */}
 
         {/* ---------------------------------------------------------------- */}
         {/* Share dialog                                                     */}
@@ -2033,7 +2210,6 @@ export default function BlogPostView({
         {/* ---------------------------------------------------------------- */}
         {/* AI dialog                                                         */}
         {/* ---------------------------------------------------------------- */}
-
         {
           aiOpen ? (
             <div

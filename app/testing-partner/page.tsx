@@ -1,4 +1,5 @@
 import Link from "next/link";
+import Script from "next/script";
 import { ArrowUpRight, Check, ChevronRight } from "lucide-react";
 
 import "@/components/css-style/testing-partner.css";
@@ -184,12 +185,13 @@ export default function TestingPartnerPage() {
               </p>
 
               <div className="testing-partner-actions">
-                <a
+                <button
+                  type="button"
                   className="testing-partner-btn testing-partner-btn-primary"
-                  href="mailto:contact@alloypress.com?subject=AlloyPress%20Testing%20Partnership"
+                  data-testing-email-open
                 >
                   Start a conversation
-                </a>
+                </button>
 
                 <Link
                   className="testing-partner-btn testing-partner-btn-secondary"
@@ -390,16 +392,118 @@ export default function TestingPartnerPage() {
                 </p>
               </div>
 
-              <a
+              <button
+                type="button"
                 className="testing-partner-cta-email"
-                href="mailto:contact@alloypress.com?subject=AlloyPress%20Testing%20Partnership"
+                data-testing-email-open
               >
-                contact@alloypress.com
+                Contact AlloyPress
                 <ArrowUpRight aria-hidden="true" />
-              </a>
+              </button>
             </div>
           </div>
         </section>
+        <dialog
+          className="testing-partner-email-dialog"
+          data-testing-email-dialog
+        >
+          <div className="testing-partner-email-dialog-inner">
+            <button
+              type="button"
+              className="testing-partner-email-close"
+              data-testing-email-close
+              aria-label="Close"
+            >
+              ×
+            </button>
+
+            <span className="testing-partner-eyebrow">
+              Contact AlloyPress
+            </span>
+
+            <h2>Let’s talk about your product.</h2>
+
+            <p>
+              Send your product details, testing requirements,
+              and any relevant access information to our email.
+            </p>
+
+            <div className="testing-partner-email-row">
+              <span>contact@alloypress.com</span>
+
+              <button
+                type="button"
+                className="testing-partner-email-copy"
+                data-testing-email-copy
+              >
+                Copy
+              </button>
+            </div>
+          </div>
+        </dialog>
+        <Script id="testing-partner-email-popup">
+          {`
+    (() => {
+      const dialog = document.querySelector(
+        "[data-testing-email-dialog]"
+      );
+
+      if (!dialog || dialog.dataset.ready === "true") {
+        return;
+      }
+
+      dialog.dataset.ready = "true";
+
+      const openButtons = document.querySelectorAll(
+        "[data-testing-email-open]"
+      );
+
+      const closeButton = dialog.querySelector(
+        "[data-testing-email-close]"
+      );
+
+      const copyButton = dialog.querySelector(
+        "[data-testing-email-copy]"
+      );
+
+      openButtons.forEach((button) => {
+        button.addEventListener("click", () => {
+          dialog.showModal();
+        });
+      });
+
+      closeButton?.addEventListener("click", () => {
+        dialog.close();
+      });
+
+      dialog.addEventListener("click", (event) => {
+        if (event.target === dialog) {
+          dialog.close();
+        }
+      });
+
+      copyButton?.addEventListener("click", async () => {
+        try {
+          await navigator.clipboard.writeText(
+            "contact@alloypress.com"
+          );
+
+          copyButton.textContent = "Copied!";
+
+          setTimeout(() => {
+            copyButton.textContent = "Copy";
+          }, 1600);
+        } catch {
+          copyButton.textContent = "Copy failed";
+
+          setTimeout(() => {
+            copyButton.textContent = "Copy";
+          }, 1600);
+        }
+      });
+    })();
+  `}
+        </Script>
       </main>
     </div>
   );

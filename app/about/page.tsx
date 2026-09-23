@@ -1,14 +1,46 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 
-export const metadata: Metadata = {
-  title: "About AlloyPress",
-  description:
-    "AlloyPress is an independent AI editorial publication. We test AI tools hands-on, write what we actually find, and help readers choose without expensive trial and error.",
-  alternates: {
-    canonical: "/about",
-  },
+import { payloadFetch } from "@/lib/payload";
+import { buildPageMetadata } from "@/lib/seo/metadata";
+
+// ------------------------------------------------------------
+// Fallback copy used only if the "about" page doesn't exist yet
+// in Payload's Pages collection, or the request fails.
+// ------------------------------------------------------------
+const FALLBACK_TITLE = "About AlloyPress";
+const FALLBACK_DESCRIPTION =
+  "AlloyPress is an independent AI editorial publication. We test AI tools hands-on, write what we actually find, and help readers choose without expensive trial and error.";
+
+type PageDoc = {
+  seo?: {
+    title?: string | null;
+    description?: string | null;
+    canonicalURL?: string | null;
+    openGraphImage?: { url?: string | null } | null;
+  } | null;
 };
+
+async function getAboutPage(): Promise<PageDoc | null> {
+  const data = await payloadFetch<{ docs?: PageDoc[] }>(
+    "/pages?where[slug][equals]=about&where[status][equals]=published&limit=1",
+  );
+
+  return data?.docs?.[0] ?? null;
+}
+
+export async function generateMetadata(): Promise<Metadata> {
+  const page = await getAboutPage();
+  const seo = page?.seo;
+
+  return buildPageMetadata({
+    title: seo?.title || FALLBACK_TITLE,
+    description: seo?.description || FALLBACK_DESCRIPTION,
+    canonicalPath: "/about",
+    canonicalUrl: seo?.canonicalURL,
+    imageUrl: seo?.openGraphImage?.url,
+  });
+}
 
 const stats = [
   ["Top 1%", "Cited across AI answer engines (Perplexity, ChatGPT, Gemini and more)"],

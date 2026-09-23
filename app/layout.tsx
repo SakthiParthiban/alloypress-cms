@@ -22,16 +22,21 @@ import Navbar from "@/components/layout/Navbar";
 import Footer from "@/components/layout/Footer";
 import ThemeScript from "@/components/ThemeScript";
 
+// ------------------------------------------------------------
+// NEW: centralized SEO constants + site-wide JSON-LD builders
+// ------------------------------------------------------------
+import { SITE_URL } from "@/lib/seo/constants";
+import {
+  createOrganizationSchema,
+  createWebSiteSchema,
+} from "@/lib/seo/schema";
+
 const inter = Inter({
   variable: "--font-inter",
   subsets: ["latin"],
   display: "swap",
   weight: ["400", "500", "600", "700", "800"],
 });
-
-const SITE_URL =
-  process.env.NEXT_PUBLIC_SITE_URL ||
-  "https://alloypress-web.vercel.app";
 
 export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),
@@ -52,18 +57,34 @@ export const metadata: Metadata = {
   },
 };
 
+// ------------------------------------------------------------
+// Site-wide JSON-LD graph: rendered once, on every page, so
+// Google always sees the same Organization + WebSite entities.
+// Individual pages/articles add their own JSON-LD on top of
+// this (Article, WebPage, BreadcrumbList, etc.) and link back
+// to these via @id references — see lib/seo/schema.ts.
+// ------------------------------------------------------------
+const siteJsonLd = {
+  "@context": "https://schema.org",
+  "@graph": [createOrganizationSchema(), createWebSiteSchema()],
+};
+
 export default function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
   return (
-    <html
-      lang="en"
-      suppressHydrationWarning
-      className={inter.variable}
-    >
+    <html lang="en" suppressHydrationWarning className={inter.variable}>
       <body>
+        <script
+          type="application/ld+json"
+          // eslint-disable-next-line react/no-danger
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify(siteJsonLd),
+          }}
+        />
+
         <ThemeScript />
 
         <Navbar />

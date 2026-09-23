@@ -986,3 +986,141 @@ html[data-theme="light"] .testing-partner-btn-secondary {
     transform: none;
   }
 }
+
+
+.testing-partner-email-dialog {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+
+  width: min(500px, calc(100% - 28px));
+  max-width: 500px;
+
+  margin: 0;
+  padding: 0;
+
+  border: 1px solid var(--border-strong);
+  border-radius: 18px;
+
+  background: var(--surface-elevated);
+  color: var(--text-primary);
+
+  box-shadow: var(--shadow-lg);
+}
+
+.testing-partner-email-dialog::backdrop {
+  background: rgba(0, 0, 0, 0.62);
+  backdrop-filter: blur(6px);
+}
+
+.testing-partner-email-dialog-inner {
+  position: relative;
+  padding: 32px;
+}
+
+.testing-partner-email-close {
+  position: absolute;
+  top: 14px;
+  right: 14px;
+
+  width: 34px;
+  height: 34px;
+
+  display: grid;
+  place-items: center;
+
+  border: 1px solid var(--border);
+  border-radius: 50%;
+
+  background: var(--surface);
+  color: var(--text-primary);
+
+  font-size: 22px;
+  line-height: 1;
+
+  cursor: pointer;
+}
+
+.testing-partner-email-dialog h2 {
+  margin: 14px 0 10px;
+
+  color: var(--text-primary);
+
+  font-size: 30px;
+  line-height: 1.12;
+  font-weight: 800;
+  letter-spacing: -0.04em;
+}
+
+.testing-partner-email-dialog p {
+  margin: 0 0 22px;
+
+  color: var(--text-secondary);
+
+  font-size: 15px;
+  line-height: 1.7;
+}
+
+.testing-partner-email-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+
+  padding: 7px;
+
+  border: 1px solid var(--border);
+  border-radius: 11px;
+
+  background: var(--surface);
+}
+
+.testing-partner-email-row > span {
+  flex: 1;
+  min-width: 0;
+
+  padding: 10px;
+
+  color: var(--text-primary);
+
+  font-size: 14px;
+  font-weight: 700;
+
+  overflow-wrap: anywhere;
+}
+
+.testing-partner-email-copy {
+  flex: 0 0 auto;
+
+  padding: 10px 16px;
+
+  border: 0;
+  border-radius: 8px;
+
+  background: var(--brand);
+  color: #fff;
+
+  font-size: 13px;
+  font-weight: 700;
+
+  cursor: pointer;
+}
+
+.testing-partner-email-copy:hover {
+  background: var(--brand-hover);
+}
+
+@media (max-width: 600px) {
+  .testing-partner-email-dialog-inner {
+    padding: 27px 20px;
+  }
+
+  .testing-partner-email-row {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .testing-partner-email-copy {
+    width: 100%;
+  }
+}

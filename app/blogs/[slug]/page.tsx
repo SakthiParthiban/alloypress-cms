@@ -581,33 +581,33 @@ export default async function BlogPostPage({
   // ==========================================================
 
   if (!post) {
-  if (isDraft) {
-    const previewSeed = {
-      id: "preview",
-      title: "",
-      slug,
-      excerpt: "",
-      content: null,
-      category: null,
-      featuredImage: null,
-      publishedAt: null,
-      updatedAt: null,
-      legacy: {},
-      tags: [],
-      author: null,
-    } as unknown as Post;
+    if (isDraft) {
+      const previewSeed = {
+        id: "preview",
+        title: "",
+        slug,
+        excerpt: "",
+        content: null,
+        category: null,
+        featuredImage: null,
+        publishedAt: null,
+        updatedAt: null,
+        legacy: {},
+        tags: [],
+        author: null,
+      } as unknown as Post;
 
-    return (
-      <BlogLivePreview
-        initialData={previewSeed}
-        related={[]}
-        slug={slug}
-      />
-    );
+      return (
+        <BlogLivePreview
+          initialData={previewSeed}
+          related={[]}
+          slug={slug}
+        />
+      );
+    }
+
+    return notFound();
   }
-
-  return notFound();
-}
 
   // ==========================================================
   // CATEGORY
@@ -718,6 +718,7 @@ export default async function BlogPostPage({
             id: post.id,
             title: post.title,
             excerpt: post.excerpt,
+            meta: post.meta,
             content: post.content,
             category: post.category,
             featuredImage: post.featuredImage,

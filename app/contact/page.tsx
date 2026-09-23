@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import Script from "next/script";
 
 export const metadata: Metadata = {
   title: "Contact AlloyPress — AI Reviews, Partnerships & Enquiries",
@@ -22,7 +23,6 @@ const paths = [
     tag: "PAID COLLABORATION",
     title: "Article Inclusion",
     text: "Get your tool featured in one of our existing listicles or alternatives articles. We test the product, write a dedicated section, and include a link so readers can navigate to your site directly. Position is based on how the tool performs during our evaluation.",
-    link: "See how it works",
     href: "#how-we-work",
   },
   {
@@ -30,7 +30,6 @@ const paths = [
     tag: "PAID COLLABORATION",
     title: "Dedicated Review",
     text: "A completely new, standalone article written specifically for your product. We test it hands-on across real workflows, document everything with screenshots, and publish a detailed in-depth review optimised for long-term search visibility.",
-    link: "See how it works",
     href: "#how-we-work",
   },
   {
@@ -38,7 +37,6 @@ const paths = [
     tag: "PARTNERSHIP",
     title: "Long-Term Partnership",
     text: "For brands and agencies looking to build an ongoing editorial relationship with AlloyPress. This includes early access for feature testing, regular content updates, promotional coverage, and digital marketing support.",
-    link: "Start a conversation",
     href: "mailto:contact@alloypress.com?subject=Long-Term%20Partnership",
   },
   {
@@ -108,13 +106,14 @@ export default function ContactPage() {
 
             <div className="contact-label">CONTACT EMAIL</div>
 
-            <a
+            <button
+              type="button"
               className="contact-email"
-              href="mailto:contact@alloypress.com"
+              data-email-popup-open
             >
-              <span>contact@alloypress.com</span>
+              <span>Contact</span>
               <b>→</b>
-            </a>
+            </button>
 
             <div className="contact-meta-grid">
               <div>
@@ -177,7 +176,6 @@ export default function ContactPage() {
                 </div>
                 <h3>{path.title}</h3>
                 <p>{path.text}</p>
-                <Link href={path.href}>{path.link} →</Link>
               </article>
             ))}
           </div>
@@ -260,22 +258,120 @@ export default function ContactPage() {
             review the details and get back to you.
           </p>
 
-          <a
+          <button
+            type="button"
             className="contact-primary-button"
-            href="mailto:contact@alloypress.com?subject=AlloyPress%20Enquiry"
+            data-email-popup-open
           >
             Email AlloyPress <span>↗</span>
-          </a>
+          </button>
 
           <div className="contact-final-email">
-            <a href="mailto:contact@alloypress.com">
-              contact@alloypress.com
-            </a>
             <span>·</span>
             <span>Usually responds within 1–2 business days</span>
           </div>
         </div>
       </section>
+      <dialog
+        className="contact-email-dialog"
+        data-email-dialog
+      >
+        <div className="contact-email-dialog-inner">
+          <button
+            type="button"
+            className="contact-email-dialog-close"
+            data-email-popup-close
+            aria-label="Close"
+          >
+            ×
+          </button>
+
+          <div className="contact-eyebrow">
+            <span />
+            GET IN TOUCH
+          </div>
+
+          <h2>Contact AlloyPress</h2>
+
+          <p>
+            Send your enquiry to our email address.
+            Copy the email below to continue.
+          </p>
+
+          <div className="contact-email-copy-row">
+            <span>contact@alloypress.com</span>
+
+            <button
+              type="button"
+              data-email-copy
+              className="contact-email-copy-button"
+            >
+              Copy
+            </button>
+          </div>
+        </div>
+      </dialog>
+      <Script id="contact-email-popup">
+  {`
+    (() => {
+      const dialog = document.querySelector("[data-email-dialog]");
+
+      if (!dialog || dialog.dataset.ready === "true") {
+        return;
+      }
+
+      dialog.dataset.ready = "true";
+
+      const openButtons = document.querySelectorAll(
+        "[data-email-popup-open]"
+      );
+
+      const closeButton = dialog.querySelector(
+        "[data-email-popup-close]"
+      );
+
+      const copyButton = dialog.querySelector(
+        "[data-email-copy]"
+      );
+
+      openButtons.forEach((button) => {
+        button.addEventListener("click", () => {
+          dialog.showModal();
+        });
+      });
+
+      closeButton?.addEventListener("click", () => {
+        dialog.close();
+      });
+
+      dialog.addEventListener("click", (event) => {
+        if (event.target === dialog) {
+          dialog.close();
+        }
+      });
+
+      copyButton?.addEventListener("click", async () => {
+        const email = "contact@alloypress.com";
+
+        try {
+          await navigator.clipboard.writeText(email);
+
+          copyButton.textContent = "Copied!";
+
+          window.setTimeout(() => {
+            copyButton.textContent = "Copy";
+          }, 1600);
+        } catch {
+          copyButton.textContent = "Copy failed";
+
+          window.setTimeout(() => {
+            copyButton.textContent = "Copy";
+          }, 1600);
+        }
+      });
+    })();
+  `}
+</Script>
     </main>
   );
 }
@@ -405,7 +501,7 @@ const styles = `
   align-items: center;
   gap: 8px;
   color: var(--text-secondary);
-  font: 600 11px/1.45 var(--font-mono);
+  font: 600 14px/1.45 var(--font-mono);
 }
 
 .contact-response > span {
@@ -429,7 +525,7 @@ const styles = `
 .contact-label {
   margin-bottom: 7px;
   color: var(--text-muted);
-  font: 700 9px/1.2 var(--font-mono);
+  font: 700 10px/1.2 var(--font-mono);
   letter-spacing: .08em;
 }
 
@@ -445,7 +541,7 @@ const styles = `
   background: var(--surface-2);
   color: var(--text-primary);
   text-decoration: none;
-  font: 600 11px/1.25 var(--font-mono);
+  font: 600 14px/1.25 var(--font-mono);
   transition: border-color .2s ease, background .2s ease;
 }
 
@@ -478,13 +574,13 @@ const styles = `
 
 .contact-meta-grid strong {
   color: var(--text-primary);
-  font: 700 12px/1.3 var(--font-ui);
+  font: 700 14px/1.3 var(--font-ui);
 }
 
 .contact-meta-grid span {
   margin-top: 4px;
   color: var(--text-muted);
-  font: 500 9px/1.3 var(--font-mono);
+  font: 500 12px/1.3 var(--font-mono);
 }
 
 .contact-hero-bottom {
@@ -732,7 +828,7 @@ const styles = `
   align-items: flex-start;
   gap: 9px;
   color: var(--text-secondary);
-  font: 500 10px/1.5 var(--font-mono);
+  font: 500 12px/1.5 var(--font-mono);
 }
 
 .contact-expect-card li span {
@@ -845,7 +941,7 @@ const styles = `
   gap: 8px;
   margin-top: 20px;
   color: var(--text-muted);
-  font: 500 9px/1.55 var(--font-mono);
+  font: 500 12px/1.55 var(--font-body);
 }
 
 .contact-final-email a {
@@ -1053,5 +1149,129 @@ html[data-theme="dark"] .contact-final-inner > p,
 html[data-theme="light"] .contact-final-inner > p {
   color: var(--text-secondary);
 }
+.contact-email {
+  width: 100%;
+  cursor: pointer;
+  appearance: none;
+  -webkit-appearance: none;
+  text-align: left;
+}
 
+.contact-primary-button {
+  cursor: pointer;
+  appearance: none;
+  -webkit-appearance: none;
+}
+
+.contact-email-dialog {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+
+  width: min(500px, calc(100% - 32px));
+  max-width: 500px;
+
+  margin: 0;
+  padding: 0;
+
+  transform: translate(-50%, -50%);
+
+  border: 1px solid var(--border-strong);
+  border-radius: 18px;
+
+  background: var(--surface-elevated);
+  color: var(--text-primary);
+
+  box-shadow: var(--shadow-lg);
+}
+
+.contact-email-dialog::backdrop {
+  background: rgba(0, 0, 0, 0.58);
+  backdrop-filter: blur(6px);
+}
+
+.contact-email-dialog-inner {
+  position: relative;
+  padding: 32px;
+}
+
+.contact-email-dialog h2 {
+  margin: 14px 0 10px;
+  color: var(--text-primary);
+  font: 700 30px/1.12 var(--font-ui);
+  letter-spacing: -.04em;
+}
+
+.contact-email-dialog p {
+  margin: 0 0 22px;
+  color: var(--text-secondary);
+  font: 400 15px/1.7 var(--font-body);
+}
+
+.contact-email-dialog-close {
+  position: absolute;
+  top: 14px;
+  right: 14px;
+  width: 34px;
+  height: 34px;
+  display: grid;
+  place-items: center;
+  padding: 0;
+  border: 1px solid var(--border);
+  border-radius: 50%;
+  background: var(--surface);
+  color: var(--text-primary);
+  font-size: 22px;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.contact-email-copy-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 7px;
+  border: 1px solid var(--border);
+  border-radius: 11px;
+  background: var(--surface);
+}
+
+.contact-email-copy-row > span {
+  flex: 1;
+  min-width: 0;
+  padding: 10px 11px;
+  color: var(--text-primary);
+  font: 600 14px/1.4 var(--font-ui);
+  overflow-wrap: anywhere;
+}
+
+.contact-email-copy-button {
+  flex: none;
+  padding: 10px 16px;
+  border: 0;
+  border-radius: 8px;
+  background: var(--brand);
+  color: #fff;
+  font: 600 13px/1 var(--font-ui);
+  cursor: pointer;
+}
+
+.contact-email-copy-button:hover {
+  background: var(--brand-hover);
+}
+
+@media (max-width: 600px) {
+  .contact-email-dialog-inner {
+    padding: 27px 20px;
+  }
+
+  .contact-email-copy-row {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .contact-email-copy-button {
+    width: 100%;
+  }
+}
 `;

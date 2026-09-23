@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import Script from "next/script";
 
 export const metadata: Metadata = {
   title: "AI Tool Reviews — Tested Before We Recommend | AlloyPress",
@@ -130,9 +131,13 @@ export default function ReviewsPage() {
           </p>
 
           <div className="review-hero-actions">
-            <a className="review-primary" href="#request">
+            <button
+              type="button"
+              className="review-primary"
+              data-review-email-open
+            >
               Request a Review <span>↗</span>
-            </a>
+            </button>
             <Link className="review-secondary" href="/blogs">
               See our articles
             </Link>
@@ -388,23 +393,132 @@ export default function ReviewsPage() {
             a response within 1–2 business days.
           </p>
 
-          <a
+          <button
+            type="button"
             className="review-primary review-primary-large"
-            href="mailto:contact@alloypress.com?subject=AI%20Tool%20Review%20Request"
+            data-review-email-open
           >
             Submit a Review Request <span>↗</span>
-          </a>
+          </button>
 
           <div className="review-cta-note">
-            Email us at{" "}
-            <a href="mailto:contact@alloypress.com">
-              contact@alloypress.com
-            </a>{" "}
+            Email us {" "}
+            <button
+              type="button"
+              className="review-email-link"
+              data-review-email-open
+            >
+            </button>{" "}
             with your product name, website, URL, category, and any relevant
             testing details.
           </div>
         </div>
       </section>
+      <dialog
+        className="review-email-dialog"
+        data-review-email-dialog
+      >
+        <div className="review-email-dialog-inner">
+          <button
+            type="button"
+            className="review-email-close"
+            data-review-email-close
+            aria-label="Close"
+          >
+            ×
+          </button>
+
+          <div className="review-eyebrow">
+            <span />
+            AI TOOL REVIEW
+          </div>
+
+          <h2>Send your review request</h2>
+
+          <p>
+            Send your product details and relevant testing
+            information to our email address.
+          </p>
+
+          <div className="review-email-copy-row">
+            <span>contact@alloypress.com</span>
+
+            <button
+              type="button"
+              className="review-email-copy"
+              data-review-email-copy
+            >
+              Copy
+            </button>
+          </div>
+        </div>
+      </dialog>
+      <Script id="review-email-popup">
+        {`
+    (() => {
+      const dialog = document.querySelector(
+        "[data-review-email-dialog]"
+      );
+
+      if (!dialog || dialog.dataset.ready === "true") {
+        return;
+      }
+
+      dialog.dataset.ready = "true";
+
+      const openButtons =
+        document.querySelectorAll(
+          "[data-review-email-open]"
+        );
+
+      const closeButton =
+        dialog.querySelector(
+          "[data-review-email-close]"
+        );
+
+      const copyButton =
+        dialog.querySelector(
+          "[data-review-email-copy]"
+        );
+
+      openButtons.forEach((button) => {
+        button.addEventListener("click", () => {
+          dialog.showModal();
+        });
+      });
+
+      closeButton?.addEventListener("click", () => {
+        dialog.close();
+      });
+
+      dialog.addEventListener("click", (event) => {
+        if (event.target === dialog) {
+          dialog.close();
+        }
+      });
+
+      copyButton?.addEventListener("click", async () => {
+        try {
+          await navigator.clipboard.writeText(
+            "contact@alloypress.com"
+          );
+
+          copyButton.textContent = "Copied!";
+
+          setTimeout(() => {
+            copyButton.textContent = "Copy";
+          }, 1600);
+        } catch {
+          copyButton.textContent = "Copy failed";
+
+          setTimeout(() => {
+            copyButton.textContent = "Copy";
+          }, 1600);
+        }
+      });
+    })();
+  `}
+      </Script>
     </main></>
   );
 }
@@ -966,7 +1080,7 @@ const styles = `
   align-items: center;
   gap: 9px;
   color: var(--text-secondary);
-  font: 500 var(--text-xs)/1.45 var(--font-mono);
+  font: 500 8px var(--text-xs)/1.45 var(--font-mono);
 }
 
 .standards-list span {
@@ -1210,6 +1324,132 @@ const styles = `
   .review-page *::after {
     scroll-behavior: auto !important;
     transition: none !important;
+  }
+}
+  .review-primary {
+  border: 0;
+  cursor: pointer;
+  appearance: none;
+}
+
+.review-email-link {
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: var(--brand);
+  font: inherit;
+  cursor: pointer;
+}
+
+.review-email-link:hover {
+  text-decoration: underline;
+}
+
+.review-email-dialog {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+
+  width: min(500px, calc(100% - 32px));
+  max-width: 500px;
+
+  margin: 0;
+  padding: 0;
+
+  border: 1px solid var(--border-strong);
+  border-radius: 18px;
+
+  background: var(--surface-elevated);
+  color: var(--text-primary);
+
+  box-shadow: var(--shadow-lg);
+}
+
+.review-email-dialog::backdrop {
+  background: rgba(0, 0, 0, 0.62);
+}
+
+.review-email-dialog-inner {
+  position: relative;
+  padding: 32px;
+}
+
+.review-email-close {
+  position: absolute;
+  top: 14px;
+  right: 14px;
+  width: 34px;
+  height: 34px;
+  display: grid;
+  place-items: center;
+  border: 1px solid var(--border);
+  border-radius: 50%;
+  background: var(--surface);
+  color: var(--text-primary);
+  font-size: 22px;
+  cursor: pointer;
+}
+
+.review-email-dialog h2 {
+  margin: 14px 0 10px;
+  color: var(--text-primary);
+  font: 700 30px/1.12 var(--font-ui);
+  letter-spacing: -.04em;
+}
+
+.review-email-dialog p {
+  margin: 0 0 22px;
+  color: var(--text-secondary);
+  font: 400 15px/1.7 var(--font-body);
+}
+
+.review-email-copy-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 7px;
+  border: 1px solid var(--border);
+  border-radius: 11px;
+  background: var(--surface);
+}
+
+.review-email-copy-row > span {
+  flex: 1;
+  min-width: 0;
+  padding: 10px 11px;
+  color: var(--text-primary);
+  font: 600 14px/1.4 var(--font-ui);
+  overflow-wrap: anywhere;
+}
+
+.review-email-copy {
+  flex: none;
+  padding: 10px 16px;
+  border: 0;
+  border-radius: 8px;
+  background: var(--brand);
+  color: #fff;
+  font: 600 13px/1 var(--font-ui);
+  cursor: pointer;
+}
+
+.review-email-copy:hover {
+  background: var(--brand-hover);
+}
+
+@media (max-width: 600px) {
+  .review-email-dialog-inner {
+    padding: 27px 20px;
+  }
+
+  .review-email-copy-row {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .review-email-copy {
+    width: 100%;
   }
 }
 `;

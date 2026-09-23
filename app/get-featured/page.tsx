@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import Script from "next/script";
 
 export const metadata: Metadata = {
   title: "AI Tool Article Inclusion | AlloyPress",
@@ -71,7 +72,13 @@ export default function InclusionPage() {
             <div className="inc-eyebrow inc-light"><span /> EDITORIAL LISTING PROGRAMME</div>
             <h1>Get Your AI Tool<br />Considered for a <em>Spot It</em><br /><em>Actually Earns</em></h1>
             <p>We publish honest, tested lists and alternatives articles covering the best AI tools in each category. If your tool fits genuinely, we want to know about it.</p>
-            <a className="inc-primary" href="mailto:contact@alloypress.com?subject=Article%20Inclusion%20Request">Submit Your Tool <span>↗</span></a>
+            <button
+              type="button"
+              className="inc-primary inc-email-open"
+              data-email-open
+            >
+              Get Featured <span>↗</span>
+            </button>
             <div className="inc-hero-meta"><span>LISTS</span><i>·</i><span>ALTERNATIVES</span><i>·</i><span>HANDS-ON TESTING</span><i>·</i><span>EDITORIAL REVIEW</span></div>
           </div>
         </div>
@@ -81,14 +88,14 @@ export default function InclusionPage() {
       <section className="inc-section inc-matters">
         <div className="inc-container">
           <header className="inc-heading"><div><div className="inc-eyebrow"><span /> WHY IT MATTERS</div><h2>What being in an AlloyPress list actually means for your product.</h2><p>There's a meaningful difference between being featured because a product is useful to readers and being dropped into a directory. Here's what editorial inclusion provides.</p></div><span className="inc-index">01 / 06</span></header>
-          <div className="inc-principle-grid">{principles.map(([icon,title,text]) => <article className="inc-principle-card" key={title}><span className="inc-card-icon">{icon}</span><div><h3>{title}</h3><p>{text}</p></div></article>)}</div>
+          <div className="inc-principle-grid">{principles.map(([icon, title, text]) => <article className="inc-principle-card" key={title}><span className="inc-card-icon">{icon}</span><div><h3>{title}</h3><p>{text}</p></div></article>)}</div>
         </div>
       </section>
 
       <section className="inc-section inc-lists">
         <div className="inc-container">
           <header className="inc-heading"><div><div className="inc-eyebrow"><span /> OUR LISTS</div><h2>The lists and alternatives articles you can be considered for.</h2><p>These are article categories we actively maintain. If your tool belongs in one, that's the starting point for a conversation.</p></div><span className="inc-index">02 / 06</span></header>
-          <div className="inc-article-grid">{articleTypes.map(([num,title,type]) => <div className="inc-article-chip" key={title}><span>{num}</span><strong>{title}</strong><small>{type}</small></div>)}</div>
+          <div className="inc-article-grid">{articleTypes.map(([num, title, type]) => <div className="inc-article-chip" key={title}><span>{num}</span><strong>{title}</strong><small>{type}</small></div>)}</div>
         </div>
       </section>
 
@@ -97,28 +104,161 @@ export default function InclusionPage() {
       <section className="inc-section inc-difference">
         <div className="inc-container">
           <header className="inc-heading"><div><div className="inc-eyebrow"><span /> WHY ALLOYPRESS</div><h2>What makes our lists different from most.</h2><p>There are a lot of “best of” lists for AI tools. Here's what separates ours.</p></div><span className="inc-index">03 / 06</span></header>
-          <div className="inc-difference-grid">{differences.map(([num,title,text]) => <article className="inc-difference-card" key={num}><span>{num}</span><div><h3>{title}</h3><p>{text}</p></div></article>)}</div>
+          <div className="inc-difference-grid">{differences.map(([num, title, text]) => <article className="inc-difference-card" key={num}><span>{num}</span><div><h3>{title}</h3><p>{text}</p></div></article>)}</div>
         </div>
       </section>
 
       <section className="inc-section inc-boundaries">
         <div className="inc-container">
           <header className="inc-heading"><div><div className="inc-eyebrow"><span /> KEEP IT CLEAR</div><h2>A few things worth being clear about.</h2><p>We know there are sites that place products on lists after a paid request. That's not how we want our editorial coverage to work.</p></div><span className="inc-index">04 / 06</span></header>
-          <div className="inc-boundary-grid">{boundaries.map(([icon,title,text]) => <article className="inc-boundary-card" key={title}><span>{icon}</span><div><h3>{title}</h3><p>{text}</p></div></article>)}</div>
+          <div className="inc-boundary-grid">{boundaries.map(([icon, title, text]) => <article className="inc-boundary-card" key={title}><span>{icon}</span><div><h3>{title}</h3><p>{text}</p></div></article>)}</div>
         </div>
       </section>
 
       <section className="inc-section inc-process">
         <div className="inc-container">
           <header className="inc-heading"><div><div className="inc-eyebrow inc-light"><span /> HOW IT WORKS</div><h2>What happens after you reach out.</h2><p>The process is straightforward. Here's exactly what to expect from submission to coverage.</p></div><span className="inc-index">05 / 06</span></header>
-          <div className="inc-process-list">{process.map(([num,title,text]) => <article className="inc-process-row" key={num}><span className="inc-process-number">{num}</span><div><h3>{title}</h3><p>{text}</p></div><b>↗</b></article>)}</div>
+          <div className="inc-process-list">{process.map(([num, title, text]) => <article className="inc-process-row" key={num}><span className="inc-process-number">{num}</span><div><h3>{title}</h3><p>{text}</p></div><b>↗</b></article>)}</div>
           <div className="inc-timeline"><strong>Timeline: 7 to 14 working days in most cases</strong><p>Once collaboration is confirmed, product access is available, and required details are received, most inclusion requests can move through the editorial process within this window. Complex evaluations may take longer.</p></div>
         </div>
       </section>
 
-      <section className="inc-section inc-requirements"><div className="inc-container inc-requirements-layout"><div><div className="inc-eyebrow"><span /> BEFORE YOU REACH OUT</div><h2>What to share when you reach out.</h2><p>The more context you give us, the faster we can evaluate your request and tell you whether there's a useful place for the product.</p></div><div className="inc-requirement-list">{requirements.map((item,index) => <div key={item}><span>{String(index+1).padStart(2,"0")}</span><p>{item}</p></div>)}</div></div></section>
+      <section className="inc-section inc-requirements"><div className="inc-container inc-requirements-layout"><div><div className="inc-eyebrow"><span /> BEFORE YOU REACH OUT</div><h2>What to share when you reach out.</h2><p>The more context you give us, the faster we can evaluate your request and tell you whether there's a useful place for the product.</p></div><div className="inc-requirement-list">{requirements.map((item, index) => <div key={item}><span>{String(index + 1).padStart(2, "0")}</span><p>{item}</p></div>)}</div></div></section>
 
-      <section className="inc-final"><div className="inc-final-grid" aria-hidden="true" /><div className="inc-final-glow" aria-hidden="true" /><div className="inc-container inc-final-inner"><div className="inc-eyebrow inc-light"><span /> GET STARTED</div><h2>If your tool genuinely belongs in our lists,<br /><em>let's find out.</em></h2><p>Send us the basics and we'll review your fit. If there's a useful editorial opportunity, we'll take it from there.</p><a className="inc-primary" href="mailto:contact@alloypress.com?subject=Article%20Inclusion%20Request">Submit Your Tool <span>↗</span></a><small>contact@alloypress.com · Product name, URL, category, and relevant testing details</small></div></section>
+      <section className="inc-final"><div className="inc-final-grid" aria-hidden="true" /><div className="inc-final-glow" aria-hidden="true" /><div className="inc-container inc-final-inner"><div className="inc-eyebrow inc-light"><span /> GET STARTED</div><h2>If your tool genuinely belongs in our lists,<br /><em>let's find out.</em></h2><p>Send us the basics and we'll review your fit. If there's a useful editorial opportunity, we'll take it from there.</p><button
+        type="button"
+        className="inc-primary inc-email-open"
+        data-email-open
+      >
+        Get Featured <span>↗</span>
+      </button><small>Product name, URL, category, and relevant testing details</small></div></section>
+      <div
+        className="inc-email-modal-wrap"
+        data-email-modal
+        aria-hidden="true"
+      >
+        <div
+          className="inc-email-backdrop"
+          data-email-close
+        />
+
+        <div
+          className="inc-email-modal"
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="inc-email-title"
+        >
+          <button
+            type="button"
+            className="inc-email-close"
+            data-email-close
+            aria-label="Close"
+          >
+            ×
+          </button>
+
+          <div className="inc-eyebrow">
+            <span />
+            ARTICLE INCLUSION
+          </div>
+
+          <h2 id="inc-email-title">
+            Send us your tool
+          </h2>
+
+          <p>
+            Send your product details and relevant
+            testing information to:
+          </p>
+
+          <div className="inc-email-row">
+            <input
+              type="text"
+              value="contact@alloypress.com"
+              readOnly
+              aria-label="AlloyPress email address"
+              className="inc-email-input"
+              data-email-input
+            />
+
+            <button
+              type="button"
+              className="inc-email-copy"
+              data-email-copy
+            >
+              Copy
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <Script
+        id="email-popup-script"
+        strategy="afterInteractive"
+      >{`
+  (() => {
+    const modal = document.querySelector("[data-email-modal]");
+
+    if (!modal || modal.dataset.ready === "true") {
+      return;
+    }
+
+    modal.dataset.ready = "true";
+
+    const openButtons = document.querySelectorAll(
+      "[data-email-open]"
+    );
+
+    const closeButtons = document.querySelectorAll(
+      "[data-email-close]"
+    );
+
+    const copyButton = document.querySelector(
+      "[data-email-copy]"
+    );
+
+    openButtons.forEach((button) => {
+      button.addEventListener("click", () => {
+        modal.classList.add("is-open");
+        modal.setAttribute("aria-hidden", "false");
+      });
+    });
+
+    closeButtons.forEach((button) => {
+      button.addEventListener("click", () => {
+        modal.classList.remove("is-open");
+        modal.setAttribute("aria-hidden", "true");
+      });
+    });
+
+    document.addEventListener("keydown", (event) => {
+      if (event.key === "Escape") {
+        modal.classList.remove("is-open");
+        modal.setAttribute("aria-hidden", "true");
+      }
+    });
+
+    copyButton?.addEventListener("click", async () => {
+      try {
+        await navigator.clipboard.writeText(
+          "contact@alloypress.com"
+        );
+
+        copyButton.textContent = "Copied!";
+
+        window.setTimeout(() => {
+          copyButton.textContent = "Copy";
+        }, 1600);
+      } catch {
+        copyButton.textContent = "Copy failed";
+
+        window.setTimeout(() => {
+          copyButton.textContent = "Copy";
+        }, 1600);
+      }
+    });
+  })();
+`}</Script>
     </main>
   );
 }
@@ -660,7 +800,7 @@ const styles = `
   display:block;
   margin-top:20px;
   color:var(--text-muted);
-  font:500 10px/1.5 var(--font-mono)
+  font:500 12px/1.5 var(--font-mono)
 }
 @media(max-width:900px) {
   .inc-proof-card,.inc-requirements-layout {
@@ -882,5 +1022,121 @@ html[data-theme="dark"] .inc-final-inner > p {
   color: var(--text-secondary);
   opacity: 1;
   text-wrap: pretty;
+}
+  .inc-email-open {
+  cursor: pointer;
+}
+
+.inc-email-modal-wrap {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  display: none;
+}
+
+.inc-email-modal-wrap.is-open {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+}
+
+.inc-email-backdrop {
+  position: absolute;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.58);
+  backdrop-filter: blur(7px);
+}
+
+.inc-email-modal {
+  position: relative;
+  z-index: 1;
+  width: min(520px, 100%);
+  padding: 34px;
+  border: 1px solid var(--border);
+  border-radius: 18px;
+  background: var(--surface-elevated);
+  color: var(--text-primary);
+  box-shadow: 0 25px 80px rgba(0, 0, 0, 0.28);
+}
+
+.inc-email-modal h2 {
+  margin: 14px 0 10px;
+  color: var(--text-primary);
+  font: 700 clamp(28px, 4vw, 34px)/1.1 var(--font-ui);
+  letter-spacing: -0.04em;
+}
+
+.inc-email-modal > p {
+  margin: 0 0 22px;
+  color: var(--text-secondary);
+  font: 400 14px/1.7 var(--font-body);
+}
+
+.inc-email-close {
+  position: absolute;
+  top: 14px;
+  right: 14px;
+  width: 34px;
+  height: 34px;
+  display: grid;
+  place-items: center;
+  border: 1px solid var(--border);
+  border-radius: 50%;
+  background: var(--surface);
+  color: var(--text-primary);
+  font-size: 22px;
+  cursor: pointer;
+}
+
+.inc-email-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 7px;
+  border: 1px solid var(--border);
+  border-radius: 11px;
+  background: var(--surface);
+}
+
+.inc-email-input {
+  flex: 1;
+  min-width: 0;
+  padding: 10px 11px;
+  border: 0;
+  outline: none;
+  background: transparent;
+  color: var(--text-primary);
+  font: 600 14px/1.4 var(--font-ui);
+}
+
+.inc-email-copy {
+  flex: none;
+  padding: 10px 15px;
+  border: 0;
+  border-radius: 8px;
+  background: var(--brand);
+  color: #fff;
+  font: 600 13px/1 var(--font-ui);
+  cursor: pointer;
+}
+
+.inc-email-copy:hover {
+  background: var(--brand-hover);
+}
+
+@media (max-width: 600px) {
+  .inc-email-modal {
+    padding: 27px 20px;
+  }
+
+  .inc-email-row {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .inc-email-copy {
+    width: 100%;
+  }
 }
 `;
