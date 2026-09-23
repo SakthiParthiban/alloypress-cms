@@ -1,17 +1,63 @@
 import CategoryListing from "@/components/category/CategoryListing";
 
-export const metadata = {
-  title: "AI Comparisons | AlloyPress",
-  description:
-    "Side-by-side AI tool comparisons to help you choose the right tool with confidence.",
-};
+import { buildPageMetadata } from "@/lib/seo/metadata";
 
-export default function ComparisonsPage() {
+import { CATEGORY_PATHS, SITE_URL } from "@/lib/seo/constants";
+
+import {
+  createBreadcrumbSchema,
+  createCollectionPageSchema,
+  createOrganizationSchema,
+} from "@/lib/seo/schema";
+
+// NOTE: title is passed WITHOUT "| AlloyPress" — the root layout's
+// title template ("%s | AlloyPress") appends that automatically.
+// Passing the full suffixed string here causes a duplicate.
+const PAGE_TITLE = "AI Alternatives";
+const PAGE_DESCRIPTION =
+  "Find better AI tool alternatives based on features, pricing, use cases and practical testing.";
+
+export const metadata = buildPageMetadata({
+  title: PAGE_TITLE,
+  description: PAGE_DESCRIPTION,
+  canonicalPath: CATEGORY_PATHS.alternatives,
+});
+
+export default function AlternativesPage() {
+  const pageUrl = `${SITE_URL}${CATEGORY_PATHS.alternatives}`;
+
+  const jsonLd = {
+    "@context": "https://schema.org",
+    "@graph": [
+      createOrganizationSchema(),
+
+      createCollectionPageSchema({
+        url: pageUrl,
+        name: PAGE_TITLE,
+        description: PAGE_DESCRIPTION,
+      }),
+
+      createBreadcrumbSchema([
+        { name: "Home", url: SITE_URL },
+        { name: "Alternatives", url: pageUrl },
+      ]),
+    ],
+  };
+
   return (
-    <CategoryListing
-      slug="comparisons"
-      title="Comparisons"
-      description="Side-by-side AI tool analysis to help you choose confidently."
-    />
+    <>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify(jsonLd),
+        }}
+      />
+
+      <CategoryListing
+        slug="alternatives"
+        title="Alternatives"
+        description="Find better AI tools when the obvious choice isn't right — compared by real use cases."
+      />
+    </>
   );
 }

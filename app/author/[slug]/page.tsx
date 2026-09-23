@@ -15,7 +15,7 @@ const SITE_URL =
 
 const AUTHOR = {
   name: "AlloyPress Team",
-  slug: "alloypress-team",
+  slug: "alloypress",
   role: "AI Research & Editorial Team",
   bio: "We test AI tools, compare alternatives, verify claims, and turn fast-moving AI updates into practical information people can actually use.",
   shortBio:
@@ -129,7 +129,7 @@ function formatDate(value?: string | null) {
 }
 
 export async function generateMetadata(): Promise<Metadata> {
-  const title = `${AUTHOR.name} — AI Research & Editorial Team | AlloyPress`;
+  const title = `${AUTHOR.name} — AI Research & Editorial Team`;
   const description =
     "Meet the AlloyPress Team — the researchers and editors testing AI tools, comparing alternatives, and explaining AI with practical, reader-first standards.";
 
@@ -159,18 +159,44 @@ export default async function AuthorPage() {
   const featured = posts[0] ?? null;
   const remaining = posts.slice(1);
 
+  const authorUrl = `${SITE_URL}/author/${AUTHOR.slug}`;
+
   const jsonLd = {
     "@context": "https://schema.org",
-    "@type": "Person",
-    name: AUTHOR.name,
-    url: `${SITE_URL}/author/${AUTHOR.slug}`,
-    jobTitle: AUTHOR.role,
-    description: AUTHOR.bio,
-    worksFor: {
-      "@type": "Organization",
-      name: "AlloyPress",
-      url: SITE_URL,
-    },
+    "@graph": [
+      {
+        "@type": "Person",
+        "@id": `${authorUrl}#person`,
+        name: AUTHOR.name,
+        url: authorUrl,
+        jobTitle: AUTHOR.role,
+        description: AUTHOR.bio,
+        worksFor: {
+          "@type": "Organization",
+          "@id": `${SITE_URL}/#organization`,
+          name: "AlloyPress",
+          url: SITE_URL,
+        },
+      },
+      {
+        "@type": "BreadcrumbList",
+        "@id": `${authorUrl}#breadcrumb`,
+        itemListElement: [
+          {
+            "@type": "ListItem",
+            position: 1,
+            name: "Home",
+            item: `${SITE_URL}/`,
+          },
+          {
+            "@type": "ListItem",
+            position: 2,
+            name: AUTHOR.name,
+            item: authorUrl,
+          },
+        ],
+      },
+    ],
   };
 
   return (

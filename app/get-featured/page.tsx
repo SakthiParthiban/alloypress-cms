@@ -2,17 +2,35 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import Script from "next/script";
 
+import { createBreadcrumbSchema } from "@/lib/seo/schema";
+
 export const metadata: Metadata = {
-  title: "AI Tool Article Inclusion | AlloyPress",
+  title: "AI Tool Article Inclusion",
   description:
     "Submit your AI tool for consideration in AlloyPress editorial lists and alternatives articles. Learn how inclusion works, what we evaluate, and what to expect.",
-  alternates: { canonical: "/inclusion" },
+  alternates: { canonical: "/get-featured" },
   openGraph: {
-    title: "AI Tool Article Inclusion | AlloyPress",
+    title: "AI Tool Article Inclusion",
     description:
       "Get your AI tool considered for relevant AlloyPress lists and alternatives articles through a reader-first editorial process.",
     type: "website",
   },
+};
+
+const breadcrumbSchema = {
+  "@context": "https://schema.org",
+  "@graph": [
+    createBreadcrumbSchema([
+      {
+        name: "Home",
+        url: "/",
+      },
+      {
+        name: "Get Featured",
+        url: "/get-featured",
+      },
+    ]),
+  ],
 };
 
 const principles = [
@@ -62,6 +80,13 @@ const requirements = [
 export default function InclusionPage() {
   return (
     <main className="inclusion-page">
+      <Script
+        id="get-featured-breadcrumb-schema"
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify(breadcrumbSchema),
+        }}
+      />
       <style dangerouslySetInnerHTML={{ __html: styles }} />
 
       <section className="inc-hero">

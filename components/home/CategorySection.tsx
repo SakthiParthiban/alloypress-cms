@@ -133,7 +133,7 @@ const categoryDefinitions: CategoryDefinition[] = [
     slug: "alternatives",
     title: "Alternatives",
     description:
-      "Better AI tool options when the obvious chioce falls short.",
+      "Better AI tool options when the obvious choice falls short.",
     href: "/alternatives",
 
     icon: (

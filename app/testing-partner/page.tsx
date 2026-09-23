@@ -1,8 +1,34 @@
+import type { Metadata } from "next";
 import Link from "next/link";
 import Script from "next/script";
 import { ArrowUpRight, Check, ChevronRight } from "lucide-react";
 
 import "@/components/css-style/testing-partner.css";
+
+import { createBreadcrumbSchema } from "@/lib/seo/schema";
+
+export const metadata: Metadata = {
+  title: "AI Tool Testing Partner",
+  description:
+    "Partner with AlloyPress for structured, real-world AI tool testing, competitive benchmarking, and business/SEO input grounded in category experience.",
+  alternates: { canonical: "/testing-partner" },
+};
+
+const breadcrumbSchema = {
+  "@context": "https://schema.org",
+  "@graph": [
+    createBreadcrumbSchema([
+      {
+        name: "Home",
+        url: "/",
+      },
+      {
+        name: "Testing Partner",
+        url: "/testing-partner",
+      },
+    ]),
+  ],
+};
 
 const partnerReceives = [
   "Structured testing reports with specific findings, not generic summaries",
@@ -164,6 +190,13 @@ const standards = [
 export default function TestingPartnerPage() {
   return (
     <div className="testing-partner-page">
+      <Script
+        id="testing-partner-breadcrumb-schema"
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify(breadcrumbSchema),
+        }}
+      />
       <main>
         {/* Hero */}
         <section className="testing-partner-hero">

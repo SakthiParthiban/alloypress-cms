@@ -1,7 +1,9 @@
 import type { Metadata } from "next";
+import Script from "next/script";
+import { createBreadcrumbSchema } from "@/lib/seo/schema";
 
 export const metadata: Metadata = {
-  title: "Terms and Conditions | AlloyPress",
+  title: "Terms and Conditions",
   description:
     "Read the Terms and Conditions governing use of AlloyPress, editorial coverage, sponsored content, payments, affiliate relationships, intellectual property, privacy, and website use.",
   alternates: {
@@ -204,9 +206,27 @@ const termsSections: TermsSection[] = [
   },
 ];
 
+const breadcrumbSchema = {
+  "@context": "https://schema.org",
+  "@graph": [
+    createBreadcrumbSchema([
+      { name: "Home", url: "/" },
+      { name: "Terms and Conditions", url: "/terms" },
+    ]),
+  ],
+};
+
 export default function TermsPage() {
   return (
-    <main className="terms-page">
+    <>
+      <Script
+        id="terms-breadcrumb-schema"
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify(breadcrumbSchema),
+        }}
+      />
+      <main className="terms-page">
       <style dangerouslySetInnerHTML={{ __html: styles }} />
 
       <section className="terms-hero">
@@ -321,6 +341,7 @@ export default function TermsPage() {
         </div>
       </section>
     </main>
+    </>
   );
 }
 

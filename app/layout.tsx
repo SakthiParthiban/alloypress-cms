@@ -26,10 +26,7 @@ import ThemeScript from "@/components/ThemeScript";
 // NEW: centralized SEO constants + site-wide JSON-LD builders
 // ------------------------------------------------------------
 import { SITE_URL } from "@/lib/seo/constants";
-import {
-  createOrganizationSchema,
-  createWebSiteSchema,
-} from "@/lib/seo/schema";
+import { createOrganizationSchema } from "@/lib/seo/schema";
 
 const inter = Inter({
   variable: "--font-inter",
@@ -58,15 +55,12 @@ export const metadata: Metadata = {
 };
 
 // ------------------------------------------------------------
-// Site-wide JSON-LD graph: rendered once, on every page, so
-// Google always sees the same Organization + WebSite entities.
-// Individual pages/articles add their own JSON-LD on top of
-// this (Article, WebPage, BreadcrumbList, etc.) and link back
-// to these via @id references — see lib/seo/schema.ts.
+// Site-wide JSON-LD: Organization only.
+// WebSite schema is intentionally rendered on the Home page only.
 // ------------------------------------------------------------
-const siteJsonLd = {
+const organizationJsonLd = {
   "@context": "https://schema.org",
-  "@graph": [createOrganizationSchema(), createWebSiteSchema()],
+  "@graph": [createOrganizationSchema()],
 };
 
 export default function RootLayout({
@@ -81,7 +75,7 @@ export default function RootLayout({
           type="application/ld+json"
           // eslint-disable-next-line react/no-danger
           dangerouslySetInnerHTML={{
-            __html: JSON.stringify(siteJsonLd),
+            __html: JSON.stringify(organizationJsonLd),
           }}
         />
 

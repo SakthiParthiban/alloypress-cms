@@ -1,4 +1,7 @@
 import type { Metadata } from "next";
+import Script from "next/script";
+
+import { createBreadcrumbSchema } from "@/lib/seo/schema";
 
 export const metadata: Metadata = {
   title: "Do Not Sell or Share My Personal Information | AlloyPress",
@@ -13,6 +16,16 @@ export const metadata: Metadata = {
   },
 };
 
+const breadcrumbSchema = {
+  "@context": "https://schema.org",
+  "@graph": [
+    createBreadcrumbSchema([
+      { name: "Home", url: "/" },
+      { name: "Do Not Sell or Share My Personal Information", url: "/do-not-sell" },
+    ]),
+  ],
+};
+
 const rights = [
   "Request access to your personal information",
   "Request the deletion of your information",
@@ -23,6 +36,14 @@ const rights = [
 export default function DoNotSellPage() {
   return (
     <>
+      <Script
+        id="do-not-sell-breadcrumb-schema"
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify(breadcrumbSchema),
+        }}
+      />
+
       <main className="dns-page">
         <section className="dns-hero">
           <div className="dns-grid" aria-hidden="true" />

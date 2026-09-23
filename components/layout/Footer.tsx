@@ -16,6 +16,7 @@ const navigateLinks = [
   { label: "Comparisons", href: "/comparisons" },
 ];
 
+
 const resourceLinks = [
   { label: "AI Image Generators", href: "/blogs/best-ai-image-generator" },
   { label: "AI Website Builders", href: "/blogs/best-ai-website-builders" },
@@ -168,7 +169,7 @@ export default function Footer() {
               </Link>
 
               <p>
-                Honest AI tool reviewes, comparisons and alternatives-based on hands on testing.
+                Honest AI tool reviews, comparisons and alternatives-based on hands on testing.
               </p>
 
               <div className="footer-socials">

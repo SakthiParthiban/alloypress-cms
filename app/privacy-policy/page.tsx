@@ -1,7 +1,10 @@
 import type { Metadata } from "next";
+import Script from "next/script";
+
+import { createBreadcrumbSchema } from "@/lib/seo/schema";
 
 export const metadata: Metadata = {
-  title: "Privacy Policy | AlloyPress",
+  title: "Privacy Policy",
   description:
     "Learn how AlloyPress collects, uses, protects, and retains information, including cookies, analytics, affiliate links, advertising, GDPR and CCPA privacy rights.",
   alternates: {
@@ -240,9 +243,27 @@ const privacySections: PrivacySection[] = [
   },
 ];
 
+const breadcrumbSchema = {
+  "@context": "https://schema.org",
+  "@graph": [
+    createBreadcrumbSchema([
+      { name: "Home", url: "/" },
+      { name: "Privacy Policy", url: "/privacy-policy" },
+    ]),
+  ],
+};
+
 export default function PrivacyPolicyPage() {
   return (
-    <main className="privacy-page">
+    <>
+      <Script
+        id="privacy-policy-breadcrumb-schema"
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify(breadcrumbSchema),
+        }}
+      />
+      <main className="privacy-page">
       <style dangerouslySetInnerHTML={{ __html: styles }} />
 
       <section className="privacy-hero">
@@ -400,6 +421,7 @@ export default function PrivacyPolicyPage() {
         </div>
       </section>
     </main>
+    </>
   );
 }
 const styles = `

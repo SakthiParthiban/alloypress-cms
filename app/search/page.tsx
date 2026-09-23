@@ -1,7 +1,19 @@
+import type { Metadata } from "next";
 import Link from "next/link";
 import { cache } from "react";
 import { payloadFetch } from "@/lib/payload";
 import "./search.css";
+// Search results are infinite ?q= variations of thin/duplicate
+// content — keep this out of Google's index, but still let it
+// be followed/linked so the crawler can reach real pages.
+export const metadata: Metadata = {
+  title: "Search | AlloyPress",
+  robots: {
+    index: false,
+    follow: true,
+  },
+};
+
 
 type SearchParams = Promise<{
   q?: string;

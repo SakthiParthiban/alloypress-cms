@@ -16,7 +16,12 @@ import type {
 } from "@/lib/cms";
 
 import { buildArticleMetadata } from "@/lib/seo/metadata";
-import { createArticleSchema } from "@/lib/seo/schema";
+import {
+  createArticleSchema,
+  createBreadcrumbSchema,
+  createReviewSchema,
+} from "@/lib/seo/schema";
+import { CATEGORY_PATHS } from "@/lib/seo/constants";
 
 // ============================================================
 // SITE
@@ -1097,21 +1102,47 @@ export default async function CategoryPostPage({
   const articleUrl =
     `${SITE_URL}/${category}/${post.slug}`;
 
+  const categoryPath =
+    CATEGORY_PATHS[category as keyof typeof CATEGORY_PATHS] ||
+    `/${category}`;
+
+  const isReview = category === "reviews";
+
+  const articleSchema = isReview
+    ? createReviewSchema({
+        url: articleUrl,
+        title: post.title || "",
+        description: post.meta?.description || post.excerpt,
+        image: articleImage,
+        publishedAt: post.publishedAt,
+        modifiedAt: post.updatedAt || post.publishedAt,
+        category: categoryLabel,
+        authorName: post.author?.name,
+      })
+    : createArticleSchema({
+        url: articleUrl,
+        title: post.title || "",
+        description: post.meta?.description || post.excerpt,
+        image: articleImage,
+        publishedAt: post.publishedAt,
+        modifiedAt: post.updatedAt || post.publishedAt,
+        category: categoryLabel,
+        // Real CMS author (Payload `author` relationship) — falls
+        // back to the AlloyPress Organization inside
+        // createArticleSchema() when a post has no author set.
+        authorName: post.author?.name,
+      });
+
   const jsonLd = {
     "@context": "https://schema.org",
-    ...createArticleSchema({
-      url: articleUrl,
-      title: post.title || "",
-      description: post.meta?.description || post.excerpt,
-      image: articleImage,
-      publishedAt: post.publishedAt,
-      modifiedAt: post.updatedAt || post.publishedAt,
-      category: categoryLabel,
-      // Real CMS author (Payload `author` relationship) — falls
-      // back to the AlloyPress Organization inside
-      // createArticleSchema() when a post has no author set.
-      authorName: post.author?.name,
-    }),
+    "@graph": [
+      articleSchema,
+      createBreadcrumbSchema([
+        { name: "Home", url: SITE_URL },
+        { name: categoryLabel, url: `${SITE_URL}${categoryPath}` },
+        { name: post.title || "", url: articleUrl },
+      ]),
+    ],
   };
 
   // ==========================================================

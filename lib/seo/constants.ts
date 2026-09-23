@@ -1,10 +1,3 @@
-// ============================================================
-// AlloyPress SEO Constants
-// ============================================================
-// Central source of truth for site-wide SEO/schema identifiers.
-// Keep route-specific SEO logic out of this file.
-// ============================================================
-
 const trimTrailingSlashes = (value: string) =>
   value.replace(/\/+$/, "");
 
@@ -50,11 +43,11 @@ export const LOGO_ID = `${SITE_URL}/#logo`;
 
 export const SITE_LOGO_URL =
   process.env.NEXT_PUBLIC_SITE_LOGO_URL?.trim() ||
-  `${SITE_URL}/logo.svg`;
+  `${SITE_URL}/ap-logo.png`;
 
 export const DEFAULT_OG_IMAGE_URL =
   process.env.NEXT_PUBLIC_DEFAULT_OG_IMAGE_URL?.trim() ||
-  SITE_LOGO_URL;
+  `${SITE_URL}/ap-icon.png`;
 
 // ------------------------------------------------------------
 // Content categories

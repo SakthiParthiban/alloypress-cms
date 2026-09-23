@@ -15,11 +15,17 @@ import {
   createOrganizationSchema,
 } from "@/lib/seo/schema";
 
-export const metadata = buildPageMetadata({
-  title: "AI Blogs | AlloyPress",
+// NOTE: title is passed WITHOUT "| AlloyPress" — the root layout's
+// title template ("%s | AlloyPress") appends that automatically.
+// Passing the full suffixed string here causes a duplicate.
+const PAGE_TITLE = "AI Blogs";
+const PAGE_DESCRIPTION =
+  "Practical AI guides, tutorials, explainers and useful knowledge from AlloyPress.";
 
-  description:
-    "Practical AI guides, tutorials, explainers and useful knowledge from AlloyPress.",
+export const metadata = buildPageMetadata({
+  title: PAGE_TITLE,
+
+  description: PAGE_DESCRIPTION,
 
   canonicalPath:
     CATEGORY_PATHS.blogs,
@@ -38,10 +44,9 @@ export default function BlogsPage() {
       createCollectionPageSchema({
         url: pageUrl,
 
-        name: "AI Blogs | AlloyPress",
+        name: PAGE_TITLE,
 
-        description:
-          "Practical AI guides, tutorials, explainers and useful knowledge from AlloyPress.",
+        description: PAGE_DESCRIPTION,
       }),
 
       createBreadcrumbSchema([

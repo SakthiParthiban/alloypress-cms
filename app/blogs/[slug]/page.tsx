@@ -10,6 +10,13 @@ import {
   type PayloadResponse,
 } from "@/lib/cms";
 
+import { buildArticleMetadata } from "@/lib/seo/metadata";
+import {
+  createArticleSchema,
+  createBreadcrumbSchema,
+} from "@/lib/seo/schema";
+import { SITE_URL } from "@/lib/seo/constants";
+
 // ============================================================
 // BREADCRUMB CONSTANTS
 // ============================================================
@@ -459,106 +466,45 @@ export async function generateMetadata({
 
   if (!post) {
     return {
-      title:
-        "Article Not Found | AlloyPress",
+      title: "Article Not Found",
+      robots: {
+        index: false,
+        follow: false,
+      },
     };
   }
 
   const meta = post.meta ?? {};
 
-  const title =
-    meta.title ||
-    post.title ||
-    "AlloyPress";
+  return buildArticleMetadata({
+    title: meta.title || post.title,
+    description: meta.description || post.excerpt,
 
-  const description =
-    meta.description ||
-    post.excerpt ||
-    "";
+    canonicalPath: `/blogs/${post.slug}`,
+    canonicalUrl: meta.canonicalURL,
 
-  const ogImage =
-    mediaUrl(meta.openGraph?.image) ||
-    mediaUrl(meta.image) ||
-    mediaUrl(post.featuredImage);
+    imageUrl:
+      mediaUrl(meta.openGraph?.image) ||
+      mediaUrl(meta.image) ||
+      mediaUrl(post.featuredImage),
+    imageAlt: post.title,
 
-  return {
-    title,
-    description,
+    publishedTime: post.publishedAt,
+    modifiedTime: post.updatedAt,
 
-    alternates: {
-      canonical:
-        meta.canonicalURL ||
-        `/blogs/${post.slug}`,
-    },
-
-    robots: {
-      index:
-        meta.robots?.index !== false,
-
-      follow:
-        meta.robots?.follow !== false,
-
-      noarchive:
-        meta.robots?.noArchive === true,
-
-      noimageindex:
-        meta.robots?.noImageIndex === true,
-
-      nosnippet:
-        meta.robots?.noSnippet === true,
-    },
+    robots: meta.robots,
 
     openGraph: {
-      type: "article",
-
-      title:
-        meta.openGraph?.title ||
-        title,
-
-      description:
-        meta.openGraph?.description ||
-        description,
-
-      publishedTime:
-        post.publishedAt ||
-        undefined,
-
-      modifiedTime:
-        post.updatedAt ||
-        undefined,
-
-      url:
-        `/blogs/${post.slug}`,
-
-      images: ogImage
-        ? [
-          {
-            url: ogImage,
-            alt:
-              post.title ||
-              "AlloyPress article",
-          },
-        ]
-        : undefined,
+      title: meta.openGraph?.title,
+      description: meta.openGraph?.description,
+      imageUrl: mediaUrl(meta.openGraph?.image),
     },
 
     twitter: {
-      card:
-        "summary_large_image",
-
-      title:
-        meta.twitter?.title ||
-        title,
-
-      description:
-        meta.twitter?.description ||
-        description,
-
-      images: ogImage
-        ? [ogImage]
-        : undefined,
+      title: meta.twitter?.title,
+      description: meta.twitter?.description,
     },
-  };
+  });
 }
 
 // ============================================================
@@ -652,45 +598,31 @@ export default async function BlogPostPage({
   // JSON-LD
   // ==========================================================
 
+  const articleUrl = `${SITE_URL}/blogs/${post.slug}`;
+
   const jsonLd = {
     "@context": "https://schema.org",
+    "@graph": [
+      createArticleSchema({
+        url: articleUrl,
+        title: post.title || "",
+        description: post.meta?.description || post.excerpt,
+        image: articleImage,
+        publishedAt: post.publishedAt,
+        modifiedAt: post.updatedAt || post.publishedAt,
+        category: categoryName,
+        // Real CMS author (Payload `author` relationship) — falls
+        // back to the AlloyPress Organization inside
+        // createArticleSchema() when a post has no author set.
+        authorName: post.author?.name,
+      }),
 
-    "@type": "Article",
-
-    headline: post.title,
-
-    description:
-      post.meta?.description ||
-      post.excerpt ||
-      "",
-
-    image: articleImage
-      ? [articleImage]
-      : undefined,
-
-    datePublished:
-      post.publishedAt ||
-      undefined,
-
-    dateModified:
-      post.updatedAt ||
-      post.publishedAt ||
-      undefined,
-
-    author: {
-      "@type": "Organization",
-      name: "AlloyPress",
-    },
-
-    publisher: {
-      "@type": "Organization",
-      name: "AlloyPress",
-    },
-
-    mainEntityOfPage: {
-      "@type": "WebPage",
-      "@id": `/blogs/${post.slug}`,
-    },
+      createBreadcrumbSchema([
+        { name: "Home", url: SITE_URL },
+        { name: categoryName, url: `${SITE_URL}/${categorySlugValue}` },
+        { name: post.title || "", url: articleUrl },
+      ]),
+    ],
   };
 
   // ==========================================================

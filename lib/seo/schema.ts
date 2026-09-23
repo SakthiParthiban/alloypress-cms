@@ -31,6 +31,11 @@ export type ArticleSchemaInput = {
   authorName?: string | null;
   authorUrl?: string | null;
   wordCount?: number | null;
+  // Defaults to "BlogPosting" — AlloyPress content is blog-style
+  // editorial content, and BlogPosting is the more specific
+  // Schema.org subtype of Article for this. Pass "Article"
+  // explicitly only for non-blog editorial content.
+  type?: "Article" | "BlogPosting";
 };
 
 export type ReviewSchemaInput = ArticleSchemaInput & {
@@ -145,9 +150,11 @@ export function createWebPageSchema(input: WebPageSchemaInput) {
     ...(cleanText(input.description)
       ? { description: cleanText(input.description) }
       : {}),
-    isPartOf: {
-      "@id": WEBSITE_ID,
-    },
+    // NOTE: no `isPartOf: { "@id": WEBSITE_ID }` here on purpose.
+    // WebSite schema only exists on the Home page in this
+    // architecture, so referencing WEBSITE_ID from any other page
+    // is a dangling @id — that entity doesn't exist on the page
+    // being validated. Only Home's own schema should point to it.
     publisher: {
       "@id": ORGANIZATION_ID,
     },
@@ -180,7 +187,7 @@ export function createArticleSchema(input: ArticleSchemaInput) {
   const articleUrl = absoluteUrl(input.url) || SITE_URL;
 
   const article: Record<string, unknown> = {
-    "@type": "Article",
+    "@type": input.type || "BlogPosting",
     "@id": `${articleUrl}#article`,
     url: articleUrl,
     headline: cleanText(input.title) || SITE_NAME,
@@ -248,15 +255,12 @@ export function createArticleSchema(input: ArticleSchemaInput) {
 // ============================================================
 // REVIEW ARTICLE
 // ============================================================
-// NOTE: this emits a single object typed ["Article", "Review"].
-// Google's Review-snippet documentation is written around a
-// standalone "Review" (or "Product" + review) type, not a
-// combined Article/Review object — combining them is valid
-// Schema.org, but is NOT guaranteed to trigger the star-rating
-// rich result. Test each review post in the Rich Results Test
-// (search.google.com/test/rich-results) before relying on this
-// for star snippets. If stars don't show, switch reviews to
-// createStandaloneReviewSchema() below instead.
+// Emits ["BlogPosting", "Review"] — a review post IS a blog
+// post, plus the Review-specific fields (itemReviewed,
+// reviewRating). Test in the Rich Results Test
+// (search.google.com/test/rich-results); if the star-rating
+// snippet doesn't show, fall back to
+// createStandaloneReviewSchema() below.
 // ============================================================
 
 export function createReviewSchema(input: ReviewSchemaInput) {
@@ -264,7 +268,7 @@ export function createReviewSchema(input: ReviewSchemaInput) {
 
   const schema = {
     ...reviewArticle,
-    "@type": ["Article", "Review"],
+    "@type": [input.type || "BlogPosting", "Review"],
   } as Record<string, unknown>;
 
   applyReviewFields(schema, input);

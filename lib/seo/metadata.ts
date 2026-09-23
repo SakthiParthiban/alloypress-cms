@@ -76,19 +76,46 @@ function absoluteUrl(value?: string | null): string | undefined {
 }
 
 function buildCanonical(input: BuildArticleMetadataInput): string {
+  // 1) If an editor has explicitly set a canonical URL in the CMS,
+  // that is an intentional override (e.g. syndicated/duplicate
+  // content) and must win. We still normalize the *host* to the
+  // production domain so a Vercel preview URL never leaks out as
+  // canonical — only the host is corrected, the editor's chosen
+  // path is always respected.
   const cmsCanonical = absoluteUrl(input.canonicalUrl);
 
   if (cmsCanonical) {
-    return cmsCanonical;
+    try {
+      const parsed = new URL(cmsCanonical);
+      const siteHost = new URL(SITE_URL).hostname;
+
+      if (
+        parsed.hostname === siteHost ||
+        parsed.hostname === "alloypress-web.vercel.app"
+      ) {
+        return new URL(
+          parsed.pathname + parsed.search + parsed.hash,
+          `${SITE_URL}/`,
+        ).toString();
+      }
+
+      // A genuinely different, trusted external host (rare —
+      // e.g. deliberately canonicalizing to a partner site).
+      // Respect it as-is rather than silently discarding it.
+      return cmsCanonical;
+    } catch {
+      // fall through
+    }
   }
 
+  // 2) No CMS override — derive canonical from the route path.
   const path = input.canonicalPath?.trim();
 
-  if (!path) {
-    return SITE_URL;
+  if (path) {
+    return absoluteUrl(path) || SITE_URL;
   }
 
-  return absoluteUrl(path) || SITE_URL;
+  return SITE_URL;
 }
 
 function buildRobots(input?: SeoRobotsInput | null): Metadata["robots"] {

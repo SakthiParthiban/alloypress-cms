@@ -1,8 +1,10 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import Script from "next/script";
 
 import { payloadFetch } from "@/lib/payload";
 import { buildPageMetadata } from "@/lib/seo/metadata";
+import { createBreadcrumbSchema } from "@/lib/seo/schema";
 
 // ------------------------------------------------------------
 // Fallback copy used only if the "about" page doesn't exist yet
@@ -41,6 +43,16 @@ export async function generateMetadata(): Promise<Metadata> {
     imageUrl: seo?.openGraphImage?.url,
   });
 }
+
+const breadcrumbSchema = {
+  "@context": "https://schema.org",
+  "@graph": [
+    createBreadcrumbSchema([
+      { name: "Home", url: "/" },
+      { name: "About", url: "/about" },
+    ]),
+  ],
+};
 
 const stats = [
   ["Top 1%", "Cited across AI answer engines (Perplexity, ChatGPT, Gemini and more)"],
@@ -1510,6 +1522,13 @@ html[data-theme="light"] .about-button-secondary {
 export default function AboutPage() {
   return (
     <>
+      <Script
+        id="about-breadcrumb-schema"
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify(breadcrumbSchema),
+        }}
+      />
       <style dangerouslySetInnerHTML={{ __html: styles }} />
 
       <main className="about-page">

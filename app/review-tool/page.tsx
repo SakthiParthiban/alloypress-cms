@@ -1,14 +1,31 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import Script from "next/script";
+import { createBreadcrumbSchema } from "@/lib/seo/schema";
 
 export const metadata: Metadata = {
-  title: "AI Tool Reviews — Tested Before We Recommend | AlloyPress",
+  title: "AI Tool Reviews — Tested Before We Recommend",
   description:
     "Request an AlloyPress AI tool review. We test real workflows, verify claims, explain limitations, and publish practical, reader-first reviews.",
   alternates: {
-    canonical: "/reviews",
+    canonical: "/review-tool",
   },
+};
+
+const breadcrumbSchema = {
+  "@context": "https://schema.org",
+  "@graph": [
+    createBreadcrumbSchema([
+      {
+        name: "Home",
+        url: "/",
+      },
+      {
+        name: "Review Tool",
+        url: "/review-tool",
+      },
+    ]),
+  ],
 };
 
 const coverage = [
@@ -104,357 +121,366 @@ const standards = [
 
 export default function ReviewsPage() {
   return (
-    <><style dangerouslySetInnerHTML={{ __html: styles }} /><main className="review-page">
-      {/* HERO */}
-      <section className="review-hero">
-        <div className="review-hero-grid" aria-hidden="true" />
-        <div className="review-hero-glow" aria-hidden="true" />
-        <div className="review-hero-line review-hero-line-one" aria-hidden="true" />
-        <div className="review-hero-line review-hero-line-two" aria-hidden="true" />
+    <>
+      <Script
+        id="review-tool-breadcrumb-schema"
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify(breadcrumbSchema),
+        }}
+      />
+      <style dangerouslySetInnerHTML={{ __html: styles }} />
+      <main className="review-page">
+        {/* HERO */}
+        <section className="review-hero">
+          <div className="review-hero-grid" aria-hidden="true" />
+          <div className="review-hero-glow" aria-hidden="true" />
+          <div className="review-hero-line review-hero-line-one" aria-hidden="true" />
+          <div className="review-hero-line review-hero-line-two" aria-hidden="true" />
 
-        <div className="review-container review-hero-inner">
-          <div className="review-eyebrow">
-            <span />
-            EDITORIAL REVIEW PROGRAMME
-          </div>
-
-          <h1>
-            Your AI Tool, Reviewed by
-            <br />
-            People Who <span><em>Actually Use It.</em></span>
-          </h1>
-
-          <p className="review-hero-copy">
-            We don't rewrite your marketing page and call it a review. We test
-            your tool on real workflows, push its limits, and write exactly what
-            we find.
-          </p>
-
-          <div className="review-hero-actions">
-            <button
-              type="button"
-              className="review-primary"
-              data-review-email-open
-            >
-              Request a Review <span>↗</span>
-            </button>
-            <Link className="review-secondary" href="/blogs">
-              See our articles
-            </Link>
-          </div>
-
-          <div className="review-hero-note">
-            We review AI tools, SaaS products, automation tools, and business
-            software.
-          </div>
-        </div>
-      </section>
-
-      {/* TRUST STRIP */}
-      <section className="review-trust" aria-label="Review principles">
-        <div className="review-container review-trust-inner">
-          <span className="review-trust-label">FEATURED TOOL REVIEWS</span>
-          <div className="review-trust-items">
-            <span><b>✦</b> Real testing</span>
-            <span><b>✓</b> Original evidence</span>
-            <span><b>▣</b> Clear comparisons</span>
-            <span><b>◈</b> Reader-first</span>
-            <span><b>↗</b> Search-ready</span>
-          </div>
-        </div>
-      </section>
-
-      {/* WHY IT MATTERS */}
-      <section className="review-section review-why">
-        <div className="review-container">
-          <div className="review-heading">
-            <div>
-              <div className="review-eyebrow review-eyebrow-light">
-                <span />
-                WHY IT MATTERS
-              </div>
-              <h2>
-                There are a lot of AI tool reviews out there.
-                <br />
-                Most of them aren't reviews.
-              </h2>
-              <p>
-                The internet is full of posts that read like product brochures
-                than honest evaluations. We built AlloyPress to do the opposite:
-                every tool gets tested hands-on, not summarised from a feature page.
-              </p>
-            </div>
-            <span className="review-index">01 / 05</span>
-          </div>
-
-          <div className="why-grid">
-            <article className="why-card why-card-featured">
-              <span className="why-icon">↯</span>
-              <h3>What we actually do</h3>
-              <p>
-                We sign up, use the tool across real tasks, run practical
-                workflows, and document what happens. Then we write about what
-                we found.
-              </p>
-            </article>
-
-            <article className="why-card">
-              <span className="why-icon">▱</span>
-              <h3>Real search and AI visibility</h3>
-              <p>
-                Our reviews are built for readers arriving from search and
-                AI-assisted discovery. Useful information comes before sales
-                language.
-              </p>
-            </article>
-
-            <article className="why-card">
-              <span className="why-icon">△</span>
-              <h3>Built to be useful, not promotional</h3>
-              <p>
-                We cover strengths, limitations, pricing realities, and who the
-                tool is genuinely best for. Readers should understand the fit.
-              </p>
-            </article>
-
-            <article className="why-card">
-              <span className="why-icon">◫</span>
-              <h3>We update as products evolve</h3>
-              <p>
-                Products change. When important features, pricing, or capabilities
-                move, useful coverage should not quietly become outdated.
-              </p>
-            </article>
-          </div>
-        </div>
-      </section>
-
-      {/* COVERAGE */}
-      <section className="review-section review-coverage">
-        <div className="review-container">
-          <div className="review-heading">
-            <div>
-              <div className="review-eyebrow">
-                <span />
-                OUR COVERAGE AREAS
-              </div>
-              <h2>We cover the tools people are actively searching for.</h2>
-              <p>
-                AlloyPress focuses on AI and SaaS products used by founders,
-                creators, marketers, developers, and everyday users looking for
-                tools that actually work.
-              </p>
-            </div>
-            <span className="review-index">02 / 05</span>
-          </div>
-
-          <div className="coverage-tags">
-            {coverage.map((item, index) => (
-              <span key={item}>
-                <i>{String(index + 1).padStart(2, "0")}</i>
-                {item}
-              </span>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* WHAT IS INCLUDED */}
-      <section className="review-section review-included">
-        <div className="review-container">
-          <div className="review-heading">
-            <div>
-              <div className="review-eyebrow">
-                <span />
-                WHAT'S INCLUDED
-              </div>
-              <h2>A review that covers the whole picture.</h2>
-              <p>
-                Depending on the tool and category, here's what goes into a
-                typical AlloyPress editorial review.
-              </p>
-            </div>
-            <span className="review-index">03 / 05</span>
-          </div>
-
-          <div className="included-grid">
-            {included.map(([number, title, text]) => (
-              <article className="included-item" key={number}>
-                <span className="included-number">{number}</span>
-                <div>
-                  <h3>{title}</h3>
-                  <p>{text}</p>
-                </div>
-              </article>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* PROCESS */}
-      <section className="review-section review-process">
-        <div className="review-container">
-          <div className="review-heading">
-            <div>
-              <div className="review-eyebrow">
-                <span />
-                HOW IT WORKS
-              </div>
-              <h2>Simple process, no back and forth.</h2>
-              <p>
-                We keep the process straightforward so you spend less time on
-                admin and more time seeing results.
-              </p>
-            </div>
-            <span className="review-index">04 / 05</span>
-          </div>
-
-          <div className="process-list">
-            {process.map(([number, title, text]) => (
-              <article className="process-item" key={number}>
-                <span className="process-step">{number}</span>
-                <div className="process-content">
-                  <h3>{title}</h3>
-                  <p>{text}</p>
-                </div>
-                <span className="process-arrow">↗</span>
-              </article>
-            ))}
-          </div>
-
-          <div className="process-note">
-            <span>ⓘ</span>
-            <p>
-              <strong>Timeline: 14 to 21 working days</strong>
-              <br />
-              Once collaboration is confirmed, product access and all required
-              details are received, most reviews are published within 14–21
-              working days. Complex tools may take a little longer and we will
-              let you know upfront.
-            </p>
-          </div>
-        </div>
-      </section>
-
-      {/* STANDARDS */}
-      <section className="review-standards">
-        <div className="review-standards-grid" aria-hidden="true" />
-        <div className="review-container">
-          <div className="standards-card">
-            <div className="review-eyebrow review-eyebrow-light">
+          <div className="review-container review-hero-inner">
+            <div className="review-eyebrow">
               <span />
-              EDITORIAL STANDARDS
+              EDITORIAL REVIEW PROGRAMME
             </div>
 
-            <h2>
-              Payment funds the work.
+            <h1>
+              Your AI Tool, Reviewed by
               <br />
-              It doesn't change what we write.
-            </h2>
+              People Who <span><em>Actually Use It.</em></span>
+            </h1>
 
-            <p className="standards-lead">
-              The cost of a review covers editorial work — research, hands-on
-              testing, writing, editing, SEO, hosting, and ongoing maintenance.
-              What it does not cover is guaranteed positive outcome, exaggerated
-              claims, or a piece that reads like it was written by marketing.
+            <p className="review-hero-copy">
+              We don't rewrite your marketing page and call it a review. We test
+              your tool on real workflows, push its limits, and write exactly what
+              we find.
             </p>
 
-            <div className="standards-list">
-              {standards.map((item) => (
-                <div key={item}>
-                  <span>×</span>
-                  {item}
+            <div className="review-hero-actions">
+              <button
+                type="button"
+                className="review-primary"
+                data-review-email-open
+              >
+                Request a Review <span>↗</span>
+              </button>
+              <Link className="review-secondary" href="/blogs">
+                See our articles
+              </Link>
+            </div>
+
+            <div className="review-hero-note">
+              We review AI tools, SaaS products, automation tools, and business
+              software.
+            </div>
+          </div>
+        </section>
+
+        {/* TRUST STRIP */}
+        <section className="review-trust" aria-label="Review principles">
+          <div className="review-container review-trust-inner">
+            <span className="review-trust-label">FEATURED TOOL REVIEWS</span>
+            <div className="review-trust-items">
+              <span><b>✦</b> Real testing</span>
+              <span><b>✓</b> Original evidence</span>
+              <span><b>▣</b> Clear comparisons</span>
+              <span><b>◈</b> Reader-first</span>
+              <span><b>↗</b> Search-ready</span>
+            </div>
+          </div>
+        </section>
+
+        {/* WHY IT MATTERS */}
+        <section className="review-section review-why">
+          <div className="review-container">
+            <div className="review-heading">
+              <div>
+                <div className="review-eyebrow review-eyebrow-light">
+                  <span />
+                  WHY IT MATTERS
                 </div>
+                <h2>
+                  There are a lot of AI tool reviews out there.
+                  <br />
+                  Most of them aren't reviews.
+                </h2>
+                <p>
+                  The internet is full of posts that read like product brochures
+                  than honest evaluations. We built AlloyPress to do the opposite:
+                  every tool gets tested hands-on, not summarised from a feature page.
+                </p>
+              </div>
+              <span className="review-index">01 / 05</span>
+            </div>
+
+            <div className="why-grid">
+              <article className="why-card why-card-featured">
+                <span className="why-icon">↯</span>
+                <h3>What we actually do</h3>
+                <p>
+                  We sign up, use the tool across real tasks, run practical
+                  workflows, and document what happens. Then we write about what
+                  we found.
+                </p>
+              </article>
+
+              <article className="why-card">
+                <span className="why-icon">▱</span>
+                <h3>Real search and AI visibility</h3>
+                <p>
+                  Our reviews are built for readers arriving from search and
+                  AI-assisted discovery. Useful information comes before sales
+                  language.
+                </p>
+              </article>
+
+              <article className="why-card">
+                <span className="why-icon">△</span>
+                <h3>Built to be useful, not promotional</h3>
+                <p>
+                  We cover strengths, limitations, pricing realities, and who the
+                  tool is genuinely best for. Readers should understand the fit.
+                </p>
+              </article>
+
+              <article className="why-card">
+                <span className="why-icon">◫</span>
+                <h3>We update as products evolve</h3>
+                <p>
+                  Products change. When important features, pricing, or capabilities
+                  move, useful coverage should not quietly become outdated.
+                </p>
+              </article>
+            </div>
+          </div>
+        </section>
+
+        {/* COVERAGE */}
+        <section className="review-section review-coverage">
+          <div className="review-container">
+            <div className="review-heading">
+              <div>
+                <div className="review-eyebrow">
+                  <span />
+                  OUR COVERAGE AREAS
+                </div>
+                <h2>We cover the tools people are actively searching for.</h2>
+                <p>
+                  AlloyPress focuses on AI and SaaS products used by founders,
+                  creators, marketers, developers, and everyday users looking for
+                  tools that actually work.
+                </p>
+              </div>
+              <span className="review-index">02 / 05</span>
+            </div>
+
+            <div className="coverage-tags">
+              {coverage.map((item, index) => (
+                <span key={item}>
+                  <i>{String(index + 1).padStart(2, "0")}</i>
+                  {item}
+                </span>
               ))}
             </div>
           </div>
-        </div>
-      </section>
+        </section>
 
-      {/* CTA */}
-      <section className="review-cta" id="request">
-        <div className="review-cta-grid" aria-hidden="true" />
-        <div className="review-cta-glow" aria-hidden="true" />
+        {/* WHAT IS INCLUDED */}
+        <section className="review-section review-included">
+          <div className="review-container">
+            <div className="review-heading">
+              <div>
+                <div className="review-eyebrow">
+                  <span />
+                  WHAT'S INCLUDED
+                </div>
+                <h2>A review that covers the whole picture.</h2>
+                <p>
+                  Depending on the tool and category, here's what goes into a
+                  typical AlloyPress editorial review.
+                </p>
+              </div>
+              <span className="review-index">03 / 05</span>
+            </div>
 
-        <div className="review-container review-cta-inner">
-          <div className="review-eyebrow review-eyebrow-light">
-            <span />
-            GET STARTED
+            <div className="included-grid">
+              {included.map(([number, title, text]) => (
+                <article className="included-item" key={number}>
+                  <span className="included-number">{number}</span>
+                  <div>
+                    <h3>{title}</h3>
+                    <p>{text}</p>
+                  </div>
+                </article>
+              ))}
+            </div>
           </div>
+        </section>
 
-          <h2>
-            Ready to get your tool in front of
-            <br />
-            the <em>right readers?</em>
-          </h2>
+        {/* PROCESS */}
+        <section className="review-section review-process">
+          <div className="review-container">
+            <div className="review-heading">
+              <div>
+                <div className="review-eyebrow">
+                  <span />
+                  HOW IT WORKS
+                </div>
+                <h2>Simple process, no back and forth.</h2>
+                <p>
+                  We keep the process straightforward so you spend less time on
+                  admin and more time seeing results.
+                </p>
+              </div>
+              <span className="review-index">04 / 05</span>
+            </div>
 
-          <p>
-            Send us the basics and we'll take it from there. Most requests get
-            a response within 1–2 business days.
-          </p>
+            <div className="process-list">
+              {process.map(([number, title, text]) => (
+                <article className="process-item" key={number}>
+                  <span className="process-step">{number}</span>
+                  <div className="process-content">
+                    <h3>{title}</h3>
+                    <p>{text}</p>
+                  </div>
+                  <span className="process-arrow">↗</span>
+                </article>
+              ))}
+            </div>
 
-          <button
-            type="button"
-            className="review-primary review-primary-large"
-            data-review-email-open
-          >
-            Submit a Review Request <span>↗</span>
-          </button>
+            <div className="process-note">
+              <span>ⓘ</span>
+              <p>
+                <strong>Timeline: 14 to 21 working days</strong>
+                <br />
+                Once collaboration is confirmed, product access and all required
+                details are received, most reviews are published within 14–21
+                working days. Complex tools may take a little longer and we will
+                let you know upfront.
+              </p>
+            </div>
+          </div>
+        </section>
 
-          <div className="review-cta-note">
-            Email us {" "}
+        {/* STANDARDS */}
+        <section className="review-standards">
+          <div className="review-standards-grid" aria-hidden="true" />
+          <div className="review-container">
+            <div className="standards-card">
+              <div className="review-eyebrow review-eyebrow-light">
+                <span />
+                EDITORIAL STANDARDS
+              </div>
+
+              <h2>
+                Payment funds the work.
+                <br />
+                It doesn't change what we write.
+              </h2>
+
+              <p className="standards-lead">
+                The cost of a review covers editorial work — research, hands-on
+                testing, writing, editing, SEO, hosting, and ongoing maintenance.
+                What it does not cover is guaranteed positive outcome, exaggerated
+                claims, or a piece that reads like it was written by marketing.
+              </p>
+
+              <div className="standards-list">
+                {standards.map((item) => (
+                  <div key={item}>
+                    <span>×</span>
+                    {item}
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        </section>
+
+        {/* CTA */}
+        <section className="review-cta" id="request">
+          <div className="review-cta-grid" aria-hidden="true" />
+          <div className="review-cta-glow" aria-hidden="true" />
+
+          <div className="review-container review-cta-inner">
+            <div className="review-eyebrow review-eyebrow-light">
+              <span />
+              GET STARTED
+            </div>
+
+            <h2>
+              Ready to get your tool in front of
+              <br />
+              the <em>right readers?</em>
+            </h2>
+
+            <p>
+              Send us the basics and we'll take it from there. Most requests get
+              a response within 1–2 business days.
+            </p>
+
             <button
               type="button"
-              className="review-email-link"
+              className="review-primary review-primary-large"
               data-review-email-open
             >
-            </button>{" "}
-            with your product name, website, URL, category, and any relevant
-            testing details.
+              Submit a Review Request <span>↗</span>
+            </button>
+
+            <div className="review-cta-note">
+              Email us {" "}
+              <button
+                type="button"
+                className="review-email-link"
+                data-review-email-open
+              >
+              </button>{" "}
+              with your product name, website, URL, category, and any relevant
+              testing details.
+            </div>
           </div>
-        </div>
-      </section>
-      <dialog
-        className="review-email-dialog"
-        data-review-email-dialog
-      >
-        <div className="review-email-dialog-inner">
-          <button
-            type="button"
-            className="review-email-close"
-            data-review-email-close
-            aria-label="Close"
-          >
-            ×
-          </button>
-
-          <div className="review-eyebrow">
-            <span />
-            AI TOOL REVIEW
-          </div>
-
-          <h2>Send your review request</h2>
-
-          <p>
-            Send your product details and relevant testing
-            information to our email address.
-          </p>
-
-          <div className="review-email-copy-row">
-            <span>contact@alloypress.com</span>
-
+        </section>
+        <dialog
+          className="review-email-dialog"
+          data-review-email-dialog
+        >
+          <div className="review-email-dialog-inner">
             <button
               type="button"
-              className="review-email-copy"
-              data-review-email-copy
+              className="review-email-close"
+              data-review-email-close
+              aria-label="Close"
             >
-              Copy
+              ×
             </button>
+
+            <div className="review-eyebrow">
+              <span />
+              AI TOOL REVIEW
+            </div>
+
+            <h2>Send your review request</h2>
+
+            <p>
+              Send your product details and relevant testing
+              information to our email address.
+            </p>
+
+            <div className="review-email-copy-row">
+              <span>contact@alloypress.com</span>
+
+              <button
+                type="button"
+                className="review-email-copy"
+                data-review-email-copy
+              >
+                Copy
+              </button>
+            </div>
           </div>
-        </div>
-      </dialog>
-      <Script id="review-email-popup">
-        {`
+        </dialog>
+        <Script id="review-email-popup">
+          {`
     (() => {
       const dialog = document.querySelector(
         "[data-review-email-dialog]"
@@ -518,8 +544,9 @@ export default function ReviewsPage() {
       });
     })();
   `}
-      </Script>
-    </main></>
+        </Script>
+      </main>
+    </>
   );
 }
 

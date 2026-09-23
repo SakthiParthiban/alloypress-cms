@@ -2,6 +2,8 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import Script from "next/script";
 
+import { createBreadcrumbSchema } from "@/lib/seo/schema";
+
 export const metadata: Metadata = {
   title: "Contact AlloyPress — AI Reviews, Partnerships & Enquiries",
   description:
@@ -15,6 +17,16 @@ export const metadata: Metadata = {
       "Get in touch with AlloyPress about AI tool reviews, editorial collaborations, partnerships, and enquiries.",
     type: "website",
   },
+};
+
+const breadcrumbSchema = {
+  "@context": "https://schema.org",
+  "@graph": [
+    createBreadcrumbSchema([
+      { name: "Home", url: "/" },
+      { name: "Contact", url: "/contact" },
+    ]),
+  ],
 };
 
 const paths = [
@@ -69,7 +81,15 @@ const expectations = [
 
 export default function ContactPage() {
   return (
-    <main className="contact-page">
+    <>
+      <Script
+        id="contact-breadcrumb-schema"
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify(breadcrumbSchema),
+        }}
+      />
+      <main className="contact-page">
       <style dangerouslySetInnerHTML={{ __html: styles }} />
 
       <section className="contact-hero">
@@ -373,9 +393,9 @@ export default function ContactPage() {
   `}
 </Script>
     </main>
+    </>
   );
 }
-
 const styles = `
 .contact-page {
   --contact-brand: var(--brand);
