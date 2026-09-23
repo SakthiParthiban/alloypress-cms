@@ -253,7 +253,7 @@ function collectContentMediaIds(
 
       if (
         fields.blockType ===
-          "videoFile" &&
+        "videoFile" &&
         typeof fields.video === "number"
       ) {
         ids.add(fields.video);
@@ -261,7 +261,7 @@ function collectContentMediaIds(
 
       if (
         fields.blockType ===
-          "audio" &&
+        "audio" &&
         typeof fields.audio === "number"
       ) {
         ids.add(fields.audio);
@@ -398,7 +398,7 @@ const getContentMedia = cache(
 
       for (
         const media of
-          data?.docs ?? []
+        data?.docs ?? []
       ) {
         const numericId =
           Number(media.id);
@@ -505,22 +505,22 @@ function replaceContentMedia(
       const fields =
         typeof next.fields ===
           "object" &&
-        next.fields !== null
+          next.fields !== null
           ? {
-              ...(
-                next.fields as Record<
-                  string,
-                  unknown
-                >
-              ),
-            }
+            ...(
+              next.fields as Record<
+                string,
+                unknown
+              >
+            ),
+          }
           : {};
 
       if (
         fields.blockType ===
-          "videoFile" &&
+        "videoFile" &&
         typeof fields.video ===
-          "number"
+        "number"
       ) {
         fields.video =
           mediaMap.get(
@@ -530,9 +530,9 @@ function replaceContentMedia(
 
       if (
         fields.blockType ===
-          "audio" &&
+        "audio" &&
         typeof fields.audio ===
-          "number"
+        "number"
       ) {
         fields.audio =
           mediaMap.get(
@@ -766,7 +766,7 @@ const getPost = cache(
 
     const postCategory =
       typeof post.category ===
-      "object"
+        "object"
         ? post.category?.slug
         : null;
 
@@ -878,7 +878,7 @@ const getRelatedPosts = cache(
     params.set(
       "select[featuredImage]",
       "true",
-    ); 
+    );
 
     params.set(
       "select[author]",
@@ -1061,7 +1061,7 @@ export default async function CategoryPostPage({
 
   const categoryId =
     typeof post.category ===
-    "object"
+      "object"
       ? post.category?.id
       : post.category;
 
@@ -1071,10 +1071,10 @@ export default async function CategoryPostPage({
 
   const related = categoryId
     ? await getRelatedPosts(
-        categoryId,
-        post.id,
-        category,
-      )
+      categoryId,
+      post.id,
+      category,
+    )
     : [];
 
   // ==========================================================
@@ -1092,12 +1092,23 @@ export default async function CategoryPostPage({
 
   const categoryLabel =
     CATEGORY_LABELS[
-      category
+    category
     ] || category;
 
   // ==========================================================
   // JSON-LD
   // ==========================================================
+
+  function getReviewedSoftwareName(slug: string): string {
+    return slug
+      .split("-")
+      .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+      .join(" ")
+      .replace(/\bAi\b/g, "AI");
+  }
+
+  const reviewedSoftwareName =
+  getReviewedSoftwareName(post.slug || slug);
 
   const articleUrl =
     `${SITE_URL}/${category}/${post.slug}`;
@@ -1110,28 +1121,32 @@ export default async function CategoryPostPage({
 
   const articleSchema = isReview
     ? createReviewSchema({
-        url: articleUrl,
-        title: post.title || "",
-        description: post.meta?.description || post.excerpt,
-        image: articleImage,
-        publishedAt: post.publishedAt,
-        modifiedAt: post.updatedAt || post.publishedAt,
-        category: categoryLabel,
-        authorName: post.author?.name,
-      })
+      url: articleUrl,
+      title: post.title || "",
+      description: post.meta?.description || post.excerpt,
+      image: articleImage,
+      publishedAt: post.publishedAt,
+      modifiedAt: post.updatedAt || post.publishedAt,
+      category: categoryLabel,
+      authorName: post.author?.name,
+      itemReviewed: {
+        type: "SoftwareApplication",
+        name: post.title || "",
+      },
+    })
     : createArticleSchema({
-        url: articleUrl,
-        title: post.title || "",
-        description: post.meta?.description || post.excerpt,
-        image: articleImage,
-        publishedAt: post.publishedAt,
-        modifiedAt: post.updatedAt || post.publishedAt,
-        category: categoryLabel,
-        // Real CMS author (Payload `author` relationship) — falls
-        // back to the AlloyPress Organization inside
-        // createArticleSchema() when a post has no author set.
-        authorName: post.author?.name,
-      });
+      url: articleUrl,
+      title: post.title || "",
+      description: post.meta?.description || post.excerpt,
+      image: articleImage,
+      publishedAt: post.publishedAt,
+      modifiedAt: post.updatedAt || post.publishedAt,
+      category: categoryLabel,
+      // Real CMS author (Payload `author` relationship) — falls
+      // back to the AlloyPress Organization inside
+      // createArticleSchema() when a post has no author set.
+      authorName: post.author?.name,
+    });
 
   const jsonLd = {
     "@context": "https://schema.org",
