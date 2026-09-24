@@ -13,18 +13,18 @@ import {
 // NOTE: title is passed WITHOUT "| AlloyPress" — the root layout's
 // title template ("%s | AlloyPress") appends that automatically.
 // Passing the full suffixed string here causes a duplicate.
-const PAGE_TITLE = "AI Alternatives";
+const PAGE_TITLE = "AI Comparisons";
 const PAGE_DESCRIPTION =
-  "Find better AI tool alternatives based on features, pricing, use cases and practical testing.";
+  "Side-by-side AI tool comparisons to help you choose the right tool with confidence.";
 
 export const metadata = buildPageMetadata({
   title: PAGE_TITLE,
   description: PAGE_DESCRIPTION,
-  canonicalPath: CATEGORY_PATHS.alternatives,
+  canonicalPath: CATEGORY_PATHS.comparisons,
 });
 
-export default function AlternativesPage() {
-  const pageUrl = `${SITE_URL}${CATEGORY_PATHS.alternatives}`;
+export default function ComparisonsPage() {
+  const pageUrl = `${SITE_URL}${CATEGORY_PATHS.comparisons}`;
 
   const jsonLd = {
     "@context": "https://schema.org",
@@ -39,7 +39,7 @@ export default function AlternativesPage() {
 
       createBreadcrumbSchema([
         { name: "Home", url: SITE_URL },
-        { name: "Alternatives", url: pageUrl },
+        { name: "Comparisons", url: pageUrl },
       ]),
     ],
   };
@@ -54,9 +54,9 @@ export default function AlternativesPage() {
       />
 
       <CategoryListing
-        slug="alternatives"
-        title="Alternatives"
-        description="Find better AI tools when the obvious choice isn't right — compared by real use cases."
+        slug="comparisons"
+        title="Comparisons"
+        description="Side-by-side AI tool analysis to help you choose confidently."
       />
     </>
   );

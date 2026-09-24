@@ -1357,7 +1357,23 @@ export default function BlogPostView({
   useEffect(() => {
     setArticleUrl(window.location.href);
   }, []);
+  useEffect(() => {
+    const previousScrollRestoration =
+      window.history.scrollRestoration;
 
+    window.history.scrollRestoration = "manual";
+
+    window.scrollTo({
+      top: 0,
+      left: 0,
+      behavior: "auto",
+    });
+
+    return () => {
+      window.history.scrollRestoration =
+        previousScrollRestoration;
+    };
+  }, [post?.slug]);
   useEffect(() => {
     if (!shareOpen) return;
 
