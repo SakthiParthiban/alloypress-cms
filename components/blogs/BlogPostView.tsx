@@ -645,7 +645,7 @@ function RenderNode({
 
         {media?.caption ? (
           <figcaption>
-            {media.caption}
+            {cleanEditorialText(String(media.caption))}
           </figcaption>
         ) : null}
       </figure>
@@ -918,6 +918,26 @@ html, body {
       fields.blockType ||
       node.blockType;
 
+    if (blockType === "htmlContent") {
+      const html =
+        typeof fields.html === "string"
+          ? fields.html
+          : "";
+
+      if (!html.trim()) {
+        return null;
+      }
+
+      return (
+        <div
+          className="post-html-content"
+          dangerouslySetInnerHTML={{
+            __html: cleanArticleHtml(html),
+          }}
+        />
+      );
+    }
+
     /* Styled box */
     if (blockType === "styledBox") {
       const heading =
@@ -1105,34 +1125,45 @@ body {
 
     /* CTA */
     if (blockType === "ctaButton") {
-      const href =
-        fields.url || "#";
+  const href = fields.url || "#";
 
-      const external =
-        /^https?:\/\//i.test(href);
+  const external = /^https?:\/\//i.test(href);
 
-      return (
-        <div className="cta-wrap">
-          <a
-            href={href}
-            className="article-cta"
-            target={
-              external
-                ? "_blank"
-                : undefined
-            }
-            rel={
-              external
-                ? "noopener noreferrer"
-                : undefined
-            }
-          >
-            {fields.label ||
-              "Try this tool →"}
-          </a>
-        </div>
-      );
-    }
+  const alignment =
+    fields.alignment === "center"
+      ? "center"
+      : fields.alignment === "right"
+        ? "flex-end"
+        : "flex-start";
+
+  return (
+    <div
+      className="cta-wrap"
+      style={{
+        display: "flex",
+        justifyContent: alignment,
+        width: "100%",
+      }}
+    >
+      <a
+        href={href}
+        className="article-cta"
+        target={
+          external
+            ? "_blank"
+            : undefined
+        }
+        rel={
+          external
+            ? "noopener noreferrer"
+            : undefined
+        }
+      >
+        {fields.label || "Try this tool →"}
+      </a>
+    </div>
+  );
+}
 
     /* YouTube / video embed */
     if (

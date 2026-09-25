@@ -38,12 +38,12 @@ export default function BlogLivePreview({
   initialData,
   related,
 }: Props) {
-  const { data } = useLivePreview<Post>({
-    initialData,
-    serverURL: PAYLOAD_URL,
-    apiRoute: "/api",
-    depth: 1,
-  });
+ const { data } = useLivePreview<Post>({
+  initialData,
+  serverURL: PAYLOAD_URL,
+  apiRoute: "/api",
+  depth: 1,
+});
 
   // Always keep something available for rendering
   const post = data ?? initialData;

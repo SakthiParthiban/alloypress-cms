@@ -310,6 +310,7 @@ async function hydrateContentMedia(
 const getPost = cache(
   async (
     slug: string,
+    isDraft = false,
   ): Promise<PostWithMeta | null> => {
     const params = new URLSearchParams();
 
@@ -318,10 +319,12 @@ const getPost = cache(
       slug,
     );
 
-    params.set(
-      "where[_status][equals]",
-      "published",
-    );
+    if (!isDraft) {
+      params.set(
+        "where[_status][equals]",
+        "published",
+      );
+    }
 
     params.set("limit", "1");
     params.set("depth", "1");
@@ -346,10 +349,12 @@ const getPost = cache(
       >(
         `/posts?${params.toString()}`,
         {
-          next: {
-            revalidate: 300,
-            tags: [`post:${slug}`],
-          },
+          next: isDraft
+            ? { revalidate: 0 }
+            : {
+              revalidate: 0,
+              tags: [`post:${slug}`],
+            },
         },
       );
 
@@ -516,12 +521,17 @@ export default async function BlogPostPage({
   params,
 }: {
   params: Params;
-}) {
+}) 
+{
   const { slug } = await params;
 
-  const post = await getPost(slug);
+  const { isEnabled: isDraft } =
+    await draftMode();
 
-  const { isEnabled: isDraft } = await draftMode();
+  const post = await getPost(
+    slug,
+    isDraft,
+  );
 
   // ==========================================================
   // 404
