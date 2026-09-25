@@ -1687,7 +1687,7 @@ export default function BlogPostView({
     setShareOpen(false);
   }
 
-  const badgeArticleUrl = `https://alloypress.com/reviews/${post?.slug || ""}`;
+  const badgeArticleUrl = `https://alloypress-web.vercel.app/reviews/${post?.slug || ""}`;
 
   const badgeToolName =
     typeof post?.title === "string" && post.title.trim()
@@ -1699,7 +1699,7 @@ export default function BlogPostView({
   rel="noopener noreferrer"
   aria-label="Featured on AlloyPress — ${badgeToolName}">
   <img
-    src="https://alloypress.com/badges/featured.png"
+    src="https://alloypress-web.vercel.app/badges/featured.png"
     alt="Featured on AlloyPress"
     width="320"
     height="117"
@@ -1865,7 +1865,7 @@ export default function BlogPostView({
                         />
                         {showUpdatedDate
                           ? `Updated ${updatedDate}`
-                          : date}
+                          : `Published ${date}`}
                       </span>
                     ) : null}
 
