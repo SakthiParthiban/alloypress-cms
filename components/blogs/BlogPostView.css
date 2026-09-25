@@ -115,7 +115,7 @@
   object-fit: contain;
 }
 
-.post-byline > span:last-child {
+.post-byline>span:last-child {
   color: var(--brand);
   font-size: 14px;
   font-weight: 600;
@@ -474,14 +474,14 @@
 
 .post-table th,
 .post-table td {
-  padding: 14px 14px;
-  border-right: 1px solid var(--line);
-  border-bottom: 1px solid var(--line);
+  padding: 14px 16px;
+  border-right: 1px solid var(--border);
+  border-bottom: 1px solid var(--border);
+  vertical-align: middle;
   text-align: left;
-  vertical-align: top;
-  min-width: 0;
   overflow-wrap: break-word;
   word-break: normal;
+  color: var(--text-secondary);
 }
 
 .post-table th:first-child,
@@ -1087,8 +1087,7 @@
   cursor: pointer;
 
   font:
-    500 18px/1
-    var(--font-ui, "Sora", sans-serif);
+    500 18px/1 var(--font-ui, "Sora", sans-serif);
 
   transition:
     border-color .18s ease,
@@ -1116,8 +1115,7 @@
   color: var(--text-secondary);
 
   font:
-    400 var(--text-sm, 14px)/1.7
-    var(--font-body, "Lora", serif);
+    400 var(--text-sm, 14px)/1.7 var(--font-body, "Lora", serif);
 }
 
 .ai-answer strong {
@@ -1128,8 +1126,7 @@
   color: var(--brand);
 
   font:
-    700 var(--text-xs, 12px)/1.2
-    var(--font-mono, "DM Mono", monospace);
+    700 var(--text-xs, 12px)/1.2 var(--font-mono, "DM Mono", monospace);
 
   letter-spacing: .08em;
   text-transform: uppercase;
@@ -1422,8 +1419,8 @@
 
 .post-table {
   width: 100%;
-  min-width: 640px;
-  table-layout: fixed;
+  min-width: 760px;
+  table-layout: auto;
   border-collapse: separate;
   border-spacing: 0;
   color: var(--text-secondary);
@@ -1434,19 +1431,17 @@
 
 .post-table col:first-child,
 .post-table .table-label-col {
-  width: 30%;
+  width: auto;
 }
 
-.post-table th,
-.post-table td {
-  padding: 12px 14px;
-  border-right: 1px solid var(--border);
-  border-bottom: 1px solid var(--border);
-  vertical-align: middle;
-  text-align: left;
-  overflow-wrap: anywhere;
-  word-break: normal;
-  color: var(--text-secondary);
+.post-table th:first-child,
+.post-table td:first-child,
+.post-table .table-label-cell {
+  width: 180px;
+  min-width: 180px;
+  color: var(--text-primary);
+  font-family: var(--font-ui);
+  font-weight: 700;
 }
 
 .post-table th:first-child,
@@ -2163,7 +2158,7 @@ html[data-theme="dark"] .post-table .table-head {
   }
 
   .single-post .related {
-    padding-bottom: 128px;
+    padding-bottom: 12px;
   }
 }
 
@@ -2211,7 +2206,7 @@ html[data-theme="dark"] .post-table .table-head {
   }
 
   .single-post .related {
-    padding-bottom: 122px;
+    padding-bottom: 12px;
   }
 }
 
@@ -3297,6 +3292,7 @@ html[data-theme="dark"] .post-table .table-head {
     transform: translateY(-50%) translateX(-3px);
   }
 }
+
 /* ============================================================================
    ALLOYPRESS — FINAL EDITORIAL TYPOGRAPHY & UX PASS
    Scope: single blog post only.
@@ -3306,8 +3302,8 @@ html[data-theme="dark"] .post-table .table-head {
 .single-post {
   /* Editorial system: compact sans headings + highly readable sans body. */
   --blog-heading-font: "Inter", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
---blog-body-font: "Inter", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
---blog-mono-font: "Inter", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  --blog-body-font: "Inter", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  --blog-mono-font: "Inter", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
   --blog-content-width: 720px;
   --blog-reading-size: 18px;
   --blog-reading-leading: 1.78;
@@ -3460,7 +3456,7 @@ html[data-theme="dark"] .post-table .table-head {
   letter-spacing: -.003em;
 }
 
-.single-post .post-content .post-p + .post-p {
+.single-post .post-content .post-p+.post-p {
   margin-top: 0;
 }
 
@@ -3700,6 +3696,7 @@ html[data-theme="dark"] .post-table .table-head {
 /* Explicitly keep the old desktop sidebar AI card and mobile navigation card
    out of desktop rendering. */
 @media (min-width: 821px) {
+
   .single-post .article-sidebar .ai-tools-card,
   .single-post .article-sidebar .mobile-toc-card {
     display: none !important;
@@ -3882,6 +3879,7 @@ html[data-theme="dark"] .single-post .ai-panel {
 }
 
 @media (prefers-reduced-motion: reduce) {
+
   .single-post .desktop-ai-fab,
   .single-post .ai-panel,
   .single-post * {
@@ -4213,7 +4211,7 @@ html[data-theme="dark"] .single-post .ai-panel {
     color: var(--brand);
   }
 
-  .single-post .ai-answer > p {
+  .single-post .ai-answer>p {
     margin: 0;
 
     font-family: var(--blog-body-font);
@@ -4274,11 +4272,9 @@ html[data-theme="dark"] .single-post .ai-panel {
   }
 
   .single-post .ai-suggestion:hover {
-    border-color: color-mix(
-      in srgb,
-      var(--brand) 45%,
-      var(--border)
-    );
+    border-color: color-mix(in srgb,
+        var(--brand) 45%,
+        var(--border));
 
     background: var(--brand-soft);
     color: var(--text-primary);
@@ -4429,7 +4425,7 @@ html[data-theme="dark"] .single-post .ai-panel {
     padding: 14px;
   }
 
-  .single-post .ai-answer > p {
+  .single-post .ai-answer>p {
     font-size: 14px;
     line-height: 1.62;
   }
@@ -4698,7 +4694,7 @@ html[data-theme="dark"] .single-post .ai-panel {
     font-weight: 700 !important;
   }
 
-  .single-post .ai-answer > p {
+  .single-post .ai-answer>p {
     margin: 0 !important;
 
     font-family: var(--blog-body-font) !important;
@@ -5034,10 +5030,9 @@ html[data-theme="dark"] .single-post .ai-panel {
 
   color: var(--ink);
 
-  font: 800 clamp(38px, 4.2vw, 56px)/1.05
-    var(--blog-heading-font, var(--font-ui));
+  font: 800 clamp(38px, 4.2vw, 56px)/1.05 var(--blog-heading-font, var(--font-ui));
 
-  letter-spacing: -.055em;
+  letter-spacing: 0;
   text-wrap: balance;
 }
 
@@ -5047,8 +5042,7 @@ html[data-theme="dark"] .single-post .ai-panel {
 
   color: var(--muted);
 
-  font: 400 18px/1.68
-    var(--blog-body-font, var(--font-body));
+  font: 400 18px/1.68 var(--blog-body-font, var(--font-body));
 
   text-wrap: pretty;
 }
@@ -5071,8 +5065,7 @@ html[data-theme="dark"] .single-post .ai-panel {
   color: var(--green);
   text-decoration: none;
 
-  font: 700 13px/1.2
-    var(--blog-body-font, var(--font-body));
+  font: 700 13px/1.2 var(--blog-body-font, var(--font-body));
 }
 
 .single-post .post-author-link:hover {
@@ -5086,8 +5079,7 @@ html[data-theme="dark"] .single-post .ai-panel {
 
   color: var(--text-secondary);
 
-  font: 500 13px/1.3
-    var(--blog-body-font, var(--font-body));
+  font: 500 13px/1.3 var(--blog-body-font, var(--font-body));
 }
 
 .single-post .post-meta-item svg {
@@ -5177,7 +5169,7 @@ html[data-theme="dark"] .single-post .ai-panel {
     max-width: 100%;
     font-size: clamp(34px, 9vw, 48px);
     line-height: 1.04;
-    letter-spacing: -.045em;
+    letter-spacing: 0;
   }
 
   .single-post .post-excerpt {
@@ -5322,9 +5314,7 @@ html[data-theme="dark"] .single-post .ai-panel {
     opacity: 0 !important;
     visibility: hidden !important;
     pointer-events: none !important;
-    transform: translateY(
-      calc(100% + 24px)
-    ) !important;
+    transform: translateY(calc(100% + 24px)) !important;
   }
 
   .single-post .article-sidebar {
@@ -5350,10 +5340,10 @@ html[data-theme="dark"] .single-post .ai-panel {
   gap: 9px;
   min-height: 52px;
   padding: 8px 9px;
-   border: 1px solid rgba(0, 216, 74, .55);
+  border: 1px solid rgba(0, 216, 74, .55);
   background: rgba(0, 216, 74, .06);
   box-shadow: 0 0 0 1px rgba(0, 216, 74, .06),
-              0 6px 18px rgba(0, 216, 74, .06);
+    0 6px 18px rgba(0, 216, 74, .06);
   border-radius: 10px;
   background: var(--surface);
 }
@@ -5454,5 +5444,455 @@ html[data-theme="dark"] .single-post .ai-panel {
 @media (max-width: 820px) {
   .single-post .article-sidebar .alloypress-badge-card {
     display: none !important;
+  }
+}
+
+
+
+.post-html-content {
+  width: 100%;
+  max-width: 100%;
+  margin: 1.5rem 0;
+  overflow-x: auto;
+}
+
+.post-html-content h1,
+.post-html-content h2,
+.post-html-content h3,
+.post-html-content h4,
+.post-html-content h5,
+.post-html-content h6 {
+  margin-top: 2rem;
+  margin-bottom: 0.75rem;
+}
+
+.post-html-content p {
+  margin: 0 0 1rem;
+  line-height: 1.8;
+}
+
+.post-html-content ul,
+.post-html-content ol {
+  margin: 1rem 0;
+  padding-left: 1.5rem;
+}
+
+.post-html-content table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 1.5rem 0;
+}
+
+.post-html-content th,
+.post-html-content td {
+  padding: 0.75rem;
+  border: 1px solid #dfe5e2;
+  text-align: left;
+  vertical-align: top;
+}
+
+.post-html-content th {
+  font-weight: 700;
+}
+
+.post-html-content img {
+  max-width: 100%;
+  height: auto;
+}
+
+.post-html-content a {
+  text-decoration: underline;
+}
+
+
+
+/* ==========================================================================
+   ARTICLE TABLES
+   Unified light/dark theme styling for both:
+   - Native Lexical/Payload tables (.post-table)
+   - Migrated HTML tables (.post-html-content table)
+   ========================================================================== */
+
+.post-table,
+.post-html-content table {
+  width: max-content;
+  min-width: 900px;
+  border-collapse: separate;
+  border-spacing: 0;
+  table-layout: auto;
+
+  background: var(--surface-elevated);
+  color: var(--text-secondary);
+
+  font-family: var(--font-body);
+  font-size: var(--text-md);
+  line-height: 1.6;
+
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  overflow: hidden;
+}
+
+/* --------------------------------------------------------------------------
+   Header
+   -------------------------------------------------------------------------- */
+
+.post-table th,
+.post-html-content table th {
+  padding: 15px 16px;
+
+  background: var(--brand-soft);
+  color: var(--brand);
+
+  font-family: var(--font-ui);
+  font-weight: 750;
+  line-height: 1.4;
+
+  text-align: left;
+  vertical-align: middle;
+
+  border-right: 1px solid var(--border);
+  border-bottom: 1px solid var(--border);
+}
+
+/* --------------------------------------------------------------------------
+   Body cells
+   -------------------------------------------------------------------------- */
+
+.post-table td,
+.post-html-content table td {
+  padding: 16px;
+
+  background: var(--surface-elevated);
+  color: var(--text-secondary);
+
+  font-family: var(--font-body);
+  font-weight: 400;
+
+  text-align: left;
+  vertical-align: middle;
+
+  border-right: 1px solid var(--border);
+  border-bottom: 1px solid var(--border);
+
+  overflow-wrap: break-word;
+  word-break: normal;
+}
+
+/* --------------------------------------------------------------------------
+   First column
+   -------------------------------------------------------------------------- */
+
+.post-table th:first-child,
+.post-table td:first-child,
+.post-html-content table th:first-child,
+.post-html-content table td:first-child {
+  width: 180px;
+  min-width: 180px;
+
+  color: var(--text-primary);
+  font-family: var(--font-ui);
+}
+
+/* First-column body values slightly stronger */
+.post-table td:first-child,
+.post-html-content table td:first-child {
+  font-weight: 650;
+}
+
+/* Header first column stays AlloyPress green */
+.post-table th:first-child,
+.post-html-content table th:first-child {
+  color: var(--brand);
+  font-weight: 750;
+}
+
+/* --------------------------------------------------------------------------
+   Header row / green heading
+   -------------------------------------------------------------------------- */
+
+.post-table .table-head {
+  background: var(--brand-soft);
+  color: var(--brand);
+}
+
+.post-table .table-head,
+.post-table .table-head * {
+  color: var(--brand);
+}
+
+/* --------------------------------------------------------------------------
+   Row hover
+   -------------------------------------------------------------------------- */
+
+.post-table tbody tr:hover td,
+.post-html-content table tbody tr:hover td {
+  background: var(--surface-2);
+}
+
+/* --------------------------------------------------------------------------
+   Last row / last column borders
+   -------------------------------------------------------------------------- */
+
+.post-table tr:last-child td,
+.post-table tr:last-child th,
+.post-html-content table tr:last-child td,
+.post-html-content table tr:last-child th {
+  border-bottom: 0;
+}
+
+.post-table th:last-child,
+.post-table td:last-child,
+.post-html-content table th:last-child,
+.post-html-content table td:last-child {
+  border-right: 0;
+}
+
+/* --------------------------------------------------------------------------
+   HTML migrated table wrapper
+   -------------------------------------------------------------------------- */
+
+.post-html-content {
+  width: 100%;
+  max-width: 100%;
+  margin: 34px 0;
+
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+/*
+ * Remove double border because the table itself already owns the border.
+ */
+.post-html-content table {
+  margin: 0;
+}
+
+/* --------------------------------------------------------------------------
+   Dark theme
+   -------------------------------------------------------------------------- */
+
+html[data-theme="dark"] .post-table,
+html[data-theme="dark"] .post-html-content table {
+  background: var(--surface-elevated);
+  color: var(--text-secondary);
+}
+
+html[data-theme="dark"] .post-table th,
+html[data-theme="dark"] .post-html-content table th {
+  background: var(--brand-soft);
+  color: var(--brand);
+}
+
+html[data-theme="dark"] .post-table td,
+html[data-theme="dark"] .post-html-content table td {
+  background: var(--surface-elevated);
+  color: var(--text-secondary);
+}
+
+html[data-theme="dark"] .post-table tbody tr:hover td,
+html[data-theme="dark"] .post-html-content table tbody tr:hover td {
+  background: var(--surface-2);
+}
+
+/* --------------------------------------------------------------------------
+   Light theme
+   -------------------------------------------------------------------------- */
+
+html[data-theme="light"] .post-table,
+html[data-theme="light"] .post-html-content table {
+  background: var(--surface-elevated);
+  color: var(--text-secondary);
+}
+
+html[data-theme="light"] .post-table th,
+html[data-theme="light"] .post-html-content table th {
+  background: var(--brand-soft);
+  color: var(--brand);
+}
+
+html[data-theme="light"] .post-table td,
+html[data-theme="light"] .post-html-content table td {
+  background: var(--surface-elevated);
+  color: var(--text-secondary);
+}
+
+html[data-theme="light"] .post-table tbody tr:hover td,
+html[data-theme="light"] .post-html-content table tbody tr:hover td {
+  background: var(--surface-2);
+}
+
+/* --------------------------------------------------------------------------
+   Mobile
+   -------------------------------------------------------------------------- */
+
+@media (max-width: 820px) {
+
+  .table-scroll,
+  .post-html-content {
+    width: 100%;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .post-table,
+  .post-html-content table {
+    min-width: 620px;
+    font-size: var(--text-sm);
+  }
+
+  .post-table th,
+  .post-html-content table th {
+    padding: 13px 14px;
+  }
+
+  .post-table td,
+  .post-html-content table td {
+    padding: 14px;
+  }
+}
+
+
+
+
+
+.alloypress-badge-copy-box {
+  display: flex !important;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  padding: 4px 0 !important;
+  border: none !important;
+  border-radius: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+  box-sizing: border-box;
+  transform: translateX(-6px);
+}
+
+.alloypress-badge-preview {
+  flex: 1;
+  min-width: 0;
+  overflow: visible !important;
+  padding: 0 !important;
+  border: none !important;
+  border-radius: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+}
+
+.alloypress-badge-image {
+  display: block;
+  width: 100%;
+  height: auto;
+  max-width: none;
+  min-width: 160px;
+  object-fit: contain;
+}
+
+.alloypress-badge-copy-button {
+  flex: 0 0 30px;
+  width: 30px;
+  height: 30px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  border: 1px solid rgba(0, 216, 74, 0.45);
+  border-radius: 8px;
+  background: transparent;
+  color: var(--primary, #00d84a);
+  cursor: pointer;
+  transition:
+    background-color 0.2s ease,
+    border-color 0.2s ease,
+    transform 0.2s ease;
+}
+
+.alloypress-badge-copy-button:hover {
+  background: rgba(0, 216, 74, 0.1);
+  border-color: var(--primary, #00d84a);
+}
+
+.alloypress-badge-copy-button:active {
+  transform: scale(0.94);
+}
+
+.alloypress-badge-copy-button svg {
+  width: 17px;
+  height: 17px;
+  stroke-width: 2;
+}
+
+.alloypress-badge-text {
+  margin: 10px 0 0;
+  font-size: 12px;
+  line-height: 1.55;
+}
+
+
+
+
+.mobile-alloypress-badge {
+  display: none;
+}
+
+@media (max-width: 820px) {
+  .mobile-alloypress-badge {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 100%;
+    margin: 24px 0 28px;
+    padding-top: 20px;
+    border-top: 1px solid rgba(0, 216, 74, 0.2);
+  }
+
+  .mobile-alloypress-badge .side-label {
+    width: 100%;
+    margin-bottom: 12px;
+    text-align: center;
+  }
+
+  .mobile-alloypress-badge .alloypress-badge-copy-box {
+    width: 100%;
+    max-width: 330px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 0;
+    border: none;
+    background: transparent;
+  }
+
+  .mobile-alloypress-badge .alloypress-badge-preview {
+    flex: 1;
+    min-width: 0;
+    overflow: visible;
+  }
+
+  .mobile-alloypress-badge .alloypress-badge-image {
+    display: block;
+    width: 100%;
+    height: auto;
+    max-width: 200px;
+    margin: 0 auto;
+  }
+
+  .mobile-alloypress-badge .alloypress-badge-copy-button {
+    flex: 0 0 38px;
+    width: 38px;
+    height: 38px;
+    transform: translateX(-30px);
+  }
+
+  .mobile-alloypress-badge .alloypress-badge-text {
+    width: 100%;
+    max-width: 330px;
+    margin: 10px auto 0;
+    text-align: center;
+    font-size: 12px;
+    line-height: 1.55;
   }
 }

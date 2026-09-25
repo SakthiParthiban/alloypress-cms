@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
 
+
 const navItems = [
   { label: "Home", href: "/" },
   { label: "Blogs", href: "/blogs" },
@@ -174,12 +175,14 @@ export default function Navbar() {
         {/* Logo */}
         <Link href="/" className="brand-logo">
           <Image
-            src="/ap-logo.png"
+            src="/ap-icon.png"
             alt="AlloyPress"
-            width={150}
-            height={40}
+            width={34}
+            height={34}
             priority
           />
+
+          <span className="brand-name">AlloyPress</span>
         </Link>
 
         {/* Desktop Navigation */}

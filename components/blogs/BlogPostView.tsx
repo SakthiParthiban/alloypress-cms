@@ -349,6 +349,47 @@ function InlineText({ node }: { node: any }) {
 /* Main Lexical renderer                                                      */
 /* -------------------------------------------------------------------------- */
 
+function isArticleHtml(code: string): boolean {
+  const html = code.trim();
+
+  if (!html) return false;
+
+  /*
+   * HTML that represents actual article content.
+   * Tables are the strongest signal because migrated
+   * WordPress articles commonly store comparison tables as HTML.
+   */
+  const articleTags = [
+    /<table\b/i,
+    /<h[1-6]\b/i,
+    /<p\b/i,
+    /<ul\b/i,
+    /<ol\b/i,
+    /<blockquote\b/i,
+    /<figure\b/i,
+    /<section\b/i,
+    /<article\b/i,
+  ];
+
+  const matches = articleTags.filter((pattern) =>
+    pattern.test(html)
+  ).length;
+
+  return matches >= 2 || /<table\b/i.test(html);
+}
+
+function cleanArticleHtml(code: string): string {
+  return code
+    // Never allow executable JavaScript from migrated article HTML.
+    .replace(/<script\b[^>]*>[\s\S]*?<\/script>/gi, "")
+    .replace(/<iframe\b[^>]*>[\s\S]*?<\/iframe>/gi, "")
+    .replace(/<object\b[^>]*>[\s\S]*?<\/object>/gi, "")
+    .replace(/<embed\b[^>]*>/gi, "")
+    .replace(/\son[a-z]+\s*=\s*(['"])[\s\S]*?\1/gi, "")
+    .replace(/\son[a-z]+\s*=\s*[^\s>]+/gi, "")
+    .replace(/javascript\s*:/gi, "");
+}
+
 function isInlineArticleTocList(node: any): boolean {
   if (!node || node.type !== "list") return false;
 
@@ -675,6 +716,24 @@ function RenderNode({
                 ? "ts"
                 : language;
 
+    /*
+     * Migrated article HTML must render as normal article content,
+     * not inside an iframe/code-preview container.
+     */
+    if (
+      normalizedLanguage === "html" &&
+      isArticleHtml(code)
+    ) {
+      return (
+        <div
+          className="post-html-content"
+          dangerouslySetInnerHTML={{
+            __html: cleanArticleHtml(code),
+          }}
+        />
+      );
+    }
+
     const isExecutable =
       normalizedLanguage === "html" ||
       normalizedLanguage === "css" ||
@@ -918,6 +977,21 @@ html, body {
         language === "html5" ||
         language === "htmlmixed"
       ) {
+        if (isArticleHtml(code)) {
+          return (
+            <div
+              className="post-html-content"
+              dangerouslySetInnerHTML={{
+                __html: cleanArticleHtml(code),
+              }}
+            />
+          );
+        }
+
+        /*
+         * Genuine HTML examples can still use the existing
+         * live-preview behaviour.
+         */
         return (
           <div className="post-live-code">
             <iframe
@@ -1621,13 +1695,15 @@ export default function BlogPostView({
       : "This tool";
 
   const badgeEmbedCode = `<a href="${badgeArticleUrl}"
-   target="_blank"
-   rel="noopener noreferrer"
-   aria-label="Featured on AlloyPress — ${badgeToolName}">
-  <img src="https://alloypress.com/badges/featured.svg"
-       alt="Featured on AlloyPress"
-       width="160"
-       height="44">
+  target="_blank"
+  rel="noopener noreferrer"
+  aria-label="Featured on AlloyPress — ${badgeToolName}">
+  <img
+    src="https://alloypress.com/badges/featured.png"
+    alt="Featured on AlloyPress"
+    width="320"
+    height="117"
+  />
 </a>`;
 
   async function copyBadgeEmbedCode() {
@@ -1979,6 +2055,40 @@ export default function BlogPostView({
                       </span>
                     ))}
                 </div>
+
+                {/* Mobile AlloyPress Badge */}
+                <div className="mobile-alloypress-badge">
+                  <div className="side-label">Featured badge</div>
+
+                  <div className="alloypress-badge-copy-box">
+                    <div className="alloypress-badge-preview">
+                      <img
+                        src="/badges/featured.png"
+                        alt="Featured on AlloyPress"
+                        width={320}
+                        height={117}
+                        className="alloypress-badge-image"
+                      />
+                    </div>
+
+                    <button
+                      type="button"
+                      className="alloypress-badge-copy-button"
+                      onClick={copyBadgeEmbedCode}
+                      aria-label={
+                        badgeCopied ? "Badge code copied" : "Copy badge code"
+                      }
+                      title={badgeCopied ? "Copied!" : "Copy badge code"}
+                    >
+                      {badgeCopied ? <Check /> : <Copy />}
+                    </button>
+                  </div>
+
+                  <p className="alloypress-badge-text">
+                    Copy this badge and add it to your website to show that this tool
+                    is featured on AlloyPress.
+                  </p>
+                </div>
               </div>
             </article>
 
@@ -2025,53 +2135,38 @@ export default function BlogPostView({
               </div>
 
               <div className="sidebar-card alloypress-badge-card">
-                <div className="side-label">AlloyPress badge</div>
+                <div className="side-label">Featured badge</div>
 
-                <div className="alloypress-badge-preview">
-                  <div className="alloypress-badge-icon">
-                    <Image
-                      src="/ap-icon.png"
-                      alt="AlloyPress"
-                      width={32}
-                      height={32}
+                <div className="alloypress-badge-copy-box">
+                  <div className="alloypress-badge-preview">
+                    <img
+                      src="/badges/featured.png"
+                      alt="Featured on AlloyPress"
+                      width={320}
+                      height={117}
+                      className="alloypress-badge-image"
                     />
                   </div>
 
-                  <div className="alloypress-badge-copy">
-                    <span className="alloypress-badge-label">
-                      Featured on
-                    </span>
-
-                    <strong>AlloyPress</strong>
-                  </div>
-
-                  <div className="alloypress-badge-status" aria-hidden="true">
-                    ✓
-                  </div>
+                  <button
+                    type="button"
+                    className="alloypress-badge-copy-button"
+                    onClick={copyBadgeEmbedCode}
+                    aria-label={badgeCopied ? "Badge code copied" : "Copy badge code"}
+                    title={badgeCopied ? "Copied!" : "Copy badge code"}
+                  >
+                    {badgeCopied ? (
+                      <Check aria-hidden="true" />
+                    ) : (
+                      <Copy aria-hidden="true" />
+                    )}
+                  </button>
                 </div>
 
                 <p className="alloypress-badge-text">
                   Copy this badge and add it to your website to show that
                   this tool is featured on AlloyPress.
                 </p>
-
-                <button
-                  type="button"
-                  className="alloypress-badge-button"
-                  onClick={copyBadgeEmbedCode}
-                >
-                  {badgeCopied ? (
-                    <>
-                      <Check aria-hidden="true" />
-                      Copied!
-                    </>
-                  ) : (
-                    <>
-                      <Copy aria-hidden="true" />
-                      Get badge code
-                    </>
-                  )}
-                </button>
               </div>
 
               {AI_ENABLED && (

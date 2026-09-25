@@ -186,10 +186,10 @@ export default function Footer() {
    target="_blank"
    rel="noopener noreferrer"
    aria-label="Featured on AlloyPress">
-  <img src="https://alloypress.com/ap-icon.png"
-       alt="Featured on AlloyPress"
-       width="44"
-       height="44">
+ <img src="https://alloypress.com/badges/featured.png"
+     alt="Featured on AlloyPress"
+     width="320"
+     height="117">
 </a>`;
 
   async function copyFooterBadgeCode() {
@@ -216,11 +216,15 @@ export default function Footer() {
             <div className="footer-brand">
               <Link href="/" className="footer-logo">
                 <Image
-                  src="/ap-logo.png"
+                  src="/ap-icon.png"
                   alt="AlloyPress"
-                  width={150}
-                  height={40}
+                  width={34}
+                  height={34}
                 />
+
+                <span className="footer-brand-name">
+                  AlloyPress
+                </span>
               </Link>
 
               <p>
@@ -264,26 +268,13 @@ export default function Footer() {
                     className="footer-featured-card"
                     aria-label="Featured on AlloyPress"
                   >
-                    <span className="footer-featured-icon">
-                      <Image
-                        src="/ap-icon.png"
-                        alt=""
-                        width={28}
-                        height={28}
-                      />
-                    </span>
-
-                    <span className="footer-featured-text">
-                      <span>Featured on</span>
-                      <strong>AlloyPress</strong>
-                    </span>
-
-                    <span
-                      className="footer-featured-check"
-                      aria-hidden="true"
-                    >
-                      ✓
-                    </span>
+                    <img
+                      src="/badges/featured.png"
+                      alt="Featured on AlloyPress"
+                      width={320}
+                      height={117}
+                      className="footer-featured-image"
+                    />
                   </a>
 
                   <button
@@ -291,15 +282,9 @@ export default function Footer() {
                     className="footer-featured-copy"
                     onClick={copyFooterBadgeCode}
                     aria-label={
-                      badgeCopied
-                        ? "Badge code copied"
-                        : "Copy badge code"
+                      badgeCopied ? "Badge code copied" : "Copy badge code"
                     }
-                    title={
-                      badgeCopied
-                        ? "Badge code copied"
-                        : "Copy badge code"
-                    }
+                    title={badgeCopied ? "Badge code copied" : "Copy badge code"}
                   >
                     {badgeCopied ? (
                       <Check aria-hidden="true" />

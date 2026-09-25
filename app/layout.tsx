@@ -27,6 +27,13 @@ import ThemeScript from "@/components/ThemeScript";
 // ------------------------------------------------------------
 import { SITE_URL } from "@/lib/seo/constants";
 import { createOrganizationSchema } from "@/lib/seo/schema";
+import { Manrope } from "next/font/google";
+
+const manrope = Manrope({
+  subsets: ["latin"],
+  variable: "--font-manrope",
+  display: "swap",
+});
 
 const inter = Inter({
   variable: "--font-inter",
