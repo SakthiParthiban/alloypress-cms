@@ -1,1886 +1,1919 @@
 {
   "success": true,
-  "count": 120,
+  "count": 141,
   "redirects": [
     {
-      "id": 6,
+      "id": "147",
       "sources": [
         {
-          "pattern": "articles",
-          "comparison": "exact",
-          "ignore": ""
+          "ignore": "",
+          "pattern": "blogs/best-ai-visibility-tools-see-where-you-rank-in-2026",
+          "comparison": "exact"
         }
       ],
-      "url_to": "https://staging.alloypress.com/",
-      "header_code": 301,
-      "status": "active",
-      "created": "2021-09-09 15:32:43",
-      "updated": "2023-03-30 22:00:30"
+      "url_to": "https://alloypress.com/blogs/best-ai-visibility-tools",
+      "header_code": "301",
+      "status": "active"
     },
     {
-      "id": 18,
+      "id": "146",
       "sources": [
         {
-          "pattern": "best-way-to-monetize-youtube-channel",
-          "comparison": "exact",
-          "ignore": ""
+          "ignore": "",
+          "pattern": "reviews/onepage-ai-review-the-good-the-bad-what-you-should-know",
+          "comparison": "exact"
         }
       ],
-      "url_to": "https://staging.alloypress.com/social-media/best-way-to-monetize-youtube-channel-707",
-      "header_code": 301,
-      "status": "active",
-      "created": "2022-01-17 13:56:19",
-      "updated": "2023-03-30 22:01:38"
+      "url_to": "https://alloypress.com/reviews/onepage-ai",
+      "header_code": "301",
+      "status": "active"
     },
     {
-      "id": 19,
+      "id": "145",
       "sources": [
         {
-          "pattern": "importance-of-a-website-in-business/2614",
-          "comparison": "exact",
-          "ignore": ""
-        }
-      ],
-      "url_to": "https://staging.alloypress.com/hosting/importance-of-a-website-in-business-2614",
-      "header_code": 301,
-      "status": "active",
-      "created": "2022-01-18 08:14:30",
-      "updated": "2023-03-30 22:04:12"
-    },
-    {
-      "id": 20,
-      "sources": [
-        {
-          "pattern": "tag/make-money-online",
-          "comparison": "exact",
-          "ignore": ""
-        }
-      ],
-      "url_to": "https://staging.alloypress.com/blog/how-to-make-money-online-best-ways-4130",
-      "header_code": 301,
-      "status": "active",
-      "created": "2022-01-30 09:26:45",
-      "updated": "2023-03-30 22:03:40"
-    },
-    {
-      "id": 21,
-      "sources": [
-        {
-          "pattern": "tag/instagram-business",
-          "comparison": "exact",
-          "ignore": ""
-        }
-      ],
-      "url_to": "https://staging.alloypress.com",
-      "header_code": 301,
-      "status": "active",
-      "created": "2022-04-18 07:14:24",
-      "updated": "2023-03-30 22:03:07"
-    },
-    {
-      "id": 22,
-      "sources": [
-        {
-          "pattern": "others/fivb-volleyball-championship-3124",
-          "comparison": "exact",
-          "ignore": ""
-        }
-      ],
-      "url_to": "https://staging.alloypress.com/sports/fivb-volleyball-championship-3124",
-      "header_code": 301,
-      "status": "active",
-      "created": "2022-07-19 07:36:11",
-      "updated": "2022-07-19 07:36:11"
-    },
-    {
-      "id": 23,
-      "sources": [
-        {
-          "pattern": "cryptocurrency",
-          "comparison": "exact",
-          "ignore": ""
-        }
-      ],
-      "url_to": "https://staging.alloypress.com/technology/cryptocurrency",
-      "header_code": 301,
-      "status": "active",
-      "created": "2022-07-19 08:57:42",
-      "updated": "2022-07-19 08:57:42"
-    },
-    {
-      "id": 24,
-      "sources": [
-        {
-          "pattern": "homepage-big-slide",
-          "comparison": "exact",
-          "ignore": ""
-        }
-      ],
-      "url_to": "https://staging.alloypress.com/",
-      "header_code": 301,
-      "status": "active",
-      "created": "2022-12-29 15:24:21",
-      "updated": "2022-12-29 15:24:21"
-    },
-    {
-      "id": 26,
-      "sources": [
-        {
-          "pattern": "home-2",
-          "comparison": "exact",
-          "ignore": ""
-        }
-      ],
-      "url_to": "https://staging.alloypress.com/",
-      "header_code": 301,
-      "status": "active",
-      "created": "2022-12-29 15:27:29",
-      "updated": "2022-12-29 15:27:29"
-    },
-    {
-      "id": 27,
-      "sources": [
-        {
-          "pattern": "sports/asia-cup-2022-prediction-3551",
-          "comparison": "exact",
-          "ignore": ""
-        }
-      ],
-      "url_to": "https://staging.alloypress.com/sports/types-of-cricket-in-the-world-3075",
-      "header_code": 301,
-      "status": "active",
-      "created": "2023-02-28 12:53:36",
-      "updated": "2023-02-28 12:53:36"
-    },
-    {
-      "id": 28,
-      "sources": [
-        {
-          "pattern": "technology/cryptocurrency/12-rich-facts-about-crypto-market-1256",
-          "comparison": "exact",
-          "ignore": ""
+          "ignore": "",
+          "pattern": "101648-2",
+          "comparison": "exact"
         },
         {
-          "pattern": "technology/cryptocurrency/7-important-dogecoin-news-for-all-1691",
-          "comparison": "exact",
-          "ignore": ""
-        },
-        {
-          "pattern": "technology/cryptocurrency/top-10-cryptocurrency-detailed-overview-1812",
-          "comparison": "exact",
-          "ignore": ""
-        },
-        {
-          "pattern": "technology/cryptocurrency/apecoin-price-prediction-2744",
-          "comparison": "exact",
-          "ignore": ""
-        },
-        {
-          "pattern": "technology/cryptocurrency/will-dogecoin-have-a-price-spike-like-bitcoin-2824",
-          "comparison": "exact",
-          "ignore": ""
-        },
-        {
-          "pattern": "technology/cryptocurrency/what-is-web30-crypto-3126",
-          "comparison": "exact",
-          "ignore": ""
-        },
-        {
-          "pattern": "technology/cryptocurrency/kucoin-review-by-alloy-press-3260",
-          "comparison": "exact",
-          "ignore": ""
-        },
-        {
-          "pattern": "technology/cryptocurrency/new-best-crypto-to-invest-3264",
-          "comparison": "exact",
-          "ignore": ""
-        },
-        {
-          "pattern": "technology/cryptocurrency/crypto-scams-explained-3304",
-          "comparison": "exact",
-          "ignore": ""
-        },
-        {
-          "pattern": "technology/cryptocurrency/the-aptos-crypto-explained-3310",
-          "comparison": "exact",
-          "ignore": ""
-        },
-        {
-          "pattern": "technology/how-to-invest-in-web3-3135",
-          "comparison": "exact",
-          "ignore": ""
-        }
-      ],
-      "url_to": "https://staging.alloypress.com",
-      "header_code": 301,
-      "status": "active",
-      "created": "2023-03-01 10:21:05",
-      "updated": "2023-03-30 21:54:33"
-    },
-    {
-      "id": 29,
-      "sources": [
-        {
-          "pattern": "make-money-online-articles",
-          "comparison": "exact",
-          "ignore": ""
-        }
-      ],
-      "url_to": "https://staging.alloypress.com/blog/how-to-make-money-online-best-ways-4130",
-      "header_code": 301,
-      "status": "active",
-      "created": "2023-03-04 12:49:35",
-      "updated": "2023-03-04 12:49:35"
-    },
-    {
-      "id": 30,
-      "sources": [
-        {
-          "pattern": "technology/cryptocurrency",
-          "comparison": "exact",
-          "ignore": ""
-        }
-      ],
-      "url_to": "https://staging.alloypress.com/",
-      "header_code": 301,
-      "status": "active",
-      "created": "2023-03-04 15:26:23",
-      "updated": "2023-03-04 15:26:23"
-    },
-    {
-      "id": 32,
-      "sources": [
-        {
-          "pattern": "best-way-to-monetize-youtube-channel/",
-          "comparison": "exact",
-          "ignore": ""
-        }
-      ],
-      "url_to": "https://staging.alloypress.com/social-media/best-way-to-monetize-youtube-channel-707",
-      "header_code": 301,
-      "status": "active",
-      "created": "2023-03-29 23:24:35",
-      "updated": "2023-03-29 23:24:35"
-    },
-    {
-      "id": 33,
-      "sources": [
-        {
-          "pattern": "write-for-us",
-          "comparison": "exact",
-          "ignore": ""
-        }
-      ],
-      "url_to": "https://staging.alloypress.com/contribute",
-      "header_code": 301,
-      "status": "active",
-      "created": "2023-08-12 00:04:19",
-      "updated": "2023-08-12 00:04:19"
-    },
-    {
-      "id": 34,
-      "sources": [
-        {
-          "pattern": "skin-care/best-natural-skincare-products-5301",
-          "comparison": "exact",
-          "ignore": ""
-        }
-      ],
-      "url_to": "https://staging.alloypress.com/skin-care/best-natural-skincare-products",
-      "header_code": 301,
-      "status": "active",
-      "created": "2023-08-18 16:38:18",
-      "updated": "2023-08-18 16:38:18"
-    },
-    {
-      "id": 35,
-      "sources": [
-        {
-          "pattern": "blog/best-low-cost-home-improvement-ideas-5243",
-          "comparison": "exact",
-          "ignore": ""
-        }
-      ],
-      "url_to": "https://staging.alloypress.com/blog/best-low-cost-home-improvement-ideas",
-      "header_code": 301,
-      "status": "active",
-      "created": "2023-08-18 16:38:55",
-      "updated": "2023-08-18 16:38:55"
-    },
-    {
-      "id": 36,
-      "sources": [
-        {
-          "pattern": "wp/wordpress-themes-list-6306",
-          "comparison": "exact",
-          "ignore": ""
-        }
-      ],
-      "url_to": "https://staging.alloypress.com/wp/wordpress-themes-list",
-      "header_code": 301,
-      "status": "active",
-      "created": "2023-08-18 16:39:18",
-      "updated": "2023-08-18 16:39:18"
-    },
-    {
-      "id": 37,
-      "sources": [
-        {
-          "pattern": "wp/generatepress-review-4136",
-          "comparison": "exact",
-          "ignore": ""
-        }
-      ],
-      "url_to": "https://staging.alloypress.com/wp/generatepress-review",
-      "header_code": 301,
-      "status": "active",
-      "created": "2023-08-18 16:39:44",
-      "updated": "2023-08-18 16:39:44"
-    },
-    {
-      "id": 38,
-      "sources": [
-        {
-          "pattern": "hosting/liquid-web-hosting-review-5764",
-          "comparison": "exact",
-          "ignore": ""
-        }
-      ],
-      "url_to": "https://staging.alloypress.com/",
-      "header_code": 301,
-      "status": "active",
-      "created": "2023-08-18 16:40:07",
-      "updated": "2026-03-19 10:03:55"
-    },
-    {
-      "id": 39,
-      "sources": [
-        {
-          "pattern": "hosting/list-of-top-web-hosting-companies-4450",
-          "comparison": "exact",
-          "ignore": ""
-        }
-      ],
-      "url_to": "https://staging.alloypress.com",
-      "header_code": 301,
-      "status": "active",
-      "created": "2023-08-18 16:40:34",
-      "updated": "2026-03-19 10:11:37"
-    },
-    {
-      "id": 40,
-      "sources": [
-        {
-          "pattern": "marketing/real-estate-lead-generation-strategies-for-agents-5852",
-          "comparison": "exact",
-          "ignore": ""
-        }
-      ],
-      "url_to": "https://staging.alloypress.com/",
-      "header_code": 301,
-      "status": "active",
-      "created": "2023-08-18 16:40:55",
-      "updated": "2026-03-19 10:12:04"
-    },
-    {
-      "id": 41,
-      "sources": [
-        {
-          "pattern": "marketing/email-marketing-softwares-6415",
-          "comparison": "exact",
-          "ignore": ""
-        }
-      ],
-      "url_to": "https://staging.alloypress.com/",
-      "header_code": 301,
-      "status": "active",
-      "created": "2023-08-18 16:41:15",
-      "updated": "2026-03-19 10:12:45"
-    },
-    {
-      "id": 42,
-      "sources": [
-        {
-          "pattern": "social-media/social-media-marketing-companies-2733",
-          "comparison": "exact",
-          "ignore": ""
-        }
-      ],
-      "url_to": "https://staging.alloypress.com/",
-      "header_code": 301,
-      "status": "active",
-      "created": "2023-08-18 16:41:35",
-      "updated": "2026-03-19 10:13:17"
-    },
-    {
-      "id": 43,
-      "sources": [
-        {
-          "pattern": "social-media/whatsapp-update-new-features-3439",
-          "comparison": "exact",
-          "ignore": ""
-        }
-      ],
-      "url_to": "https://staging.alloypress.com/",
-      "header_code": 301,
-      "status": "active",
-      "created": "2023-08-18 16:41:53",
-      "updated": "2026-03-19 10:13:33"
-    },
-    {
-      "id": 45,
-      "sources": [
-        {
-          "pattern": "marketing/brand-reputation-management-2693",
-          "comparison": "exact",
-          "ignore": ""
-        }
-      ],
-      "url_to": "https://staging.alloypress.com/",
-      "header_code": 301,
-      "status": "active",
-      "created": "2023-08-18 16:42:32",
-      "updated": "2026-03-19 10:16:04"
-    },
-    {
-      "id": 46,
-      "sources": [
-        {
-          "pattern": "hosting/pressable-hosting-review-4177",
-          "comparison": "exact",
-          "ignore": ""
-        }
-      ],
-      "url_to": "https://staging.alloypress.com/",
-      "header_code": 301,
-      "status": "active",
-      "created": "2023-08-18 16:42:50",
-      "updated": "2026-03-19 10:26:11"
-    },
-    {
-      "id": 47,
-      "sources": [
-        {
-          "pattern": "social-media/linkedin-ads-to-improve-business-3443",
-          "comparison": "exact",
-          "ignore": ""
-        }
-      ],
-      "url_to": "https://staging.alloypress.com/",
-      "header_code": 301,
-      "status": "active",
-      "created": "2023-08-18 16:43:09",
-      "updated": "2026-03-19 10:26:27"
-    },
-    {
-      "id": 48,
-      "sources": [
-        {
-          "pattern": "social-media/importance-of-social-media-marketing-2420",
-          "comparison": "exact",
-          "ignore": ""
-        }
-      ],
-      "url_to": "https://staging.alloypress.com/",
-      "header_code": 301,
-      "status": "active",
-      "created": "2023-08-18 16:43:27",
-      "updated": "2026-03-19 10:28:23"
-    },
-    {
-      "id": 49,
-      "sources": [
-        {
-          "pattern": "marketing/digital-marketing-business-7-key-things-for-a-successful-start-2786",
-          "comparison": "exact",
-          "ignore": ""
-        }
-      ],
-      "url_to": "https://staging.alloypress.com/",
-      "header_code": 301,
-      "status": "active",
-      "created": "2023-08-18 16:43:53",
-      "updated": "2026-03-19 10:28:56"
-    },
-    {
-      "id": 50,
-      "sources": [
-        {
-          "pattern": "hosting/importance-of-a-website-in-business-2614",
-          "comparison": "exact",
-          "ignore": ""
-        }
-      ],
-      "url_to": "https://staging.alloypress.com/",
-      "header_code": 301,
-      "status": "active",
-      "created": "2023-08-18 16:44:40",
-      "updated": "2026-03-19 10:37:29"
-    },
-    {
-      "id": 51,
-      "sources": [
-        {
-          "pattern": "technology/free-email-marketing-tools-5358",
-          "comparison": "exact",
-          "ignore": ""
-        }
-      ],
-      "url_to": "https://staging.alloypress.com/technology/free-email-marketing-tools",
-      "header_code": 301,
-      "status": "active",
-      "created": "2023-08-18 16:45:01",
-      "updated": "2023-08-18 16:45:01"
-    },
-    {
-      "id": 52,
-      "sources": [
-        {
-          "pattern": "technology/artificial-intelligence-5375",
-          "comparison": "exact",
-          "ignore": ""
-        }
-      ],
-      "url_to": "https://staging.alloypress.com/technology/artificial-intelligence",
-      "header_code": 301,
-      "status": "active",
-      "created": "2023-08-18 16:45:19",
-      "updated": "2023-08-18 16:45:19"
-    },
-    {
-      "id": 53,
-      "sources": [
-        {
-          "pattern": "technology/what-is-chat-gpt-4326",
-          "comparison": "exact",
-          "ignore": ""
-        }
-      ],
-      "url_to": "https://staging.alloypress.com/technology/what-is-chat-gpt",
-      "header_code": 301,
-      "status": "active",
-      "created": "2023-08-18 16:45:39",
-      "updated": "2023-08-18 16:45:39"
-    },
-    {
-      "id": 54,
-      "sources": [
-        {
-          "pattern": "hosting/bluehost-hosting-review-849",
-          "comparison": "exact",
-          "ignore": ""
-        }
-      ],
-      "url_to": "https://staging.alloypress.com/hosting/bluehost-hosting-review",
-      "header_code": 301,
-      "status": "active",
-      "created": "2023-08-18 16:45:57",
-      "updated": "2023-08-18 16:45:57"
-    },
-    {
-      "id": 55,
-      "sources": [
-        {
-          "pattern": "success-story/walmart-success-story-3422",
-          "comparison": "exact",
-          "ignore": ""
-        }
-      ],
-      "url_to": "https://staging.alloypress.com/success-story/walmart-success-story",
-      "header_code": 301,
-      "status": "active",
-      "created": "2023-08-18 16:46:16",
-      "updated": "2023-08-18 16:46:16"
-    },
-    {
-      "id": 56,
-      "sources": [
-        {
-          "pattern": "social-media/can-you-make-money-on-youtube-7-best-ways-2093",
-          "comparison": "exact",
-          "ignore": ""
-        }
-      ],
-      "url_to": "https://staging.alloypress.com/social-media/can-you-make-money-on-youtube-7-best-ways",
-      "header_code": 301,
-      "status": "active",
-      "created": "2023-08-18 16:46:34",
-      "updated": "2023-08-18 16:46:34"
-    },
-    {
-      "id": 57,
-      "sources": [
-        {
-          "pattern": "technology/what-is-blockchain-technology-3211",
-          "comparison": "exact",
-          "ignore": ""
-        }
-      ],
-      "url_to": "https://staging.alloypress.com/technology/what-is-blockchain-technology",
-      "header_code": 301,
-      "status": "active",
-      "created": "2023-08-18 16:47:08",
-      "updated": "2023-08-18 16:47:53"
-    },
-    {
-      "id": 58,
-      "sources": [
-        {
-          "pattern": "hosting/greengeeks-vs-bluehost-2752",
-          "comparison": "exact",
-          "ignore": ""
-        }
-      ],
-      "url_to": "https://staging.alloypress.com/hosting/greengeeks-vs-bluehost",
-      "header_code": 301,
-      "status": "active",
-      "created": "2023-08-18 16:48:12",
-      "updated": "2023-08-18 16:48:12"
-    },
-    {
-      "id": 59,
-      "sources": [
-        {
-          "pattern": "technology/what-are-decentralized-applications-3236",
-          "comparison": "exact",
-          "ignore": ""
-        }
-      ],
-      "url_to": "https://staging.alloypress.com/technology/what-are-decentralized-applications",
-      "header_code": 301,
-      "status": "active",
-      "created": "2023-08-18 16:48:28",
-      "updated": "2023-08-18 16:48:28"
-    },
-    {
-      "id": 60,
-      "sources": [
-        {
-          "pattern": "technology/distributed-ledger-technologydlt-3240",
-          "comparison": "exact",
-          "ignore": ""
-        }
-      ],
-      "url_to": "https://staging.alloypress.com/technology/distributed-ledger-technologydlt",
-      "header_code": 301,
-      "status": "active",
-      "created": "2023-08-18 16:49:07",
-      "updated": "2023-08-18 16:49:07"
-    },
-    {
-      "id": 61,
-      "sources": [
-        {
-          "pattern": "marketing/use-chatbots-for-customer-service-to-build-your-brand-reputation-3026",
-          "comparison": "exact",
-          "ignore": ""
-        }
-      ],
-      "url_to": "https://staging.alloypress.com/marketing/use-chatbots-for-customer-service-to-build-your-brand-reputation",
-      "header_code": 301,
-      "status": "active",
-      "created": "2023-08-18 16:49:27",
-      "updated": "2023-08-18 16:49:27"
-    },
-    {
-      "id": 62,
-      "sources": [
-        {
-          "pattern": "technology/best-chatbots-on-the-web-4591",
-          "comparison": "exact",
-          "ignore": ""
-        }
-      ],
-      "url_to": "https://staging.alloypress.com/technology/best-chatbots-on-the-web",
-      "header_code": 301,
-      "status": "active",
-      "created": "2023-08-18 16:49:51",
-      "updated": "2023-08-18 16:49:51"
-    },
-    {
-      "id": 63,
-      "sources": [
-        {
-          "pattern": "hosting/bluehost-vs-pressable-which-is-the-best-3523",
-          "comparison": "exact",
-          "ignore": ""
-        }
-      ],
-      "url_to": "https://staging.alloypress.com/hosting/bluehost-vs-pressable-which-is-the-best",
-      "header_code": 301,
-      "status": "active",
-      "created": "2023-08-18 16:50:16",
-      "updated": "2023-08-18 16:50:16"
-    },
-    {
-      "id": 64,
-      "sources": [
-        {
-          "pattern": "social-media/best-way-to-monetize-youtube-channel-707",
-          "comparison": "exact",
-          "ignore": ""
-        }
-      ],
-      "url_to": "https://staging.alloypress.com/social-media/best-way-to-monetize-youtube-channel",
-      "header_code": 301,
-      "status": "active",
-      "created": "2023-08-18 16:50:35",
-      "updated": "2023-08-18 16:50:35"
-    },
-    {
-      "id": 65,
-      "sources": [
-        {
-          "pattern": "social-media/instagram-business-make-money-on-instagram-2028",
-          "comparison": "exact",
-          "ignore": ""
-        }
-      ],
-      "url_to": "https://staging.alloypress.com/social-media/instagram-business-make-money-on-instagram",
-      "header_code": 301,
-      "status": "active",
-      "created": "2023-08-18 16:50:54",
-      "updated": "2023-08-18 16:50:54"
-    },
-    {
-      "id": 66,
-      "sources": [
-        {
-          "pattern": "marketing/use-chatgpt-for-your-marketing-4023",
-          "comparison": "exact",
-          "ignore": ""
-        }
-      ],
-      "url_to": "https://staging.alloypress.com/marketing/use-chatgpt-for-your-marketing",
-      "header_code": 301,
-      "status": "active",
-      "created": "2023-08-18 16:51:11",
-      "updated": "2023-08-18 16:51:11"
-    },
-    {
-      "id": 67,
-      "sources": [
-        {
-          "pattern": "success-story/virat-kohli-success-story-3497",
-          "comparison": "exact",
-          "ignore": ""
-        }
-      ],
-      "url_to": "https://staging.alloypress.com/success-story/virat-kohli-success-story",
-      "header_code": 301,
-      "status": "active",
-      "created": "2023-08-18 16:51:30",
-      "updated": "2023-08-18 16:51:30"
-    },
-    {
-      "id": 68,
-      "sources": [
-        {
-          "pattern": "social-media/quora-ads-step-by-step-tutorial-3471",
-          "comparison": "exact",
-          "ignore": ""
-        }
-      ],
-      "url_to": "https://staging.alloypress.com/social-media/quora-ads-step-by-step-tutorial",
-      "header_code": 301,
-      "status": "active",
-      "created": "2023-08-18 16:52:44",
-      "updated": "2023-08-18 16:53:28"
-    },
-    {
-      "id": 69,
-      "sources": [
-        {
-          "pattern": "health/best-ways-to-train-your-brain-3418",
-          "comparison": "exact",
-          "ignore": ""
-        }
-      ],
-      "url_to": "https://staging.alloypress.com/health/best-ways-to-train-your-brain",
-      "header_code": 301,
-      "status": "active",
-      "created": "2023-08-18 16:53:42",
-      "updated": "2023-08-18 16:53:42"
-    },
-    {
-      "id": 70,
-      "sources": [
-        {
-          "pattern": "health/increase-your-immune-system-by-food-3321",
-          "comparison": "exact",
-          "ignore": ""
-        }
-      ],
-      "url_to": "https://staging.alloypress.com/health/increase-your-immune-system-by-food",
-      "header_code": 301,
-      "status": "active",
-      "created": "2023-08-18 16:53:56",
-      "updated": "2023-08-18 16:53:56"
-    },
-    {
-      "id": 71,
-      "sources": [
-        {
-          "pattern": "health/importance-of-sleep-for-students-3350",
-          "comparison": "exact",
-          "ignore": ""
-        }
-      ],
-      "url_to": "https://staging.alloypress.com/health/importance-of-sleep-for-students",
-      "header_code": 301,
-      "status": "active",
-      "created": "2023-08-18 16:54:14",
-      "updated": "2023-08-18 16:54:14"
-    },
-    {
-      "id": 72,
-      "sources": [
-        {
-          "pattern": "health/best-ways-to-have-healthy-hair-3323",
-          "comparison": "exact",
-          "ignore": ""
-        }
-      ],
-      "url_to": "https://staging.alloypress.com/health/best-ways-to-have-healthy-hair",
-      "header_code": 301,
-      "status": "active",
-      "created": "2023-08-18 16:54:56",
-      "updated": "2023-08-18 16:54:56"
-    },
-    {
-      "id": 73,
-      "sources": [
-        {
-          "pattern": "health/how-to-stay-healthy-when-you-get-older-3328",
-          "comparison": "exact",
-          "ignore": ""
-        }
-      ],
-      "url_to": "https://staging.alloypress.com/health/how-to-stay-healthy-when-you-get-older",
-      "header_code": 301,
-      "status": "active",
-      "created": "2023-08-18 16:55:22",
-      "updated": "2023-08-18 16:55:22"
-    },
-    {
-      "id": 74,
-      "sources": [
-        {
-          "pattern": "health/mental-health-7-ways-to-make-it-fit-3339",
-          "comparison": "exact",
-          "ignore": ""
-        }
-      ],
-      "url_to": "https://staging.alloypress.com/health/mental-health-7-ways-to-make-it-fit",
-      "header_code": 301,
-      "status": "active",
-      "created": "2023-08-18 16:55:44",
-      "updated": "2023-08-18 16:55:44"
-    },
-    {
-      "id": 75,
-      "sources": [
-        {
-          "pattern": "health/what-is-monkeypox-and-its-precautions-3297",
-          "comparison": "exact",
-          "ignore": ""
-        }
-      ],
-      "url_to": "https://staging.alloypress.com/health/what-is-monkeypox-and-its-precautions",
-      "header_code": 301,
-      "status": "active",
-      "created": "2023-08-18 16:56:18",
-      "updated": "2023-08-18 16:56:18"
-    },
-    {
-      "id": 76,
-      "sources": [
-        {
-          "pattern": "sports/fivb-volleyball-championship-3124",
-          "comparison": "exact",
-          "ignore": ""
-        }
-      ],
-      "url_to": "https://staging.alloypress.com/sports/fivb-volleyball-championship",
-      "header_code": 301,
-      "status": "active",
-      "created": "2023-08-18 16:56:37",
-      "updated": "2023-08-18 16:56:37"
-    },
-    {
-      "id": 77,
-      "sources": [
-        {
-          "pattern": "sports/fifa-womens-world-cup-3100",
-          "comparison": "exact",
-          "ignore": ""
-        }
-      ],
-      "url_to": "https://staging.alloypress.com/sports/fifa-womens-world-cup",
-      "header_code": 301,
-      "status": "active",
-      "created": "2023-08-18 16:56:57",
-      "updated": "2023-08-18 16:56:57"
-    },
-    {
-      "id": 78,
-      "sources": [
-        {
-          "pattern": "sports/one-day-internationalodi-highlights-1971-to-2022-3095",
-          "comparison": "exact",
-          "ignore": ""
-        }
-      ],
-      "url_to": "https://staging.alloypress.com/sports/one-day-internationalodi-highlights-1971-to-2022",
-      "header_code": 301,
-      "status": "active",
-      "created": "2023-08-18 16:57:29",
-      "updated": "2023-08-18 16:57:29"
-    },
-    {
-      "id": 79,
-      "sources": [
-        {
-          "pattern": "sports/hockey-world-cup-3089",
-          "comparison": "exact",
-          "ignore": ""
-        }
-      ],
-      "url_to": "https://staging.alloypress.com/sports/hockey-world-cup",
-      "header_code": 301,
-      "status": "active",
-      "created": "2023-08-18 16:57:46",
-      "updated": "2023-08-18 16:57:46"
-    },
-    {
-      "id": 80,
-      "sources": [
-        {
-          "pattern": "sports/football-world-cup-3085",
-          "comparison": "exact",
-          "ignore": ""
-        }
-      ],
-      "url_to": "https://staging.alloypress.com/sports/football-world-cup",
-      "header_code": 301,
-      "status": "active",
-      "created": "2023-08-18 16:58:02",
-      "updated": "2023-08-18 16:58:02"
-    },
-    {
-      "id": 81,
-      "sources": [
-        {
-          "pattern": "sports/types-of-cricket-in-the-world-3075",
-          "comparison": "exact",
-          "ignore": ""
-        }
-      ],
-      "url_to": "https://staging.alloypress.com/sports/types-of-cricket-in-the-world",
-      "header_code": 301,
-      "status": "active",
-      "created": "2023-08-18 16:58:20",
-      "updated": "2023-08-18 16:58:20"
-    },
-    {
-      "id": 82,
-      "sources": [
-        {
-          "pattern": "sports/fiba-basketball-world-cup-3061",
-          "comparison": "exact",
-          "ignore": ""
-        }
-      ],
-      "url_to": "https://staging.alloypress.com/sports/fiba-basketball-world-cup",
-      "header_code": 301,
-      "status": "active",
-      "created": "2023-08-18 16:58:36",
-      "updated": "2023-08-18 16:58:36"
-    },
-    {
-      "id": 83,
-      "sources": [
-        {
-          "pattern": "sports/the-athletic-world-cup-3056",
-          "comparison": "exact",
-          "ignore": ""
-        }
-      ],
-      "url_to": "https://staging.alloypress.com/sports/the-athletic-world-cup",
-      "header_code": 301,
-      "status": "active",
-      "created": "2023-08-18 16:58:53",
-      "updated": "2023-08-18 16:58:53"
-    },
-    {
-      "id": 84,
-      "sources": [
-        {
-          "pattern": "sports/list-of-world-cups-around-the-world-3049",
-          "comparison": "exact",
-          "ignore": ""
-        }
-      ],
-      "url_to": "https://staging.alloypress.com/sports/list-of-world-cups-around-the-world",
-      "header_code": 301,
-      "status": "active",
-      "created": "2023-08-18 16:59:11",
-      "updated": "2023-08-18 16:59:32"
-    },
-    {
-      "id": 85,
-      "sources": [
-        {
-          "pattern": "sports/qatar-world-cup-2022-3039",
-          "comparison": "exact",
-          "ignore": ""
-        }
-      ],
-      "url_to": "https://staging.alloypress.com/sports/qatar-world-cup-2022",
-      "header_code": 301,
-      "status": "active",
-      "created": "2023-08-18 17:00:02",
-      "updated": "2023-08-18 17:00:02"
-    },
-    {
-      "id": 86,
-      "sources": [
-        {
-          "pattern": "health/how-to-get-a-slim-body-in-just-1-month-2963",
-          "comparison": "exact",
-          "ignore": ""
-        }
-      ],
-      "url_to": "https://staging.alloypress.com/health/how-to-get-a-slim-body-in-just-1-month",
-      "header_code": 301,
-      "status": "active",
-      "created": "2023-08-18 17:00:19",
-      "updated": "2023-08-18 17:00:19"
-    },
-    {
-      "id": 87,
-      "sources": [
-        {
-          "pattern": "skin-care/take-1-step-closer-to-have-glowing-skin-2890",
-          "comparison": "exact",
-          "ignore": ""
-        }
-      ],
-      "url_to": "https://staging.alloypress.com/skin-care/take-1-step-closer-to-have-glowing-skin",
-      "header_code": 301,
-      "status": "active",
-      "created": "2023-08-18 17:00:39",
-      "updated": "2023-08-18 17:00:39"
-    },
-    {
-      "id": 88,
-      "sources": [
-        {
-          "pattern": "marketing/tivos-mistakes-while-marketing-2846",
-          "comparison": "exact",
-          "ignore": ""
-        }
-      ],
-      "url_to": "https://staging.alloypress.com/marketing/tivos-mistakes-while-marketing",
-      "header_code": 301,
-      "status": "active",
-      "created": "2023-08-18 17:00:57",
-      "updated": "2023-08-18 17:00:57"
-    },
-    {
-      "id": 89,
-      "sources": [
-        {
-          "pattern": "software/software-companies-in-the-world-2778",
-          "comparison": "exact",
-          "ignore": ""
-        }
-      ],
-      "url_to": "https://staging.alloypress.com/software/software-companies-in-the-world",
-      "header_code": 301,
-      "status": "active",
-      "created": "2023-08-18 17:01:14",
-      "updated": "2023-08-18 17:01:14"
-    },
-    {
-      "id": 90,
-      "sources": [
-        {
-          "pattern": "social-media/best-ways-to-make-money-from-facebook-01-2489",
-          "comparison": "exact",
-          "ignore": ""
-        }
-      ],
-      "url_to": "https://staging.alloypress.com/social-media/best-ways-to-make-money-from-facebook-01",
-      "header_code": 301,
-      "status": "active",
-      "created": "2023-08-18 17:01:32",
-      "updated": "2023-08-18 17:01:32"
-    },
-    {
-      "id": 91,
-      "sources": [
-        {
-          "pattern": "social-media/youtube-channel-go-viral-best-tips-908",
-          "comparison": "exact",
-          "ignore": ""
-        }
-      ],
-      "url_to": "https://staging.alloypress.com/social-media/youtube-channel-go-viral-best-tips",
-      "header_code": 301,
-      "status": "active",
-      "created": "2023-08-18 17:02:04",
-      "updated": "2023-08-18 17:02:04"
-    },
-    {
-      "id": 92,
-      "sources": [
-        {
-          "pattern": "blog/how-to-make-money-online-best-ways-4130",
-          "comparison": "exact",
-          "ignore": ""
-        }
-      ],
-      "url_to": "https://staging.alloypress.com/blog/how-to-make-money-online-best-ways",
-      "header_code": 301,
-      "status": "active",
-      "created": "2023-08-18 17:02:22",
-      "updated": "2023-08-18 17:02:22"
-    },
-    {
-      "id": 93,
-      "sources": [
-        {
-          "pattern": "hosting/top10-web-hosting-companies-4450",
-          "comparison": "exact",
-          "ignore": ""
-        }
-      ],
-      "url_to": "https://staging.alloypress.com/hosting/list-of-top-web-hosting-companies",
-      "header_code": 301,
-      "status": "active",
-      "created": "2023-08-22 17:39:06",
-      "updated": "2023-08-22 17:39:06"
-    },
-    {
-      "id": 94,
-      "sources": [
-        {
-          "pattern": "web-stories/10-best-tourist-countries-for-budget-travellers-with-1000",
-          "comparison": "exact",
-          "ignore": ""
-        }
-      ],
-      "url_to": "https://staging.alloypress.com/web-stories/10-best-tourist-countries-for-budget-travellers-with-1000-dollars",
-      "header_code": 301,
-      "status": "active",
-      "created": "2023-08-27 23:30:59",
-      "updated": "2023-08-27 23:30:59"
-    },
-    {
-      "id": 97,
-      "sources": [
-        {
-          "pattern": "technology/top-5-seo-experts-in-india",
-          "comparison": "exact",
-          "ignore": ""
-        }
-      ],
-      "url_to": "https://staging.alloypress.com/technology/top-seo-experts-in-india",
-      "header_code": 301,
-      "status": "active",
-      "created": "2024-06-09 13:30:31",
-      "updated": "2024-06-09 13:30:31"
-    },
-    {
-      "id": 98,
-      "sources": [
-        {
-          "pattern": "hosting/top-5-best-liquid-web-alternatives-competitors",
-          "comparison": "exact",
-          "ignore": ""
-        }
-      ],
-      "url_to": "https://staging.alloypress.com/hosting/best-liquid-web-hosting-alternatives",
-      "header_code": 301,
-      "status": "active",
-      "created": "2024-06-14 18:01:47",
-      "updated": "2024-06-14 18:01:47"
-    },
-    {
-      "id": 99,
-      "sources": [
-        {
-          "pattern": "technology/top-10-web-push-notification-tools-and-service",
-          "comparison": "exact",
-          "ignore": ""
-        }
-      ],
-      "url_to": "https://staging.alloypress.com/technology/best-web-push-notification-plugins",
-      "header_code": 301,
-      "status": "active",
-      "created": "2024-06-14 18:04:13",
-      "updated": "2024-06-14 18:04:13"
-    },
-    {
-      "id": 100,
-      "sources": [
-        {
-          "pattern": "wp",
-          "comparison": "exact",
-          "ignore": ""
-        }
-      ],
-      "url_to": "https://staging.alloypress.com/wordpress",
-      "header_code": 301,
-      "status": "active",
-      "created": "2024-06-14 18:05:21",
-      "updated": "2024-06-14 18:05:21"
-    },
-    {
-      "id": 101,
-      "sources": [
-        {
-          "pattern": "technology/free-email-marketing-tools",
-          "comparison": "exact",
-          "ignore": ""
-        }
-      ],
-      "url_to": "https://staging.alloypress.com/software/free-email-marketing-tools",
-      "header_code": 301,
-      "status": "active",
-      "created": "2024-06-14 18:50:21",
-      "updated": "2024-06-14 18:50:21"
-    },
-    {
-      "id": 102,
-      "sources": [
-        {
-          "pattern": "technology/best-chatbots-on-the-web",
-          "comparison": "exact",
-          "ignore": ""
-        },
-        {
-          "pattern": "software/best-chatbots-on-the-web",
-          "comparison": "exact",
-          "ignore": ""
-        },
-        {
-          "pattern": "ai/best-chatbots-on-the-web",
-          "comparison": "exact",
-          "ignore": ""
-        },
-        {
-          "pattern": "blogs/best-chatbots-on-the-web",
-          "comparison": "exact",
-          "ignore": ""
-        }
-      ],
-      "url_to": "https://staging.alloypress.com/blogs/best-ai-chatbots",
-      "header_code": 301,
-      "status": "active",
-      "created": "2024-06-14 18:50:39",
-      "updated": "2024-06-14 18:50:39"
-    },
-    {
-      "id": 104,
-      "sources": [
-        {
-          "pattern": "social-media/quora-ads-step-by-step-tutorial",
-          "comparison": "exact",
-          "ignore": ""
-        }
-      ],
-      "url_to": "https://staging.alloypress.com/",
-      "header_code": 301,
-      "status": "active",
-      "created": "2024-06-14 19:32:15",
-      "updated": "2026-03-19 10:11:13"
-    },
-    {
-      "id": 105,
-      "sources": [
-        {
-          "pattern": "social-media/linkedin-ads-to-improve-business",
-          "comparison": "exact",
-          "ignore": ""
-        }
-      ],
-      "url_to": "https://staging.alloypress.com/",
-      "header_code": 301,
-      "status": "active",
-      "created": "2024-06-14 19:32:26",
-      "updated": "2026-03-19 10:10:37"
-    },
-    {
-      "id": 106,
-      "sources": [
-        {
-          "pattern": "toggle-module",
-          "comparison": "exact",
-          "ignore": ""
-        }
-      ],
-      "url_to": "https://staging.alloypress.com/elements/toggle-module",
-      "header_code": 301,
-      "status": "active",
-      "created": "2025-01-14 17:30:06",
-      "updated": "2025-01-14 17:30:06"
-    },
-    {
-      "id": 107,
-      "sources": [
-        {
-          "pattern": "portfolio-modules",
-          "comparison": "exact",
-          "ignore": ""
-        }
-      ],
-      "url_to": "https://staging.alloypress.com/elements/portfolio-modules",
-      "header_code": 301,
-      "status": "active",
-      "created": "2025-01-14 17:30:07",
-      "updated": "2025-01-14 17:30:07"
-    },
-    {
-      "id": 108,
-      "sources": [
-        {
-          "pattern": "blog-module",
-          "comparison": "exact",
-          "ignore": ""
-        }
-      ],
-      "url_to": "https://staging.alloypress.com/elements/blog-module",
-      "header_code": 301,
-      "status": "active",
-      "created": "2025-01-14 17:30:08",
-      "updated": "2025-01-14 17:30:08"
-    },
-    {
-      "id": 109,
-      "sources": [
-        {
-          "pattern": "content-switch",
-          "comparison": "exact",
-          "ignore": ""
-        }
-      ],
-      "url_to": "https://staging.alloypress.com/elements/content-switch",
-      "header_code": 301,
-      "status": "active",
-      "created": "2025-01-14 17:30:08",
-      "updated": "2025-01-14 17:30:08"
-    },
-    {
-      "id": 110,
-      "sources": [
-        {
-          "pattern": "tab-designs",
-          "comparison": "exact",
-          "ignore": ""
-        }
-      ],
-      "url_to": "https://staging.alloypress.com/elements/tab-designs",
-      "header_code": 301,
-      "status": "active",
-      "created": "2025-01-14 17:30:09",
-      "updated": "2025-01-14 17:30:09"
-    },
-    {
-      "id": 111,
-      "sources": [
-        {
-          "pattern": "service-boxes",
-          "comparison": "exact",
-          "ignore": ""
-        }
-      ],
-      "url_to": "https://staging.alloypress.com/elements/service-boxes",
-      "header_code": 301,
-      "status": "active",
-      "created": "2025-01-14 17:30:10",
-      "updated": "2025-01-14 17:30:10"
-    },
-    {
-      "id": 112,
-      "sources": [
-        {
-          "pattern": "opt-in-design",
-          "comparison": "exact",
-          "ignore": ""
-        }
-      ],
-      "url_to": "https://staging.alloypress.com/elements/opt-in-design",
-      "header_code": 301,
-      "status": "active",
-      "created": "2025-01-14 17:30:11",
-      "updated": "2025-01-14 17:30:11"
-    },
-    {
-      "id": 113,
-      "sources": [
-        {
-          "pattern": "team-card",
-          "comparison": "exact",
-          "ignore": ""
-        }
-      ],
-      "url_to": "https://staging.alloypress.com/elements/team-card",
-      "header_code": 301,
-      "status": "active",
-      "created": "2025-01-14 17:30:12",
-      "updated": "2025-01-14 17:30:12"
-    },
-    {
-      "id": 114,
-      "sources": [
-        {
-          "pattern": "testimonial-designs",
-          "comparison": "exact",
-          "ignore": ""
-        }
-      ],
-      "url_to": "https://staging.alloypress.com/elements/testimonial-designs",
-      "header_code": 301,
-      "status": "active",
-      "created": "2025-01-14 17:30:12",
-      "updated": "2025-01-14 17:30:12"
-    },
-    {
-      "id": 115,
-      "sources": [
-        {
-          "pattern": "pricing-tables",
-          "comparison": "exact",
-          "ignore": ""
-        }
-      ],
-      "url_to": "https://staging.alloypress.com/elements/pricing-tables",
-      "header_code": 301,
-      "status": "active",
-      "created": "2025-01-14 17:30:13",
-      "updated": "2025-01-14 17:30:13"
-    },
-    {
-      "id": 116,
-      "sources": [
-        {
-          "pattern": "card-designs",
-          "comparison": "exact",
-          "ignore": ""
-        }
-      ],
-      "url_to": "https://staging.alloypress.com/elements/card-designs",
-      "header_code": 301,
-      "status": "active",
-      "created": "2025-01-14 17:30:14",
-      "updated": "2025-01-14 17:30:14"
-    },
-    {
-      "id": 118,
-      "sources": [
-        {
-          "pattern": "software/social-media-marketing-tools",
-          "comparison": "exact",
-          "ignore": ""
-        },
-        {
-          "pattern": "ai/social-media-marketing-tools",
-          "comparison": "exact",
-          "ignore": ""
-        }
-      ],
-      "url_to": "https://staging.alloypress.com/blogs/social-media-marketing-tools",
-      "header_code": 301,
-      "status": "active",
-      "created": "2025-01-18 20:20:53",
-      "updated": "2025-01-18 20:20:53"
-    },
-    {
-      "id": 120,
-      "sources": [
-        {
-          "pattern": "uncategorized/list-of-top-web-hosting-companies",
-          "comparison": "exact",
-          "ignore": ""
-        },
-        {
-          "pattern": "hosting/list-of-top-web-hosting-companies",
-          "comparison": "exact",
-          "ignore": ""
-        }
-      ],
-      "url_to": "https://staging.alloypress.com/",
-      "header_code": 301,
-      "status": "active",
-      "created": "2025-01-18 20:50:09",
-      "updated": "2026-03-19 10:06:14"
-    },
-    {
-      "id": 121,
-      "sources": [
-        {
-          "pattern": "ai/tools/ai-tutorials",
-          "comparison": "exact",
-          "ignore": ""
-        }
-      ],
-      "url_to": "https://staging.alloypress.com/tutorial",
-      "header_code": 301,
-      "status": "active",
-      "created": "2025-01-23 21:10:28",
-      "updated": "2026-03-19 10:05:44"
-    },
-    {
-      "id": 122,
-      "sources": [
-        {
-          "pattern": "privacy-policy-2",
-          "comparison": "exact",
-          "ignore": ""
-        }
-      ],
-      "url_to": "https://staging.alloypress.com/privacy-policy",
-      "header_code": 301,
-      "status": "active",
-      "created": "2025-01-24 18:25:17",
-      "updated": "2025-01-24 18:25:17"
-    },
-    {
-      "id": 123,
-      "sources": [
-        {
-          "pattern": "about-us-2",
-          "comparison": "exact",
-          "ignore": ""
-        }
-      ],
-      "url_to": "https://staging.alloypress.com/about-us",
-      "header_code": 301,
-      "status": "active",
-      "created": "2025-01-24 21:17:40",
-      "updated": "2025-01-24 21:17:40"
-    },
-    {
-      "id": 124,
-      "sources": [
-        {
-          "pattern": "company/best/social-media-marketing-companies",
-          "comparison": "exact",
-          "ignore": ""
-        }
-      ],
-      "url_to": "https://staging.alloypress.com/",
-      "header_code": 301,
-      "status": "active",
-      "created": "2025-01-27 19:39:34",
-      "updated": "2025-01-27 19:39:34"
-    },
-    {
-      "id": 125,
-      "sources": [
-        {
-          "pattern": "software/best-employee-monitoring-softwares",
-          "comparison": "exact",
-          "ignore": ""
-        }
-      ],
-      "url_to": "https://staging.alloypress.com/",
-      "header_code": 301,
-      "status": "active",
-      "created": "2025-01-27 19:57:33",
-      "updated": "2025-01-27 19:57:33"
-    },
-    {
-      "id": 126,
-      "sources": [
-        {
-          "pattern": "uncategorized/top-5-seo-experts-in-india",
-          "comparison": "exact",
-          "ignore": ""
-        }
-      ],
-      "url_to": "https://staging.alloypress.com/",
-      "header_code": 301,
-      "status": "active",
-      "created": "2025-01-27 19:59:02",
-      "updated": "2025-01-27 19:59:02"
-    },
-    {
-      "id": 127,
-      "sources": [
-        {
-          "pattern": "person/neymar-jr",
-          "comparison": "exact",
-          "ignore": ""
-        }
-      ],
-      "url_to": "https://staging.alloypress.com/",
-      "header_code": 301,
-      "status": "active",
-      "created": "2025-01-27 19:59:42",
-      "updated": "2025-01-27 19:59:42"
-    },
-    {
-      "id": 128,
-      "sources": [
-        {
-          "pattern": "software/best-snipping-tools",
-          "comparison": "exact",
-          "ignore": ""
-        }
-      ],
-      "url_to": "https://staging.alloypress.com/",
-      "header_code": 301,
-      "status": "active",
-      "created": "2025-01-27 20:00:20",
-      "updated": "2025-01-27 20:00:20"
-    },
-    {
-      "id": 129,
-      "sources": [
-        {
-          "pattern": "person/elon-musk",
-          "comparison": "exact",
-          "ignore": ""
-        }
-      ],
-      "url_to": "https://staging.alloypress.com/",
-      "header_code": 301,
-      "status": "active",
-      "created": "2025-01-27 20:00:59",
-      "updated": "2025-01-27 20:00:59"
-    },
-    {
-      "id": 130,
-      "sources": [
-        {
-          "pattern": "list-your-company-profile",
-          "comparison": "exact",
-          "ignore": ""
-        }
-      ],
-      "url_to": "https://staging.alloypress.com/",
-      "header_code": 301,
-      "status": "active",
-      "created": "2025-02-07 11:31:52",
-      "updated": "2025-02-08 11:51:20"
-    },
-    {
-      "id": 131,
-      "sources": [
-        {
-          "pattern": "sitemap",
-          "comparison": "exact",
-          "ignore": ""
-        }
-      ],
-      "url_to": "https://staging.alloypress.com/sitemap_index.xml",
-      "header_code": 301,
-      "status": "active",
-      "created": "2025-02-08 12:01:56",
-      "updated": "2025-02-08 12:01:56"
-    },
-    {
-      "id": 132,
-      "sources": [
-        {
-          "pattern": "review",
-          "comparison": "exact",
-          "ignore": ""
-        }
-      ],
-      "url_to": "https://staging.alloypress.com/reviews",
-      "header_code": 301,
-      "status": "active",
-      "created": "2025-06-01 13:29:46",
-      "updated": "2025-06-01 13:29:46"
-    },
-    {
-      "id": 134,
-      "sources": [
-        {
-          "pattern": "ai/tools/best-ai-blog-writing-tools",
-          "comparison": "exact",
-          "ignore": ""
-        }
-      ],
-      "url_to": "https://staging.alloypress.com/blogs/best-ai-blog-writing-tools",
-      "header_code": 301,
-      "status": "active",
-      "created": "2025-06-02 15:38:00",
-      "updated": "2025-06-02 15:38:00"
-    },
-    {
-      "id": 135,
-      "sources": [
-        {
-          "pattern": "ai/top-ai-tools",
-          "comparison": "exact",
-          "ignore": ""
-        }
-      ],
-      "url_to": "https://staging.alloypress.com/blogs/top-ai-tools",
-      "header_code": 301,
-      "status": "active",
-      "created": "2025-06-05 06:45:51",
-      "updated": "2025-06-05 06:45:51"
-    },
-    {
-      "id": 136,
-      "sources": [
-        {
-          "pattern": "ai/top-ai-tools-for-marketing",
-          "comparison": "exact",
-          "ignore": ""
-        }
-      ],
-      "url_to": "https://staging.alloypress.com/blogs/top-ai-tools-for-marketing",
-      "header_code": 301,
-      "status": "active",
-      "created": "2025-06-05 06:46:17",
-      "updated": "2025-06-05 06:46:17"
-    },
-    {
-      "id": 137,
-      "sources": [
-        {
-          "pattern": "ai/tutorials/artificial-intelligence",
-          "comparison": "exact",
-          "ignore": ""
-        }
-      ],
-      "url_to": "https://staging.alloypress.com/blogs/artificial-intelligence",
-      "header_code": 301,
-      "status": "active",
-      "created": "2025-06-05 06:46:58",
-      "updated": "2025-06-05 06:46:58"
-    },
-    {
-      "id": 138,
-      "sources": [
-        {
-          "pattern": "ai/tutorials/what-is-chat-gpt",
-          "comparison": "exact",
-          "ignore": ""
-        }
-      ],
-      "url_to": "https://staging.alloypress.com/blogs/what-is-chat-gpt",
-      "header_code": 301,
-      "status": "active",
-      "created": "2025-06-05 06:49:29",
-      "updated": "2025-06-05 06:49:29"
-    },
-    {
-      "id": 139,
-      "sources": [
-        {
-          "pattern": "ai/tutorials/use-chatgpt-for-your-marketing",
-          "comparison": "exact",
-          "ignore": ""
-        }
-      ],
-      "url_to": "https://staging.alloypress.com/blogs/use-chatgpt-for-your-marketing",
-      "header_code": 301,
-      "status": "active",
-      "created": "2025-06-05 06:49:51",
-      "updated": "2025-06-05 06:49:51"
-    },
-    {
-      "id": 140,
-      "sources": [
-        {
-          "pattern": "contribute",
-          "comparison": "exact",
-          "ignore": ""
-        }
-      ],
-      "url_to": "https://staging.alloypress.com/",
-      "header_code": 301,
-      "status": "active",
-      "created": "2025-08-30 10:20:48",
-      "updated": "2025-08-30 10:20:48"
-    },
-    {
-      "id": 141,
-      "sources": [
-        {
-          "pattern": "blogs/best-ai-productivity-tools",
-          "comparison": "exact",
-          "ignore": ""
-        }
-      ],
-      "url_to": "https://staging.alloypress.com/blogs/top-ai-tools",
-      "header_code": 301,
-      "status": "active",
-      "created": "2026-02-25 08:20:01",
-      "updated": "2026-02-25 08:20:01"
-    },
-    {
-      "id": 142,
-      "sources": [
-        {
-          "pattern": "reviews/best-ai-background-remover-tools",
-          "comparison": "exact",
-          "ignore": ""
-        }
-      ],
-      "url_to": "https://staging.alloypress.com/blogs/best-ai-background-remover-tools",
-      "header_code": 301,
-      "status": "active",
-      "created": "2026-03-16 08:08:20",
-      "updated": "2026-03-16 08:08:20"
-    },
-    {
-      "id": 143,
-      "sources": [
-        {
-          "pattern": "alternatives/quillbot-2",
-          "comparison": "exact",
-          "ignore": ""
+          "ignore": "",
+          "pattern": "101648-2",
+          "comparison": "exact"
         }
       ],
-      "url_to": "https://staging.alloypress.com/alternatives/quillbot-alternatives",
-      "header_code": 301,
-      "status": "active",
-      "created": "2026-04-30 10:35:40",
-      "updated": "2026-04-30 10:35:40"
+      "url_to": "https://alloypress.com/terms-and-conditions",
+      "header_code": "301",
+      "status": "active"
     },
     {
-      "id": 144,
+      "id": "144",
       "sources": [
         {
+          "ignore": "",
           "pattern": "blogs/ai-vs-human-in-unique-perspective",
-          "comparison": "exact",
-          "ignore": ""
+          "comparison": "exact"
         }
       ],
-      "url_to": "https://staging.alloypress.com/blogs/ai-vs-human-intelligence",
-      "header_code": 301,
-      "status": "active",
-      "created": "2026-05-08 12:29:50",
-      "updated": "2026-05-08 12:29:50"
+      "url_to": "https://alloypress.com/blogs/ai-vs-human-intelligence",
+      "header_code": "301",
+      "status": "active"
     },
     {
-      "id": 145,
+      "id": "143",
       "sources": [
         {
-          "pattern": "101648-2",
-          "comparison": "exact",
-          "ignore": ""
-        },
-        {
-          "pattern": "101648-2",
-          "comparison": "exact",
-          "ignore": ""
+          "ignore": "",
+          "pattern": "alternatives/quillbot-2",
+          "comparison": "exact"
         }
       ],
-      "url_to": "https://staging.alloypress.com/terms-and-conditions",
-      "header_code": 301,
-      "status": "active",
-      "created": "2026-05-14 16:55:15",
-      "updated": "2026-05-14 16:55:15"
+      "url_to": "https://alloypress.com/alternatives/quillbot-alternatives",
+      "header_code": "301",
+      "status": "active"
+    },
+    {
+      "id": "142",
+      "sources": [
+        {
+          "ignore": "",
+          "pattern": "reviews/best-ai-background-remover-tools",
+          "comparison": "exact"
+        }
+      ],
+      "url_to": "https://alloypress.com/blogs/best-ai-background-remover-tools",
+      "header_code": "301",
+      "status": "active"
+    },
+    {
+      "id": "141",
+      "sources": [
+        {
+          "ignore": "",
+          "pattern": "blogs/best-ai-productivity-tools",
+          "comparison": "exact"
+        }
+      ],
+      "url_to": "https://alloypress.com/blogs/top-ai-tools",
+      "header_code": "301",
+      "status": "active"
+    },
+    {
+      "id": "140",
+      "sources": [
+        {
+          "ignore": "",
+          "pattern": "contribute",
+          "comparison": "exact"
+        }
+      ],
+      "url_to": "https://alloypress.com/",
+      "header_code": "301",
+      "status": "active"
+    },
+    {
+      "id": "139",
+      "sources": [
+        {
+          "ignore": "",
+          "pattern": "ai/tutorials/use-chatgpt-for-your-marketing",
+          "comparison": "exact"
+        }
+      ],
+      "url_to": "https://alloypress.com/blogs/use-chatgpt-for-your-marketing",
+      "header_code": "301",
+      "status": "active"
+    },
+    {
+      "id": "138",
+      "sources": [
+        {
+          "ignore": "",
+          "pattern": "ai/tutorials/what-is-chat-gpt",
+          "comparison": "exact"
+        }
+      ],
+      "url_to": "https://alloypress.com/blogs/what-is-chat-gpt",
+      "header_code": "301",
+      "status": "active"
+    },
+    {
+      "id": "137",
+      "sources": [
+        {
+          "ignore": "",
+          "pattern": "ai/tutorials/artificial-intelligence",
+          "comparison": "exact"
+        }
+      ],
+      "url_to": "https://alloypress.com/blogs/artificial-intelligence",
+      "header_code": "301",
+      "status": "active"
+    },
+    {
+      "id": "136",
+      "sources": [
+        {
+          "ignore": "",
+          "pattern": "ai/top-ai-tools-for-marketing",
+          "comparison": "exact"
+        }
+      ],
+      "url_to": "https://alloypress.com/blogs/top-ai-tools-for-marketing",
+      "header_code": "301",
+      "status": "active"
+    },
+    {
+      "id": "135",
+      "sources": [
+        {
+          "ignore": "",
+          "pattern": "ai/top-ai-tools",
+          "comparison": "exact"
+        }
+      ],
+      "url_to": "https://alloypress.com/blogs/top-ai-tools",
+      "header_code": "301",
+      "status": "active"
+    },
+    {
+      "id": "134",
+      "sources": [
+        {
+          "ignore": "",
+          "pattern": "ai/tools/best-ai-blog-writing-tools",
+          "comparison": "exact"
+        }
+      ],
+      "url_to": "https://alloypress.com/blogs/best-ai-blog-writing-tools",
+      "header_code": "301",
+      "status": "active"
+    },
+    {
+      "id": "133",
+      "sources": [
+        {
+          "ignore": "",
+          "pattern": "blog",
+          "comparison": "exact"
+        }
+      ],
+      "url_to": "https://alloypress.com/blogs",
+      "header_code": "301",
+      "status": "inactive"
+    },
+    {
+      "id": "132",
+      "sources": [
+        {
+          "ignore": "",
+          "pattern": "review",
+          "comparison": "exact"
+        }
+      ],
+      "url_to": "https://alloypress.com/reviews",
+      "header_code": "301",
+      "status": "active"
+    },
+    {
+      "id": "131",
+      "sources": [
+        {
+          "ignore": "",
+          "pattern": "sitemap",
+          "comparison": "exact"
+        }
+      ],
+      "url_to": "https://alloypress.com/sitemap_index.xml",
+      "header_code": "301",
+      "status": "active"
+    },
+    {
+      "id": "130",
+      "sources": [
+        {
+          "ignore": "",
+          "pattern": "list-your-company-profile",
+          "comparison": "exact"
+        }
+      ],
+      "url_to": "https://alloypress.com/",
+      "header_code": "301",
+      "status": "active"
+    },
+    {
+      "id": "129",
+      "sources": [
+        {
+          "ignore": "",
+          "pattern": "person/elon-musk",
+          "comparison": "exact"
+        }
+      ],
+      "url_to": "https://alloypress.com/",
+      "header_code": "301",
+      "status": "active"
+    },
+    {
+      "id": "128",
+      "sources": [
+        {
+          "ignore": "",
+          "pattern": "software/best-snipping-tools",
+          "comparison": "exact"
+        }
+      ],
+      "url_to": "https://alloypress.com/",
+      "header_code": "301",
+      "status": "active"
+    },
+    {
+      "id": "127",
+      "sources": [
+        {
+          "ignore": "",
+          "pattern": "person/neymar-jr",
+          "comparison": "exact"
+        }
+      ],
+      "url_to": "https://alloypress.com/",
+      "header_code": "301",
+      "status": "active"
+    },
+    {
+      "id": "126",
+      "sources": [
+        {
+          "ignore": "",
+          "pattern": "uncategorized/top-5-seo-experts-in-india",
+          "comparison": "exact"
+        }
+      ],
+      "url_to": "https://alloypress.com/",
+      "header_code": "301",
+      "status": "active"
+    },
+    {
+      "id": "125",
+      "sources": [
+        {
+          "ignore": "",
+          "pattern": "software/best-employee-monitoring-softwares",
+          "comparison": "exact"
+        }
+      ],
+      "url_to": "https://alloypress.com/",
+      "header_code": "301",
+      "status": "active"
+    },
+    {
+      "id": "124",
+      "sources": [
+        {
+          "ignore": "",
+          "pattern": "company/best/social-media-marketing-companies",
+          "comparison": "exact"
+        }
+      ],
+      "url_to": "https://alloypress.com/",
+      "header_code": "301",
+      "status": "active"
+    },
+    {
+      "id": "123",
+      "sources": [
+        {
+          "ignore": "",
+          "pattern": "about-us-2",
+          "comparison": "exact"
+        }
+      ],
+      "url_to": "https://alloypress.com/about-us",
+      "header_code": "301",
+      "status": "active"
+    },
+    {
+      "id": "122",
+      "sources": [
+        {
+          "ignore": "",
+          "pattern": "privacy-policy-2",
+          "comparison": "exact"
+        }
+      ],
+      "url_to": "https://alloypress.com/privacy-policy",
+      "header_code": "301",
+      "status": "active"
+    },
+    {
+      "id": "121",
+      "sources": [
+        {
+          "ignore": "",
+          "pattern": "ai/tools/ai-tutorials",
+          "comparison": "exact"
+        }
+      ],
+      "url_to": "https://alloypress.com/tutorial",
+      "header_code": "301",
+      "status": "active"
+    },
+    {
+      "id": "120",
+      "sources": [
+        {
+          "ignore": "",
+          "pattern": "uncategorized/list-of-top-web-hosting-companies",
+          "comparison": "exact"
+        },
+        {
+          "ignore": "",
+          "pattern": "hosting/list-of-top-web-hosting-companies",
+          "comparison": "exact"
+        }
+      ],
+      "url_to": "https://alloypress.com/",
+      "header_code": "301",
+      "status": "active"
+    },
+    {
+      "id": "118",
+      "sources": [
+        {
+          "ignore": "",
+          "pattern": "software/social-media-marketing-tools",
+          "comparison": "exact"
+        },
+        {
+          "ignore": "",
+          "pattern": "ai/social-media-marketing-tools",
+          "comparison": "exact"
+        }
+      ],
+      "url_to": "https://alloypress.com/blogs/social-media-marketing-tools",
+      "header_code": "301",
+      "status": "active"
+    },
+    {
+      "id": "117",
+      "sources": [
+        {
+          "ignore": "",
+          "pattern": "ai/news",
+          "comparison": "exact"
+        }
+      ],
+      "url_to": "https://alloypress.com/ai/updates",
+      "header_code": "301",
+      "status": "inactive"
+    },
+    {
+      "id": "116",
+      "sources": [
+        {
+          "ignore": "",
+          "pattern": "card-designs",
+          "comparison": "exact"
+        }
+      ],
+      "url_to": "https://alloypress.com/elements/card-designs",
+      "header_code": "301",
+      "status": "active"
+    },
+    {
+      "id": "115",
+      "sources": [
+        {
+          "ignore": "",
+          "pattern": "pricing-tables",
+          "comparison": "exact"
+        }
+      ],
+      "url_to": "https://alloypress.com/elements/pricing-tables",
+      "header_code": "301",
+      "status": "active"
+    },
+    {
+      "id": "114",
+      "sources": [
+        {
+          "ignore": "",
+          "pattern": "testimonial-designs",
+          "comparison": "exact"
+        }
+      ],
+      "url_to": "https://alloypress.com/elements/testimonial-designs",
+      "header_code": "301",
+      "status": "active"
+    },
+    {
+      "id": "113",
+      "sources": [
+        {
+          "ignore": "",
+          "pattern": "team-card",
+          "comparison": "exact"
+        }
+      ],
+      "url_to": "https://alloypress.com/elements/team-card",
+      "header_code": "301",
+      "status": "active"
+    },
+    {
+      "id": "112",
+      "sources": [
+        {
+          "ignore": "",
+          "pattern": "opt-in-design",
+          "comparison": "exact"
+        }
+      ],
+      "url_to": "https://alloypress.com/elements/opt-in-design",
+      "header_code": "301",
+      "status": "active"
+    },
+    {
+      "id": "111",
+      "sources": [
+        {
+          "ignore": "",
+          "pattern": "service-boxes",
+          "comparison": "exact"
+        }
+      ],
+      "url_to": "https://alloypress.com/elements/service-boxes",
+      "header_code": "301",
+      "status": "active"
+    },
+    {
+      "id": "110",
+      "sources": [
+        {
+          "ignore": "",
+          "pattern": "tab-designs",
+          "comparison": "exact"
+        }
+      ],
+      "url_to": "https://alloypress.com/elements/tab-designs",
+      "header_code": "301",
+      "status": "active"
+    },
+    {
+      "id": "109",
+      "sources": [
+        {
+          "ignore": "",
+          "pattern": "content-switch",
+          "comparison": "exact"
+        }
+      ],
+      "url_to": "https://alloypress.com/elements/content-switch",
+      "header_code": "301",
+      "status": "active"
+    },
+    {
+      "id": "108",
+      "sources": [
+        {
+          "ignore": "",
+          "pattern": "blog-module",
+          "comparison": "exact"
+        }
+      ],
+      "url_to": "https://alloypress.com/elements/blog-module",
+      "header_code": "301",
+      "status": "active"
+    },
+    {
+      "id": "107",
+      "sources": [
+        {
+          "ignore": "",
+          "pattern": "portfolio-modules",
+          "comparison": "exact"
+        }
+      ],
+      "url_to": "https://alloypress.com/elements/portfolio-modules",
+      "header_code": "301",
+      "status": "active"
+    },
+    {
+      "id": "106",
+      "sources": [
+        {
+          "ignore": "",
+          "pattern": "toggle-module",
+          "comparison": "exact"
+        }
+      ],
+      "url_to": "https://alloypress.com/elements/toggle-module",
+      "header_code": "301",
+      "status": "active"
+    },
+    {
+      "id": "105",
+      "sources": [
+        {
+          "ignore": "",
+          "pattern": "social-media/linkedin-ads-to-improve-business",
+          "comparison": "exact"
+        }
+      ],
+      "url_to": "https://alloypress.com/",
+      "header_code": "301",
+      "status": "active"
+    },
+    {
+      "id": "104",
+      "sources": [
+        {
+          "ignore": "",
+          "pattern": "social-media/quora-ads-step-by-step-tutorial",
+          "comparison": "exact"
+        }
+      ],
+      "url_to": "https://alloypress.com/",
+      "header_code": "301",
+      "status": "active"
+    },
+    {
+      "id": "102",
+      "sources": [
+        {
+          "ignore": "",
+          "pattern": "technology/best-chatbots-on-the-web",
+          "comparison": "exact"
+        },
+        {
+          "ignore": "",
+          "pattern": "software/best-chatbots-on-the-web",
+          "comparison": "exact"
+        },
+        {
+          "ignore": "",
+          "pattern": "ai/best-chatbots-on-the-web",
+          "comparison": "exact"
+        },
+        {
+          "ignore": "",
+          "pattern": "blogs/best-chatbots-on-the-web",
+          "comparison": "exact"
+        }
+      ],
+      "url_to": "https://alloypress.com/blogs/best-ai-chatbots",
+      "header_code": "301",
+      "status": "active"
+    },
+    {
+      "id": "101",
+      "sources": [
+        {
+          "ignore": "",
+          "pattern": "technology/free-email-marketing-tools",
+          "comparison": "exact"
+        }
+      ],
+      "url_to": "https://alloypress.com/software/free-email-marketing-tools",
+      "header_code": "301",
+      "status": "active"
+    },
+    {
+      "id": "100",
+      "sources": [
+        {
+          "ignore": "",
+          "pattern": "wp",
+          "comparison": "exact"
+        }
+      ],
+      "url_to": "https://alloypress.com/wordpress",
+      "header_code": "301",
+      "status": "active"
+    },
+    {
+      "id": "99",
+      "sources": [
+        {
+          "ignore": "",
+          "pattern": "technology/top-10-web-push-notification-tools-and-service",
+          "comparison": "exact"
+        }
+      ],
+      "url_to": "https://alloypress.com/technology/best-web-push-notification-plugins",
+      "header_code": "301",
+      "status": "active"
+    },
+    {
+      "id": "98",
+      "sources": [
+        {
+          "ignore": "",
+          "pattern": "hosting/top-5-best-liquid-web-alternatives-competitors",
+          "comparison": "exact"
+        }
+      ],
+      "url_to": "https://alloypress.com/hosting/best-liquid-web-hosting-alternatives",
+      "header_code": "301",
+      "status": "active"
+    },
+    {
+      "id": "97",
+      "sources": [
+        {
+          "ignore": "",
+          "pattern": "technology/top-5-seo-experts-in-india",
+          "comparison": "exact"
+        }
+      ],
+      "url_to": "https://alloypress.com/technology/top-seo-experts-in-india",
+      "header_code": "301",
+      "status": "active"
+    },
+    {
+      "id": "94",
+      "sources": [
+        {
+          "ignore": "",
+          "pattern": "web-stories/10-best-tourist-countries-for-budget-travellers-with-1000",
+          "comparison": "exact"
+        }
+      ],
+      "url_to": "https://alloypress.com/web-stories/10-best-tourist-countries-for-budget-travellers-with-1000-dollars",
+      "header_code": "301",
+      "status": "active"
+    },
+    {
+      "id": "93",
+      "sources": [
+        {
+          "ignore": "",
+          "pattern": "hosting/top10-web-hosting-companies-4450",
+          "comparison": "exact"
+        }
+      ],
+      "url_to": "https://alloypress.com/hosting/list-of-top-web-hosting-companies",
+      "header_code": "301",
+      "status": "active"
+    },
+    {
+      "id": "92",
+      "sources": [
+        {
+          "ignore": "",
+          "pattern": "blog/how-to-make-money-online-best-ways-4130",
+          "comparison": "exact"
+        }
+      ],
+      "url_to": "https://alloypress.com/blog/how-to-make-money-online-best-ways",
+      "header_code": "301",
+      "status": "active"
+    },
+    {
+      "id": "91",
+      "sources": [
+        {
+          "ignore": "",
+          "pattern": "social-media/youtube-channel-go-viral-best-tips-908",
+          "comparison": "exact"
+        }
+      ],
+      "url_to": "https://alloypress.com/social-media/youtube-channel-go-viral-best-tips",
+      "header_code": "301",
+      "status": "active"
+    },
+    {
+      "id": "90",
+      "sources": [
+        {
+          "ignore": "",
+          "pattern": "social-media/best-ways-to-make-money-from-facebook-01-2489",
+          "comparison": "exact"
+        }
+      ],
+      "url_to": "https://alloypress.com/social-media/best-ways-to-make-money-from-facebook-01",
+      "header_code": "301",
+      "status": "active"
+    },
+    {
+      "id": "89",
+      "sources": [
+        {
+          "ignore": "",
+          "pattern": "software/software-companies-in-the-world-2778",
+          "comparison": "exact"
+        }
+      ],
+      "url_to": "https://alloypress.com/software/software-companies-in-the-world",
+      "header_code": "301",
+      "status": "active"
+    },
+    {
+      "id": "88",
+      "sources": [
+        {
+          "ignore": "",
+          "pattern": "marketing/tivos-mistakes-while-marketing-2846",
+          "comparison": "exact"
+        }
+      ],
+      "url_to": "https://alloypress.com/marketing/tivos-mistakes-while-marketing",
+      "header_code": "301",
+      "status": "active"
+    },
+    {
+      "id": "87",
+      "sources": [
+        {
+          "ignore": "",
+          "pattern": "skin-care/take-1-step-closer-to-have-glowing-skin-2890",
+          "comparison": "exact"
+        }
+      ],
+      "url_to": "https://alloypress.com/skin-care/take-1-step-closer-to-have-glowing-skin",
+      "header_code": "301",
+      "status": "active"
+    },
+    {
+      "id": "86",
+      "sources": [
+        {
+          "ignore": "",
+          "pattern": "health/how-to-get-a-slim-body-in-just-1-month-2963",
+          "comparison": "exact"
+        }
+      ],
+      "url_to": "https://alloypress.com/health/how-to-get-a-slim-body-in-just-1-month",
+      "header_code": "301",
+      "status": "active"
+    },
+    {
+      "id": "85",
+      "sources": [
+        {
+          "ignore": "",
+          "pattern": "sports/qatar-world-cup-2022-3039",
+          "comparison": "exact"
+        }
+      ],
+      "url_to": "https://alloypress.com/sports/qatar-world-cup-2022",
+      "header_code": "301",
+      "status": "active"
+    },
+    {
+      "id": "84",
+      "sources": [
+        {
+          "ignore": "",
+          "pattern": "sports/list-of-world-cups-around-the-world-3049",
+          "comparison": "exact"
+        }
+      ],
+      "url_to": "https://alloypress.com/sports/list-of-world-cups-around-the-world",
+      "header_code": "301",
+      "status": "active"
+    },
+    {
+      "id": "83",
+      "sources": [
+        {
+          "ignore": "",
+          "pattern": "sports/the-athletic-world-cup-3056",
+          "comparison": "exact"
+        }
+      ],
+      "url_to": "https://alloypress.com/sports/the-athletic-world-cup",
+      "header_code": "301",
+      "status": "active"
+    },
+    {
+      "id": "82",
+      "sources": [
+        {
+          "ignore": "",
+          "pattern": "sports/fiba-basketball-world-cup-3061",
+          "comparison": "exact"
+        }
+      ],
+      "url_to": "https://alloypress.com/sports/fiba-basketball-world-cup",
+      "header_code": "301",
+      "status": "active"
+    },
+    {
+      "id": "81",
+      "sources": [
+        {
+          "ignore": "",
+          "pattern": "sports/types-of-cricket-in-the-world-3075",
+          "comparison": "exact"
+        }
+      ],
+      "url_to": "https://alloypress.com/sports/types-of-cricket-in-the-world",
+      "header_code": "301",
+      "status": "active"
+    },
+    {
+      "id": "80",
+      "sources": [
+        {
+          "ignore": "",
+          "pattern": "sports/football-world-cup-3085",
+          "comparison": "exact"
+        }
+      ],
+      "url_to": "https://alloypress.com/sports/football-world-cup",
+      "header_code": "301",
+      "status": "active"
+    },
+    {
+      "id": "79",
+      "sources": [
+        {
+          "ignore": "",
+          "pattern": "sports/hockey-world-cup-3089",
+          "comparison": "exact"
+        }
+      ],
+      "url_to": "https://alloypress.com/sports/hockey-world-cup",
+      "header_code": "301",
+      "status": "active"
+    },
+    {
+      "id": "78",
+      "sources": [
+        {
+          "ignore": "",
+          "pattern": "sports/one-day-internationalodi-highlights-1971-to-2022-3095",
+          "comparison": "exact"
+        }
+      ],
+      "url_to": "https://alloypress.com/sports/one-day-internationalodi-highlights-1971-to-2022",
+      "header_code": "301",
+      "status": "active"
+    },
+    {
+      "id": "77",
+      "sources": [
+        {
+          "ignore": "",
+          "pattern": "sports/fifa-womens-world-cup-3100",
+          "comparison": "exact"
+        }
+      ],
+      "url_to": "https://alloypress.com/sports/fifa-womens-world-cup",
+      "header_code": "301",
+      "status": "active"
+    },
+    {
+      "id": "76",
+      "sources": [
+        {
+          "ignore": "",
+          "pattern": "sports/fivb-volleyball-championship-3124",
+          "comparison": "exact"
+        }
+      ],
+      "url_to": "https://alloypress.com/sports/fivb-volleyball-championship",
+      "header_code": "301",
+      "status": "active"
+    },
+    {
+      "id": "75",
+      "sources": [
+        {
+          "ignore": "",
+          "pattern": "health/what-is-monkeypox-and-its-precautions-3297",
+          "comparison": "exact"
+        }
+      ],
+      "url_to": "https://alloypress.com/health/what-is-monkeypox-and-its-precautions",
+      "header_code": "301",
+      "status": "active"
+    },
+    {
+      "id": "74",
+      "sources": [
+        {
+          "ignore": "",
+          "pattern": "health/mental-health-7-ways-to-make-it-fit-3339",
+          "comparison": "exact"
+        }
+      ],
+      "url_to": "https://alloypress.com/health/mental-health-7-ways-to-make-it-fit",
+      "header_code": "301",
+      "status": "active"
+    },
+    {
+      "id": "73",
+      "sources": [
+        {
+          "ignore": "",
+          "pattern": "health/how-to-stay-healthy-when-you-get-older-3328",
+          "comparison": "exact"
+        }
+      ],
+      "url_to": "https://alloypress.com/health/how-to-stay-healthy-when-you-get-older",
+      "header_code": "301",
+      "status": "active"
+    },
+    {
+      "id": "72",
+      "sources": [
+        {
+          "ignore": "",
+          "pattern": "health/best-ways-to-have-healthy-hair-3323",
+          "comparison": "exact"
+        }
+      ],
+      "url_to": "https://alloypress.com/health/best-ways-to-have-healthy-hair",
+      "header_code": "301",
+      "status": "active"
+    },
+    {
+      "id": "71",
+      "sources": [
+        {
+          "ignore": "",
+          "pattern": "health/importance-of-sleep-for-students-3350",
+          "comparison": "exact"
+        }
+      ],
+      "url_to": "https://alloypress.com/health/importance-of-sleep-for-students",
+      "header_code": "301",
+      "status": "active"
+    },
+    {
+      "id": "70",
+      "sources": [
+        {
+          "ignore": "",
+          "pattern": "health/increase-your-immune-system-by-food-3321",
+          "comparison": "exact"
+        }
+      ],
+      "url_to": "https://alloypress.com/health/increase-your-immune-system-by-food",
+      "header_code": "301",
+      "status": "active"
+    },
+    {
+      "id": "69",
+      "sources": [
+        {
+          "ignore": "",
+          "pattern": "health/best-ways-to-train-your-brain-3418",
+          "comparison": "exact"
+        }
+      ],
+      "url_to": "https://alloypress.com/health/best-ways-to-train-your-brain",
+      "header_code": "301",
+      "status": "active"
+    },
+    {
+      "id": "68",
+      "sources": [
+        {
+          "ignore": "",
+          "pattern": "social-media/quora-ads-step-by-step-tutorial-3471",
+          "comparison": "exact"
+        }
+      ],
+      "url_to": "https://alloypress.com/social-media/quora-ads-step-by-step-tutorial",
+      "header_code": "301",
+      "status": "active"
+    },
+    {
+      "id": "67",
+      "sources": [
+        {
+          "ignore": "",
+          "pattern": "success-story/virat-kohli-success-story-3497",
+          "comparison": "exact"
+        }
+      ],
+      "url_to": "https://alloypress.com/success-story/virat-kohli-success-story",
+      "header_code": "301",
+      "status": "active"
+    },
+    {
+      "id": "66",
+      "sources": [
+        {
+          "ignore": "",
+          "pattern": "marketing/use-chatgpt-for-your-marketing-4023",
+          "comparison": "exact"
+        }
+      ],
+      "url_to": "https://alloypress.com/marketing/use-chatgpt-for-your-marketing",
+      "header_code": "301",
+      "status": "active"
+    },
+    {
+      "id": "65",
+      "sources": [
+        {
+          "ignore": "",
+          "pattern": "social-media/instagram-business-make-money-on-instagram-2028",
+          "comparison": "exact"
+        }
+      ],
+      "url_to": "https://alloypress.com/social-media/instagram-business-make-money-on-instagram",
+      "header_code": "301",
+      "status": "active"
+    },
+    {
+      "id": "64",
+      "sources": [
+        {
+          "ignore": "",
+          "pattern": "social-media/best-way-to-monetize-youtube-channel-707",
+          "comparison": "exact"
+        }
+      ],
+      "url_to": "https://alloypress.com/social-media/best-way-to-monetize-youtube-channel",
+      "header_code": "301",
+      "status": "active"
+    },
+    {
+      "id": "63",
+      "sources": [
+        {
+          "ignore": "",
+          "pattern": "hosting/bluehost-vs-pressable-which-is-the-best-3523",
+          "comparison": "exact"
+        }
+      ],
+      "url_to": "https://alloypress.com/hosting/bluehost-vs-pressable-which-is-the-best",
+      "header_code": "301",
+      "status": "active"
+    },
+    {
+      "id": "62",
+      "sources": [
+        {
+          "ignore": "",
+          "pattern": "technology/best-chatbots-on-the-web-4591",
+          "comparison": "exact"
+        }
+      ],
+      "url_to": "https://alloypress.com/technology/best-chatbots-on-the-web",
+      "header_code": "301",
+      "status": "active"
+    },
+    {
+      "id": "61",
+      "sources": [
+        {
+          "ignore": "",
+          "pattern": "marketing/use-chatbots-for-customer-service-to-build-your-brand-reputation-3026",
+          "comparison": "exact"
+        }
+      ],
+      "url_to": "https://alloypress.com/marketing/use-chatbots-for-customer-service-to-build-your-brand-reputation",
+      "header_code": "301",
+      "status": "active"
+    },
+    {
+      "id": "60",
+      "sources": [
+        {
+          "ignore": "",
+          "pattern": "technology/distributed-ledger-technologydlt-3240",
+          "comparison": "exact"
+        }
+      ],
+      "url_to": "https://alloypress.com/technology/distributed-ledger-technologydlt",
+      "header_code": "301",
+      "status": "active"
+    },
+    {
+      "id": "59",
+      "sources": [
+        {
+          "ignore": "",
+          "pattern": "technology/what-are-decentralized-applications-3236",
+          "comparison": "exact"
+        }
+      ],
+      "url_to": "https://alloypress.com/technology/what-are-decentralized-applications",
+      "header_code": "301",
+      "status": "active"
+    },
+    {
+      "id": "58",
+      "sources": [
+        {
+          "ignore": "",
+          "pattern": "hosting/greengeeks-vs-bluehost-2752",
+          "comparison": "exact"
+        }
+      ],
+      "url_to": "https://alloypress.com/hosting/greengeeks-vs-bluehost",
+      "header_code": "301",
+      "status": "active"
+    },
+    {
+      "id": "57",
+      "sources": [
+        {
+          "ignore": "",
+          "pattern": "technology/what-is-blockchain-technology-3211",
+          "comparison": "exact"
+        }
+      ],
+      "url_to": "https://alloypress.com/technology/what-is-blockchain-technology",
+      "header_code": "301",
+      "status": "active"
+    },
+    {
+      "id": "56",
+      "sources": [
+        {
+          "ignore": "",
+          "pattern": "social-media/can-you-make-money-on-youtube-7-best-ways-2093",
+          "comparison": "exact"
+        }
+      ],
+      "url_to": "https://alloypress.com/social-media/can-you-make-money-on-youtube-7-best-ways",
+      "header_code": "301",
+      "status": "active"
+    },
+    {
+      "id": "55",
+      "sources": [
+        {
+          "ignore": "",
+          "pattern": "success-story/walmart-success-story-3422",
+          "comparison": "exact"
+        }
+      ],
+      "url_to": "https://alloypress.com/success-story/walmart-success-story",
+      "header_code": "301",
+      "status": "active"
+    },
+    {
+      "id": "54",
+      "sources": [
+        {
+          "ignore": "",
+          "pattern": "hosting/bluehost-hosting-review-849",
+          "comparison": "exact"
+        }
+      ],
+      "url_to": "https://alloypress.com/hosting/bluehost-hosting-review",
+      "header_code": "301",
+      "status": "active"
+    },
+    {
+      "id": "53",
+      "sources": [
+        {
+          "ignore": "",
+          "pattern": "technology/what-is-chat-gpt-4326",
+          "comparison": "exact"
+        }
+      ],
+      "url_to": "https://alloypress.com/technology/what-is-chat-gpt",
+      "header_code": "301",
+      "status": "active"
+    },
+    {
+      "id": "52",
+      "sources": [
+        {
+          "ignore": "",
+          "pattern": "technology/artificial-intelligence-5375",
+          "comparison": "exact"
+        }
+      ],
+      "url_to": "https://alloypress.com/technology/artificial-intelligence",
+      "header_code": "301",
+      "status": "active"
+    },
+    {
+      "id": "51",
+      "sources": [
+        {
+          "ignore": "",
+          "pattern": "technology/free-email-marketing-tools-5358",
+          "comparison": "exact"
+        }
+      ],
+      "url_to": "https://alloypress.com/technology/free-email-marketing-tools",
+      "header_code": "301",
+      "status": "active"
+    },
+    {
+      "id": "50",
+      "sources": [
+        {
+          "ignore": "",
+          "pattern": "hosting/importance-of-a-website-in-business-2614",
+          "comparison": "exact"
+        }
+      ],
+      "url_to": "https://alloypress.com/",
+      "header_code": "301",
+      "status": "active"
+    },
+    {
+      "id": "49",
+      "sources": [
+        {
+          "ignore": "",
+          "pattern": "marketing/digital-marketing-business-7-key-things-for-a-successful-start-2786",
+          "comparison": "exact"
+        }
+      ],
+      "url_to": "https://alloypress.com/",
+      "header_code": "301",
+      "status": "active"
+    },
+    {
+      "id": "48",
+      "sources": [
+        {
+          "ignore": "",
+          "pattern": "social-media/importance-of-social-media-marketing-2420",
+          "comparison": "exact"
+        }
+      ],
+      "url_to": "https://alloypress.com/",
+      "header_code": "301",
+      "status": "active"
+    },
+    {
+      "id": "47",
+      "sources": [
+        {
+          "ignore": "",
+          "pattern": "social-media/linkedin-ads-to-improve-business-3443",
+          "comparison": "exact"
+        }
+      ],
+      "url_to": "https://alloypress.com/",
+      "header_code": "301",
+      "status": "active"
+    },
+    {
+      "id": "46",
+      "sources": [
+        {
+          "ignore": "",
+          "pattern": "hosting/pressable-hosting-review-4177",
+          "comparison": "exact"
+        }
+      ],
+      "url_to": "https://alloypress.com/",
+      "header_code": "301",
+      "status": "active"
+    },
+    {
+      "id": "45",
+      "sources": [
+        {
+          "ignore": "",
+          "pattern": "marketing/brand-reputation-management-2693",
+          "comparison": "exact"
+        }
+      ],
+      "url_to": "https://alloypress.com/",
+      "header_code": "301",
+      "status": "active"
+    },
+    {
+      "id": "43",
+      "sources": [
+        {
+          "ignore": "",
+          "pattern": "social-media/whatsapp-update-new-features-3439",
+          "comparison": "exact"
+        }
+      ],
+      "url_to": "https://alloypress.com/",
+      "header_code": "301",
+      "status": "active"
+    },
+    {
+      "id": "42",
+      "sources": [
+        {
+          "ignore": "",
+          "pattern": "social-media/social-media-marketing-companies-2733",
+          "comparison": "exact"
+        }
+      ],
+      "url_to": "https://alloypress.com/",
+      "header_code": "301",
+      "status": "active"
+    },
+    {
+      "id": "41",
+      "sources": [
+        {
+          "ignore": "",
+          "pattern": "marketing/email-marketing-softwares-6415",
+          "comparison": "exact"
+        }
+      ],
+      "url_to": "https://alloypress.com/",
+      "header_code": "301",
+      "status": "active"
+    },
+    {
+      "id": "40",
+      "sources": [
+        {
+          "ignore": "",
+          "pattern": "marketing/real-estate-lead-generation-strategies-for-agents-5852",
+          "comparison": "exact"
+        }
+      ],
+      "url_to": "https://alloypress.com/",
+      "header_code": "301",
+      "status": "active"
+    },
+    {
+      "id": "39",
+      "sources": [
+        {
+          "ignore": "",
+          "pattern": "hosting/list-of-top-web-hosting-companies-4450",
+          "comparison": "exact"
+        }
+      ],
+      "url_to": "https://alloypress.com",
+      "header_code": "301",
+      "status": "active"
+    },
+    {
+      "id": "38",
+      "sources": [
+        {
+          "ignore": "",
+          "pattern": "hosting/liquid-web-hosting-review-5764",
+          "comparison": "exact"
+        }
+      ],
+      "url_to": "https://alloypress.com/",
+      "header_code": "301",
+      "status": "active"
+    },
+    {
+      "id": "37",
+      "sources": [
+        {
+          "ignore": "",
+          "pattern": "wp/generatepress-review-4136",
+          "comparison": "exact"
+        }
+      ],
+      "url_to": "https://alloypress.com/wp/generatepress-review",
+      "header_code": "301",
+      "status": "active"
+    },
+    {
+      "id": "36",
+      "sources": [
+        {
+          "ignore": "",
+          "pattern": "wp/wordpress-themes-list-6306",
+          "comparison": "exact"
+        }
+      ],
+      "url_to": "https://alloypress.com/wp/wordpress-themes-list",
+      "header_code": "301",
+      "status": "active"
+    },
+    {
+      "id": "35",
+      "sources": [
+        {
+          "ignore": "",
+          "pattern": "blog/best-low-cost-home-improvement-ideas-5243",
+          "comparison": "exact"
+        }
+      ],
+      "url_to": "https://alloypress.com/blog/best-low-cost-home-improvement-ideas",
+      "header_code": "301",
+      "status": "active"
+    },
+    {
+      "id": "34",
+      "sources": [
+        {
+          "ignore": "",
+          "pattern": "skin-care/best-natural-skincare-products-5301",
+          "comparison": "exact"
+        }
+      ],
+      "url_to": "https://alloypress.com/skin-care/best-natural-skincare-products",
+      "header_code": "301",
+      "status": "active"
+    },
+    {
+      "id": "33",
+      "sources": [
+        {
+          "ignore": "",
+          "pattern": "write-for-us",
+          "comparison": "exact"
+        }
+      ],
+      "url_to": "https://alloypress.com/contribute",
+      "header_code": "301",
+      "status": "active"
+    },
+    {
+      "id": "32",
+      "sources": [
+        {
+          "ignore": "",
+          "pattern": "best-way-to-monetize-youtube-channel/",
+          "comparison": "exact"
+        }
+      ],
+      "url_to": "https://alloypress.com/social-media/best-way-to-monetize-youtube-channel-707",
+      "header_code": "301",
+      "status": "active"
+    },
+    {
+      "id": "31",
+      "sources": [
+        {
+          "ignore": "",
+          "pattern": "blogs",
+          "comparison": "exact"
+        }
+      ],
+      "url_to": "https://alloypress.com/blog",
+      "header_code": "301",
+      "status": "inactive"
+    },
+    {
+      "id": "30",
+      "sources": [
+        {
+          "ignore": "",
+          "pattern": "technology/cryptocurrency",
+          "comparison": "exact"
+        }
+      ],
+      "url_to": "https://alloypress.com/",
+      "header_code": "301",
+      "status": "active"
+    },
+    {
+      "id": "29",
+      "sources": [
+        {
+          "ignore": "",
+          "pattern": "make-money-online-articles",
+          "comparison": "exact"
+        }
+      ],
+      "url_to": "https://alloypress.com/blog/how-to-make-money-online-best-ways-4130",
+      "header_code": "301",
+      "status": "active"
+    },
+    {
+      "id": "28",
+      "sources": [
+        {
+          "ignore": "",
+          "pattern": "technology/cryptocurrency/12-rich-facts-about-crypto-market-1256",
+          "comparison": "exact"
+        },
+        {
+          "ignore": "",
+          "pattern": "technology/cryptocurrency/7-important-dogecoin-news-for-all-1691",
+          "comparison": "exact"
+        },
+        {
+          "ignore": "",
+          "pattern": "technology/cryptocurrency/top-10-cryptocurrency-detailed-overview-1812",
+          "comparison": "exact"
+        },
+        {
+          "ignore": "",
+          "pattern": "technology/cryptocurrency/apecoin-price-prediction-2744",
+          "comparison": "exact"
+        },
+        {
+          "ignore": "",
+          "pattern": "technology/cryptocurrency/will-dogecoin-have-a-price-spike-like-bitcoin-2824",
+          "comparison": "exact"
+        },
+        {
+          "ignore": "",
+          "pattern": "technology/cryptocurrency/what-is-web30-crypto-3126",
+          "comparison": "exact"
+        },
+        {
+          "ignore": "",
+          "pattern": "technology/cryptocurrency/kucoin-review-by-alloy-press-3260",
+          "comparison": "exact"
+        },
+        {
+          "ignore": "",
+          "pattern": "technology/cryptocurrency/new-best-crypto-to-invest-3264",
+          "comparison": "exact"
+        },
+        {
+          "ignore": "",
+          "pattern": "technology/cryptocurrency/crypto-scams-explained-3304",
+          "comparison": "exact"
+        },
+        {
+          "ignore": "",
+          "pattern": "technology/cryptocurrency/the-aptos-crypto-explained-3310",
+          "comparison": "exact"
+        },
+        {
+          "ignore": "",
+          "pattern": "technology/how-to-invest-in-web3-3135",
+          "comparison": "exact"
+        }
+      ],
+      "url_to": "https://alloypress.com",
+      "header_code": "301",
+      "status": "active"
+    },
+    {
+      "id": "27",
+      "sources": [
+        {
+          "ignore": "",
+          "pattern": "sports/asia-cup-2022-prediction-3551",
+          "comparison": "exact"
+        }
+      ],
+      "url_to": "https://alloypress.com/sports/types-of-cricket-in-the-world-3075",
+      "header_code": "301",
+      "status": "active"
+    },
+    {
+      "id": "26",
+      "sources": [
+        {
+          "ignore": "",
+          "pattern": "home-2",
+          "comparison": "exact"
+        }
+      ],
+      "url_to": "https://alloypress.com/",
+      "header_code": "301",
+      "status": "active"
+    },
+    {
+      "id": "25",
+      "sources": [
+        {
+          "ignore": "",
+          "pattern": "news",
+          "comparison": "exact"
+        }
+      ],
+      "url_to": "https://alloypress.com/",
+      "header_code": "301",
+      "status": "inactive"
+    },
+    {
+      "id": "24",
+      "sources": [
+        {
+          "ignore": "",
+          "pattern": "homepage-big-slide",
+          "comparison": "exact"
+        }
+      ],
+      "url_to": "https://alloypress.com/",
+      "header_code": "301",
+      "status": "active"
+    },
+    {
+      "id": "23",
+      "sources": [
+        {
+          "ignore": "",
+          "pattern": "cryptocurrency",
+          "comparison": "exact"
+        }
+      ],
+      "url_to": "https://alloypress.com/technology/cryptocurrency",
+      "header_code": "301",
+      "status": "active"
+    },
+    {
+      "id": "22",
+      "sources": [
+        {
+          "ignore": "",
+          "pattern": "others/fivb-volleyball-championship-3124",
+          "comparison": "exact"
+        }
+      ],
+      "url_to": "https://alloypress.com/sports/fivb-volleyball-championship-3124",
+      "header_code": "301",
+      "status": "active"
+    },
+    {
+      "id": "21",
+      "sources": [
+        {
+          "ignore": "",
+          "pattern": "tag/instagram-business",
+          "comparison": "exact"
+        }
+      ],
+      "url_to": "https://alloypress.com",
+      "header_code": "301",
+      "status": "active"
+    },
+    {
+      "id": "20",
+      "sources": [
+        {
+          "ignore": "",
+          "pattern": "tag/make-money-online",
+          "comparison": "exact"
+        }
+      ],
+      "url_to": "https://alloypress.com/blog/how-to-make-money-online-best-ways-4130",
+      "header_code": "301",
+      "status": "active"
+    },
+    {
+      "id": "19",
+      "sources": [
+        {
+          "ignore": "",
+          "pattern": "importance-of-a-website-in-business/2614",
+          "comparison": "exact"
+        }
+      ],
+      "url_to": "https://alloypress.com/hosting/importance-of-a-website-in-business-2614",
+      "header_code": "301",
+      "status": "active"
+    },
+    {
+      "id": "18",
+      "sources": [
+        {
+          "ignore": "",
+          "pattern": "best-way-to-monetize-youtube-channel",
+          "comparison": "exact"
+        }
+      ],
+      "url_to": "https://alloypress.com/social-media/best-way-to-monetize-youtube-channel-707",
+      "header_code": "301",
+      "status": "active"
+    },
+    {
+      "id": "17",
+      "sources": [
+        {
+          "ignore": "",
+          "pattern": "bluehost-hosting-review",
+          "comparison": "exact"
+        }
+      ],
+      "url_to": "https://blogsatabhub.com/hosting/bluehost-hosting-review-849",
+      "header_code": "301",
+      "status": "inactive"
+    },
+    {
+      "id": "16",
+      "sources": [
+        {
+          "ignore": "",
+          "pattern": "grow-your-youtube-channel-and-video-fast",
+          "comparison": "exact"
+        }
+      ],
+      "url_to": "https://blogsatabhub.com/social-media/grow-your-youtube-channel-and-video-fast-908",
+      "header_code": "301",
+      "status": "inactive"
+    },
+    {
+      "id": "15",
+      "sources": [
+        {
+          "ignore": "",
+          "pattern": "12-rich-facts-about-crypto-market",
+          "comparison": "exact"
+        }
+      ],
+      "url_to": "https://blogsatabhub.com/cryptocurrency/12-rich-facts-about-crypto-market-1256",
+      "header_code": "301",
+      "status": "inactive"
+    },
+    {
+      "id": "14",
+      "sources": [
+        {
+          "ignore": "",
+          "pattern": "7-important-dogecoin-news-for-all",
+          "comparison": "exact"
+        }
+      ],
+      "url_to": "https://blogsatabhub.com/cryptocurrency/7-important-dogecoin-news-for-all-1691",
+      "header_code": "301",
+      "status": "inactive"
+    },
+    {
+      "id": "13",
+      "sources": [
+        {
+          "ignore": "",
+          "pattern": "top-10-cryptocurrency-detailed-overview",
+          "comparison": "exact"
+        }
+      ],
+      "url_to": "https://blogsatabhub.com/cryptocurrency/top-10-cryptocurrency-detailed-overview-1812",
+      "header_code": "301",
+      "status": "inactive"
+    },
+    {
+      "id": "12",
+      "sources": [
+        {
+          "ignore": "",
+          "pattern": "instagram-business-make-money-on-instagram",
+          "comparison": "exact"
+        }
+      ],
+      "url_to": "https://blogsatabhub.com/social-media/instagram-business-make-money-on-instagram-2028",
+      "header_code": "301",
+      "status": "inactive"
+    },
+    {
+      "id": "11",
+      "sources": [
+        {
+          "ignore": "",
+          "pattern": "can-you-make-money-on-youtube-7-best-ways",
+          "comparison": "exact"
+        }
+      ],
+      "url_to": "https://blogsatabhub.com/social-media/can-you-make-money-on-youtube-7-best-ways-2093",
+      "header_code": "301",
+      "status": "inactive"
+    },
+    {
+      "id": "10",
+      "sources": [
+        {
+          "ignore": "",
+          "pattern": "importance-of-social-media-marketing",
+          "comparison": "exact"
+        }
+      ],
+      "url_to": "https://blogsatabhub.com/social-media/importance-of-social-media-marketing-2420",
+      "header_code": "301",
+      "status": "inactive"
+    },
+    {
+      "id": "9",
+      "sources": [
+        {
+          "ignore": "",
+          "pattern": "best-ways-to-make-money-from-facebook-01",
+          "comparison": "exact"
+        }
+      ],
+      "url_to": "https://blogsatabhub.com/social-media/best-ways-to-make-money-from-facebook-01-2489",
+      "header_code": "301",
+      "status": "inactive"
+    },
+    {
+      "id": "8",
+      "sources": [
+        {
+          "ignore": "",
+          "pattern": "abhub-articles",
+          "comparison": "exact"
+        }
+      ],
+      "url_to": "https://blogsatabhub.com/make-money-online-articles/",
+      "header_code": "301",
+      "status": "inactive"
+    },
+    {
+      "id": "7",
+      "sources": [
+        {
+          "ignore": "",
+          "pattern": "uncategorized",
+          "comparison": "exact"
+        }
+      ],
+      "url_to": "https://blogsatabhub.com/",
+      "header_code": "301",
+      "status": "inactive"
+    },
+    {
+      "id": "6",
+      "sources": [
+        {
+          "ignore": "",
+          "pattern": "articles",
+          "comparison": "exact"
+        }
+      ],
+      "url_to": "https://alloypress.com/",
+      "header_code": "301",
+      "status": "active"
+    },
+    {
+      "id": "5",
+      "sources": [
+        {
+          "ignore": "",
+          "pattern": "digital-world",
+          "comparison": "exact"
+        }
+      ],
+      "url_to": "https://blogsatabhub.com/social-media/",
+      "header_code": "301",
+      "status": "inactive"
+    },
+    {
+      "id": "4",
+      "sources": [
+        {
+          "ignore": "",
+          "pattern": "get-your-youtube-monetized-best-ways",
+          "comparison": "exact"
+        }
+      ],
+      "url_to": "https://blogsatabhub.com/best-way-to-monetize-youtube-channel/",
+      "header_code": "301",
+      "status": "inactive"
+    },
+    {
+      "id": "2",
+      "sources": [
+        {
+          "ignore": "",
+          "pattern": "blogs1",
+          "comparison": "exact"
+        }
+      ],
+      "url_to": "https://blogsatabhub.com/blogs/",
+      "header_code": "301",
+      "status": "inactive"
+    },
+    {
+      "id": "1",
+      "sources": [
+        {
+          "ignore": "",
+          "pattern": "products",
+          "comparison": "exact"
+        }
+      ],
+      "url_to": "https://blogsatabhub.com/articles/",
+      "header_code": "301",
+      "status": "inactive"
     }
   ]
 }

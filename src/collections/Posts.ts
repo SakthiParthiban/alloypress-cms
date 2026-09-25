@@ -26,10 +26,10 @@ const isAdmin: Access = ({ req }) => {
   return role === 'admin'
 }
 
-const SEARCH_MAX_RESULTS = 20
+const SEARCH_MAX_RESULTS = 8
 const SEARCH_MAX_QUERY_LENGTH = 80
 const SEARCH_MAX_TERMS = 6
-const SEARCH_WORD_SIMILARITY_THRESHOLD = 0.45
+const SEARCH_WORD_SIMILARITY_THRESHOLD = 0.30
 
 const SEARCH_ALLOWED_CATEGORY_SLUGS = [
   'blogs',
@@ -61,6 +61,11 @@ type SearchResultRow = {
   slug: string | null
   excerpt: string | null
   publishedAt: string | null
+  featuredImage: {
+    id: string | number
+    url: string | null
+    alt: string | null
+  } | null
   category: {
     id: string | number
     name: string | null
@@ -117,28 +122,36 @@ async function searchPostsWithSimilarity(
   const candidateConditions = terms.map((term) => {
     const partial = `%${escapeLikePattern(term)}%`
 
+    const fuzzyThreshold =
+      term.length <= 4
+        ? 0.30
+        : term.length <= 6
+          ? 0.25
+          : 0.25
+
     return sql`
-      (
-        ${term} <% p.title
-        OR ${term} <% p.slug
-        OR ${term} <% p.excerpt
-        OR ${term} <% c.name
-        OR ${term} <% c.slug
-        OR p.title ILIKE ${partial}
-        OR p.slug ILIKE ${partial}
-        OR p.excerpt ILIKE ${partial}
-        OR c.name ILIKE ${partial}
-        OR c.slug ILIKE ${partial}
-      )
-    `
+    (
+      word_similarity(${term}, COALESCE(p.title, '')) >= ${fuzzyThreshold}
+      OR word_similarity(${term}, COALESCE(p.slug, '')) >= ${fuzzyThreshold}
+      OR word_similarity(${term}, COALESCE(p.excerpt, '')) >= ${fuzzyThreshold}
+      OR word_similarity(${term}, COALESCE(c.name, '')) >= ${fuzzyThreshold}
+      OR word_similarity(${term}, COALESCE(c.slug, '')) >= ${fuzzyThreshold}
+      OR p.title ILIKE ${partial}
+      OR p.slug ILIKE ${partial}
+      OR p.excerpt ILIKE ${partial}
+      OR c.name ILIKE ${partial}
+      OR c.slug ILIKE ${partial}
+    )
+  `
   })
 
   const scoreParts = terms.map((term) => {
-    const shortTermWeight = term.length <= 2
-      ? 0.35
-      : term.length === 3
-        ? 0.65
-        : 1
+    const shortTermWeight =
+      term.length <= 2
+        ? 0.35
+        : term.length === 3
+          ? 0.65
+          : 1
 
     return sql`
       GREATEST(
@@ -170,48 +183,50 @@ async function searchPostsWithSimilarity(
     END
   `
 
-  const result = await req.payload.db.drizzle.transaction(async (tx) => {
-    await tx.execute(
-      sql.raw(
-        `SET LOCAL pg_trgm.word_similarity_threshold = ${SEARCH_WORD_SIMILARITY_THRESHOLD}`,
-      ),
-    )
-
-    return tx.execute(sql`
-      SELECT
-        p.id AS "id",
-        p.title AS "title",
-        p.slug AS "slug",
-        p.excerpt AS "excerpt",
-        p.published_at AS "publishedAt",
-        jsonb_build_object(
-          'id', c.id,
-          'name', c.name,
-          'slug', c.slug
-        ) AS "category",
-        (
-          ${scoreExpression}
-          + ${exactPhraseBoost}
-          + ${titlePrefixBoost}
-        ) AS "score"
-      FROM posts AS p
-      INNER JOIN categories AS c
-        ON c.id = p.category_id
-      WHERE
-        p._status = 'published'
-        AND c.slug IN (${sql.join(
-      SEARCH_ALLOWED_CATEGORY_SLUGS.map((slug) => sql`${slug}`),
-      sql`, `,
-    )})
-        AND (
-          ${sql.join(candidateConditions, sql` OR `)}
-        )
-      ORDER BY
-        "score" DESC,
-        p.published_at DESC NULLS LAST
-      LIMIT ${limit}
-    `)
-  })
+  const result = await req.payload.db.drizzle.execute(sql`
+    SELECT
+      p.id AS "id",
+      p.title AS "title",
+      p.slug AS "slug",
+      p.excerpt AS "excerpt",
+     p.published_at AS "publishedAt",
+CASE
+  WHEN m.id IS NULL THEN NULL
+  ELSE jsonb_build_object(
+    'id', m.id,
+    'url', m.url,
+    'alt', m.alt
+  )
+END AS "featuredImage",
+jsonb_build_object(
+  'id', c.id,
+  'name', c.name,
+  'slug', c.slug
+) AS "category",
+      (
+        ${scoreExpression}
+        + ${exactPhraseBoost}
+        + ${titlePrefixBoost}
+      ) AS "score"
+    FROM posts AS p
+INNER JOIN categories AS c
+  ON c.id = p.category_id
+LEFT JOIN media AS m
+  ON m.id = p.featured_image_id
+    WHERE
+      p._status = 'published'
+      AND c.slug IN (${sql.join(
+    SEARCH_ALLOWED_CATEGORY_SLUGS.map((slug) => sql`${slug}`),
+    sql`, `,
+  )})
+      AND (
+        ${sql.join(candidateConditions, sql` OR `)}
+      )
+    ORDER BY
+      "score" DESC,
+      p.published_at DESC NULLS LAST
+    LIMIT ${limit}
+  `)
 
   return (result.rows || []) as unknown as SearchResultRow[]
 }
@@ -384,16 +399,18 @@ export const Posts: CollectionConfig = {
             totalDocs: docs.length,
           })
         } catch (error) {
-          req.payload.logger.error(
-            `Post search failed for "${query}": ${error instanceof Error ? error.message : String(error)
-            }`,
-          )
+          const message =
+            error instanceof Error
+              ? error.message
+              : String(error)
+
+          console.error('[SEARCH ERROR]', error)
 
           return Response.json(
             {
               docs: [],
               totalDocs: 0,
-              error: 'Search failed',
+              error: message,
             },
             { status: 500 },
           )

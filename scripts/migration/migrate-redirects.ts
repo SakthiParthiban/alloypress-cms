@@ -213,8 +213,9 @@ async function migrateRedirects() {
       config,
     })
 
-  const redirects =
-    loadRedirects()
+ const redirects = loadRedirects().filter(
+  (redirect) => redirect.status === 'active',
+)
 
   console.log(
     `Found ${redirects.length} active Rank Math redirects`,
