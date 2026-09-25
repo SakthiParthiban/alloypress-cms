@@ -12,7 +12,6 @@ export const Media: CollectionConfig = {
 
   admin: {
     useAsTitle: 'filename',
-
     defaultColumns: [
       'filename',
       'mimeType',
@@ -48,7 +47,8 @@ export const Media: CollectionConfig = {
       }
 
       const thumbnailFilename =
-        media.sizes?.thumbnail?.filename || media.filename
+        media.sizes?.thumbnail?.filename ||
+        media.filename
 
       if (!thumbnailFilename) {
         return ''
@@ -80,7 +80,6 @@ export const Media: CollectionConfig = {
       name: 'wordpressId',
       type: 'number',
       unique: true,
-
       admin: {
         description:
           'Original WordPress media ID used for migration mapping.',
@@ -90,7 +89,6 @@ export const Media: CollectionConfig = {
     {
       name: 'originalUrl',
       type: 'text',
-
       admin: {
         description:
           'Original WordPress media URL used during migration.',
@@ -106,7 +104,6 @@ export const Media: CollectionConfig = {
       type: 'text',
       required: true,
       label: 'Alt Text',
-
       admin: {
         description:
           'Alternative text for accessibility and image SEO. For audio files, use a short descriptive text.',
@@ -121,7 +118,6 @@ export const Media: CollectionConfig = {
       name: 'title',
       type: 'text',
       label: 'Media Title',
-
       admin: {
         description:
           'Title used for identifying and managing the media.',
@@ -139,7 +135,11 @@ export const Media: CollectionConfig = {
 
       admin: {
         description:
-          'Optional caption displayed with the media.',
+          'Optional caption displayed with the media. Supports bold, italic, underline, links, and left/center/right alignment.',
+        components: {
+          Field:
+            '/components/admin/MediaCaptionField#MediaCaptionField',
+        },
       },
     },
 
@@ -151,7 +151,6 @@ export const Media: CollectionConfig = {
       name: 'description',
       type: 'textarea',
       label: 'Description',
-
       admin: {
         description:
           'Optional description containing additional information about the media.',

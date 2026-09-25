@@ -242,15 +242,15 @@ const CodeBlockWithPreview: Block = {
   fields: baseCodeBlock.fields.map((f: any) =>
     f.name === 'code'
       ? {
-          ...f,
-          admin: {
-            ...f.admin,
-            components: {
-              ...f.admin?.components,
-              Field: '/components/admin/CodePreviewField#CodePreviewField',
-            },
+        ...f,
+        admin: {
+          ...f.admin,
+          components: {
+            ...f.admin?.components,
+            Field: '/components/admin/CodePreviewField#CodePreviewField',
           },
-        }
+        },
+      }
       : f,
   ) as Block['fields'],
 }
@@ -524,7 +524,7 @@ export const Posts: CollectionConfig = {
             ? String(data.id)
             : "";
 
-        return `https://alloypress-web.vercel.app/preview/blogs/${slug}${id ? `?id=${encodeURIComponent(id)}` : ""
+        return `http://localhost:3000/preview/blogs/${slug}${id ? `?id=${encodeURIComponent(id)}` : ""
           }`;
       },
     },
@@ -535,7 +535,7 @@ export const Posts: CollectionConfig = {
 
     drafts: {
       autosave: {
-        interval: 10000,
+        interval: 375,
         showSaveDraftButton: true,
       },
       schedulePublish: true,
@@ -857,13 +857,39 @@ export const Posts: CollectionConfig = {
               },
 
               {
-                slug: 'ctaButton',
+                slug: 'htmlContent',
 
+                labels: {
+                  singular: 'HTML Content',
+                  plural: 'HTML Content Blocks',
+                },
+
+                fields: [
+                  {
+                    name: 'html',
+                    type: 'code',
+                    required: true,
+                    label: 'HTML',
+
+                    admin: {
+                      description:
+                        'Use for migrated or complex article HTML such as comparison tables, custom layouts, buttons, and other supported HTML content.',
+
+                      components: {
+                        Field:
+                          '/components/admin/HTMLPreviewField#HTMLPreviewField',
+                      },
+                    },
+                  },
+                ],
+              },
+
+              {
+                slug: 'ctaButton',
                 labels: {
                   singular: 'CTA Button',
                   plural: 'CTA Buttons',
                 },
-
                 fields: [
                   {
                     name: 'label',
@@ -871,15 +897,205 @@ export const Posts: CollectionConfig = {
                     required: true,
                     label: 'Button Label',
                   },
-
                   {
                     name: 'url',
                     type: 'text',
                     required: true,
                     label: 'Button URL',
                   },
+                  {
+                    name: 'alignment',
+                    type: 'select',
+                    label: 'Alignment',
+                    defaultValue: 'center',
+                    options: [
+                      { label: 'Left', value: 'left' },
+                      { label: 'Center', value: 'center' },
+                      { label: 'Right', value: 'right' },
+                    ],
+                  },
+                  {
+                    name: 'backgroundColor',
+                    type: 'text',
+                    label: 'Background Color',
+                    defaultValue: '#16a34a',
+                    admin: {
+                      components: {
+                        Field: '/components/admin/CTAColorField#CTAColorField',
+                      },
+                    },
+                  },
+                  {
+                    name: 'textColor',
+                    type: 'text',
+                    label: 'Text Color',
+                    defaultValue: '#ffffff',
+                    admin: {
+                      components: {
+                        Field: '/components/admin/CTAColorField#CTAColorField',
+                      },
+                    },
+                  },
+                  {
+                    name: 'hoverBackgroundColor',
+                    type: 'text',
+                    label: 'Hover Background',
+                    defaultValue: '#15803d',
+                    admin: {
+                      components: {
+                        Field: '/components/admin/CTAColorField#CTAColorField',
+                      },
+                    },
+                  },
+                  {
+                    name: 'hoverTextColor',
+                    type: 'text',
+                    label: 'Hover Text Color',
+                    defaultValue: '#ffffff',
+                    admin: {
+                      components: {
+                        Field: '/components/admin/CTAColorField#CTAColorField',
+                      },
+                    },
+                  },
+                  {
+                    name: 'borderColor',
+                    type: 'text',
+                    label: 'Border Color',
+                    defaultValue: '#16a34a',
+                    admin: {
+                      components: {
+                        Field: '/components/admin/CTAColorField#CTAColorField',
+                      },
+                    },
+                  },
+                  {
+                    name: 'fontSize',
+                    type: 'text',
+                    label: 'Font Size',
+                    defaultValue: '16px',
+                  },
+                  {
+                    name: 'fontWeight',
+                    type: 'select',
+                    label: 'Font Weight',
+                    defaultValue: '700',
+                    options: [
+                      { label: 'Normal', value: '400' },
+                      { label: 'Medium', value: '500' },
+                      { label: 'Semibold', value: '600' },
+                      { label: 'Bold', value: '700' },
+                      { label: 'Extra Bold', value: '800' },
+                    ],
+                  },
+                  {
+                    name: 'italic',
+                    type: 'checkbox',
+                    label: 'Italic',
+                    defaultValue: false,
+                  },
+                  {
+                    name: 'underline',
+                    type: 'checkbox',
+                    label: 'Underline',
+                    defaultValue: false,
+                  },
+                  {
+                    name: 'textTransform',
+                    type: 'select',
+                    label: 'Text Transform',
+                    defaultValue: 'none',
+                    options: [
+                      { label: 'Normal', value: 'none' },
+                      { label: 'Uppercase', value: 'uppercase' },
+                      { label: 'Lowercase', value: 'lowercase' },
+                      { label: 'Capitalize', value: 'capitalize' },
+                    ],
+                  },
+                  {
+                    name: 'letterSpacing',
+                    type: 'text',
+                    label: 'Letter Spacing',
+                    defaultValue: '0',
+                  },
+                  {
+                    name: 'borderWidth',
+                    type: 'text',
+                    label: 'Border Width',
+                    defaultValue: '1px',
+                  },
+                  {
+                    name: 'borderStyle',
+                    type: 'select',
+                    label: 'Border Style',
+                    defaultValue: 'solid',
+                    options: [
+                      { label: 'None', value: 'none' },
+                      { label: 'Solid', value: 'solid' },
+                      { label: 'Dashed', value: 'dashed' },
+                      { label: 'Dotted', value: 'dotted' },
+                    ],
+                  },
+                  {
+                    name: 'borderRadius',
+                    type: 'text',
+                    label: 'Border Radius',
+                    defaultValue: '8px',
+                  },
+                  {
+                    name: 'padding',
+                    type: 'text',
+                    label: 'Padding',
+                    defaultValue: '12px 20px',
+                  },
+                  {
+                    name: 'minWidth',
+                    type: 'text',
+                    label: 'Minimum Width',
+                    defaultValue: 'auto',
+                  },
+                  {
+                    name: 'shadow',
+                    type: 'select',
+                    label: 'Shadow',
+                    defaultValue: 'small',
+                    options: [
+                      { label: 'None', value: 'none' },
+                      { label: 'Small', value: 'small' },
+                      { label: 'Medium', value: 'medium' },
+                      { label: 'Large', value: 'large' },
+                    ],
+                  },
+                  {
+                    name: 'icon',
+                    type: 'select',
+                    label: 'Icon',
+                    defaultValue: 'none',
+                    options: [
+                      { label: 'None', value: 'none' },
+                      { label: 'Arrow →', value: 'arrow' },
+                      { label: 'External ↗', value: 'external' },
+                      { label: 'Download ↓', value: 'download' },
+                    ],
+                  },
+                  {
+                    name: 'iconPosition',
+                    type: 'select',
+                    label: 'Icon Position',
+                    defaultValue: 'right',
+                    options: [
+                      { label: 'Left', value: 'left' },
+                      { label: 'Right', value: 'right' },
+                    ],
+                  },
+                  {
+                    name: 'openInNewTab',
+                    type: 'checkbox',
+                    label: 'Open in New Tab',
+                    defaultValue: false,
+                  },
                 ],
-              },
+              }
             ],
           }),
 

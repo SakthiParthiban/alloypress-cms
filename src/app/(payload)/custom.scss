@@ -1415,3 +1415,18 @@ html[data-theme='dark'] ::-webkit-scrollbar-thumb:hover {
     transition: none !important;
   }
 }
+
+
+/* =========================================================
+   CODE FIELD — TALLER, RESIZABLE EDITOR
+   Payload's default CodeMirror height is fixed and small
+   (~200-300px), so a 500+ line HTML/CSS block forces the
+   editor into a tiny scrollable box — every next line means
+   scrolling inside that box. This makes the editor open at a
+   much taller height by default AND lets the editor be
+   dragged taller/shorter by the person editing it.
+========================================================= */
+
+.alloypress-code-editor-wrap {
+  width: 100%;
+}

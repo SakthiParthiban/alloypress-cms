@@ -215,7 +215,7 @@ export interface Media {
    */
   title?: string | null;
   /**
-   * Optional caption displayed with the media.
+   * Optional caption displayed with the media. Supports bold, italic, underline, links, and left/center/right alignment.
    */
   caption?: string | null;
   /**
