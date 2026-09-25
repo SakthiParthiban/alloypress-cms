@@ -21,6 +21,7 @@ import EmailCtaModal from "@/components/ui/EmailCtaModal";
 import Navbar from "@/components/layout/Navbar";
 import Footer from "@/components/layout/Footer";
 import ThemeScript from "@/components/ThemeScript";
+import BackToTop from "@/components/BackToTop";
 
 // ------------------------------------------------------------
 // NEW: centralized SEO constants + site-wide JSON-LD builders
@@ -91,6 +92,7 @@ export default function RootLayout({
         <Navbar />
 
         <main>{children}</main>
+         <BackToTop />
 
         <Footer />
         <EmailCtaModal />

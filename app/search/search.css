@@ -1,3 +1,7 @@
+/* ============================================================
+   SEARCH PAGE
+============================================================ */
+
 .search-page {
   min-height: calc(100vh - 80px);
   background: var(--background);
@@ -40,6 +44,10 @@
   font-size: 16px;
   line-height: 1.6;
 }
+
+/* ============================================================
+   SEARCH FORM
+============================================================ */
 
 .search-page-form {
   margin-bottom: 44px;
@@ -92,13 +100,17 @@
   color: #fff;
   font-weight: 700;
   cursor: pointer;
-  transition: transform 0.2s ease, opacity 0.2s ease;
+  transition: opacity 0.2s ease, transform 0.2s ease;
 }
 
 .search-page-input-wrap button:hover {
   opacity: 0.9;
   transform: translateY(-1px);
 }
+
+/* ============================================================
+   DISCOVERY
+============================================================ */
 
 .search-discovery-header {
   margin-bottom: 22px;
@@ -118,40 +130,43 @@
   line-height: 1.6;
 }
 
+/* Small keyword-style search suggestions — no arrows */
 .search-suggestions {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 10px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 9px;
 }
 
 .search-suggestion {
-  display: flex;
+  display: inline-flex;
   align-items: center;
-  justify-content: space-between;
-  gap: 16px;
-  min-height: 54px;
-  padding: 14px 16px;
+  min-height: 36px;
+  padding: 8px 13px;
   border: 1px solid var(--border);
-  border-radius: 12px;
+  border-radius: 999px;
   background: var(--surface-elevated);
-  color: var(--text-primary);
+  color: var(--text-secondary);
   text-decoration: none;
-  font-size: 14px;
+  font-size: 13px;
   font-weight: 600;
-  transition: border-color 0.2s ease, transform 0.2s ease,
-    background 0.2s ease;
-}
-
-.search-suggestion span:last-child {
-  color: var(--brand);
-  font-size: 18px;
-  flex: 0 0 auto;
+  line-height: 1.2;
+  transition:
+    border-color 0.2s ease,
+    color 0.2s ease,
+    background 0.2s ease,
+    transform 0.2s ease;
 }
 
 .search-suggestion:hover {
   border-color: var(--brand);
-  transform: translateY(-2px);
+  color: var(--text-primary);
+  background: color-mix(in srgb, var(--brand) 7%, var(--surface-elevated));
+  transform: translateY(-1px);
 }
+
+/* ============================================================
+   LATEST ARTICLES — 4 CARDS
+============================================================ */
 
 .search-suggested-posts {
   margin-top: 48px;
@@ -171,31 +186,17 @@
   font-weight: 700;
 }
 
-.search-subsection-heading a {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  color: var(--brand);
-  font-size: 13px;
-  font-weight: 700;
-  text-decoration: none;
-}
-
-.search-subsection-heading a span {
-  font-size: 16px;
-}
-
 .search-suggested-grid {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 12px;
+  gap: 14px;
 }
 
 .search-suggested-card {
   display: flex;
   flex-direction: column;
   min-width: 0;
-  padding: 20px;
+  overflow: hidden;
   border: 1px solid var(--border);
   border-radius: 14px;
   background: var(--surface-elevated);
@@ -209,14 +210,40 @@
   transform: translateY(-2px);
 }
 
+.search-suggested-image {
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  overflow: hidden;
+  background: var(--surface);
+}
+
+.search-suggested-image img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.35s ease;
+}
+
+.search-suggested-card:hover .search-suggested-image img {
+  transform: scale(1.025);
+}
+
+.search-suggested-content {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  padding: 17px 18px 18px;
+}
+
 .search-suggested-meta {
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 10px;
-  margin-bottom: 10px;
+  margin-bottom: 9px;
   color: var(--text-muted);
-  font-size: 11px;
+  font-size: 10px;
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.06em;
@@ -234,26 +261,16 @@
 }
 
 .search-suggested-card p {
-  margin: 9px 0 14px;
+  margin: 9px 0 0;
   color: var(--text-secondary);
   font-size: 13px;
   line-height: 1.55;
 }
 
-.search-read-link {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  margin-top: auto;
-  color: var(--text-primary);
-  font-size: 13px;
-  font-weight: 700;
-}
-
-.search-read-link span {
-  color: var(--brand);
-  font-size: 16px;
-}
+/* ============================================================
+   SEARCH RESULTS — MAX 8
+   Editorial list layout: number | content | image
+============================================================ */
 
 .search-results-heading {
   display: flex;
@@ -270,59 +287,101 @@
 
 .search-results-list {
   display: grid;
-  gap: 12px;
+  gap: 0;
+  border-top: 1px solid var(--border);
 }
 
 .search-result-card {
-  display: block;
-  padding: 24px;
-  border: 1px solid var(--border);
-  border-radius: 14px;
-  background: var(--surface-elevated);
+  display: grid;
+  grid-template-columns: 48px minmax(0, 1fr) 240px;
+  align-items: center;
+  column-gap: 18px;
+  min-width: 0;
+  padding: 24px 0;
+  border-bottom: 1px solid var(--border);
+  background: transparent;
   color: inherit;
   text-decoration: none;
-  transition: border-color 0.2s ease, transform 0.2s ease;
+  transition: background 0.2s ease, border-color 0.2s ease;
 }
 
 .search-result-card:hover {
-  border-color: var(--brand);
-  transform: translateY(-2px);
+  background: color-mix(in srgb, var(--brand) 3%, transparent);
+}
+
+.search-result-number {
+  align-self: start;
+  padding-top: 3px;
+  color: var(--brand);
+  font-size: 12px;
+  font-weight: 700;
+  line-height: 1;
+  letter-spacing: 0.04em;
+}
+
+.search-result-image {
+  grid-column: 3;
+  grid-row: 1;
+  width: 240px;
+  aspect-ratio: 16 / 9;
+  overflow: hidden;
+  border-radius: 10px;
+  background: var(--surface);
+  justify-self: end;
+}
+
+.search-result-image img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.35s ease;
+}
+
+.search-result-card:hover .search-result-image img {
+  transform: scale(1.025);
+}
+
+.search-result-content {
+  min-width: 0;
+  padding: 0;
 }
 
 .search-result-meta {
   display: flex;
   align-items: center;
-  gap: 5px;
-  margin-bottom: 8px;
-  color: var(--brand);
-  font-size: 12px;
+  gap: 8px;
+  margin-bottom: 10px;
+  color: var(--text-muted);
+  font-size: 11px;
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.08em;
 }
 
+.search-result-meta span:first-child {
+  color: var(--brand);
+}
+
 .search-result-card h2 {
+  max-width: 700px;
   margin: 0;
   font-size: 22px;
-  line-height: 1.25;
+  line-height: 1.28;
+  letter-spacing: -0.02em;
 }
 
 .search-result-card p {
-  margin: 10px 0 14px;
+  max-width: 680px;
+  margin: 10px 0 0;
   color: var(--text-secondary);
-  line-height: 1.65;
-}
-
-.search-result-link {
-  color: var(--text-primary);
   font-size: 14px;
-  font-weight: 700;
+  line-height: 1.6;
 }
 
-.search-result-link span {
-  margin-left: 5px;
-  color: var(--brand);
-}
+/* ============================================================
+   NO RESULTS / MORE
+============================================================ */
 
 .search-no-results {
   padding: 44px 24px;
@@ -369,6 +428,10 @@
   margin-bottom: 20px;
 }
 
+/* ============================================================
+   MOBILE
+============================================================ */
+
 @media (max-width: 700px) {
   .search-page-inner {
     width: min(calc(100% - 32px), 960px);
@@ -389,7 +452,13 @@
   }
 
   .search-suggestions {
-    grid-template-columns: 1fr;
+    gap: 8px;
+  }
+
+  .search-suggestion {
+    min-height: 34px;
+    padding: 7px 11px;
+    font-size: 12px;
   }
 
   .search-suggested-grid {
@@ -397,7 +466,27 @@
   }
 
   .search-result-card {
-    padding: 20px;
+    grid-template-columns: 32px minmax(0, 1fr);
+    column-gap: 12px;
+    padding: 20px 0;
+  }
+
+  .search-result-number {
+    font-size: 11px;
+  }
+
+  .search-result-image {
+    grid-column: 2;
+    grid-row: 2;
+    width: 100%;
+    aspect-ratio: 16 / 9;
+    margin-top: 16px;
+    justify-self: stretch;
+  }
+
+  .search-result-content {
+    grid-column: 2;
+    grid-row: 1;
   }
 
   .search-result-card h2 {

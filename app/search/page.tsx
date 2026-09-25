@@ -25,12 +25,19 @@ type Category = {
   name?: string | null;
 };
 
+type Media = {
+  id: number | string;
+  url?: string | null;
+  alt?: string | null;
+};
+
 type Post = {
   id: number | string;
   title?: string | null;
   slug?: string | null;
   excerpt?: string | null;
   publishedAt?: string | null;
+  featuredImage?: Media | number | string | null;
   category?: Category | number | string | null;
 };
 
@@ -58,7 +65,19 @@ const SUGGESTED_SEARCHES = [
 ];
 
 function cleanText(value?: string | null) {
-  return value?.replace(/<[^>]*>/g, "").replace(/\s+/g, " ").trim() || "";
+  return (
+    value
+      ?.replace(/<[^>]*>/g, "")
+      .replace(/TL;DR\s*:/gi, "")
+      .replace(/📋?\s*Copied!\s*Press\s*Ctrl\+V\s*\(or\s*Cmd\+V on Mac\)\s*in the box that just opened\.?/gi, "")
+      .replace(/Copy again\s*[×x]?/gi, "")
+      .replace(/\[&hellip;\]/gi, "")
+      .replace(/&hellip;/gi, "")
+      .replace(/&#8230;/gi, "")
+      .replace(/&#x2026;/gi, "")
+      .replace(/\s+/g, " ")
+      .trim() || ""
+  );
 }
 
 function getCategory(post: Post): Category | null {
@@ -79,7 +98,7 @@ function isValidPost(post: Post) {
   );
 }
 
-const MAX_SEARCH_RESULTS = 20;
+const MAX_SEARCH_RESULTS = 8;
 const MAX_QUERY_LENGTH = 100;
 
 async function searchPosts(query: string): Promise<Post[]> {
@@ -126,7 +145,7 @@ const getSuggestedPosts = cache(
         await payloadFetch<PayloadResponse<Post>>(
           "/posts" +
             "?where[workflowStatus][equals]=published" +
-            "&limit=8" +
+            "&limit=4" +
             "&depth=1" +
             "&sort=-publishedAt" +
             "&select[id]=true" +
@@ -134,7 +153,8 @@ const getSuggestedPosts = cache(
             "&select[slug]=true" +
             "&select[excerpt]=true" +
             "&select[publishedAt]=true" +
-            "&select[category]=true",
+            "&select[category]=true" +
+            "&select[featuredImage]=true",
           {
             next: {
               revalidate: 300,
@@ -145,7 +165,7 @@ const getSuggestedPosts = cache(
 
       return (data?.docs || [])
         .filter(isValidPost)
-        .slice(0, 6);
+        .slice(0, 4);
     } catch (error) {
       console.error(
         "[AlloyPress Search] Suggested posts failed:",
@@ -156,6 +176,26 @@ const getSuggestedPosts = cache(
     }
   },
 );
+
+function getImageUrl(
+  featuredImage: Post["featuredImage"],
+): string | null {
+  if (
+    typeof featuredImage === "object" &&
+    featuredImage !== null &&
+    typeof featuredImage.url === "string" &&
+    featuredImage.url
+  ) {
+    return featuredImage.url.startsWith("http")
+      ? featuredImage.url
+      : `${
+          process.env.PAYLOAD_API_URL?.replace(/\/api$/, "") ||
+          "http://localhost:3001"
+        }${featuredImage.url}`;
+  }
+
+  return null;
+}
 
 function formatDate(value?: string | null) {
   if (!value) return "";
@@ -272,68 +312,66 @@ export default async function SearchPage({
             </div>
 
             <div className="search-suggestions">
-              {SUGGESTED_SEARCHES.map(
-                (suggestion) => (
-                  <Link
-                    key={suggestion}
-                    href={`/search?q=${encodeURIComponent(
-                      suggestion,
-                    )}`}
-                    className="search-suggestion"
-                  >
-                    <span>{suggestion}</span>
-                    <span aria-hidden="true">
-                      →
-                    </span>
-                  </Link>
-                ),
-              )}
+              {SUGGESTED_SEARCHES.map((suggestion) => (
+                <Link
+                  key={suggestion}
+                  href={`/search?q=${encodeURIComponent(suggestion)}`}
+                  className="search-suggestion"
+                >
+                  {suggestion}
+                </Link>
+              ))}
             </div>
 
             {suggestedPosts.length > 0 && (
               <div className="search-suggested-posts">
                 <div className="search-subsection-heading">
-                  <span>Latest content</span>
-
-                  <Link href="/blogs">
-                    View all
-                    <span aria-hidden="true">
-                      →
-                    </span>
-                  </Link>
+                  <span>Latest articles</span>
                 </div>
 
                 <div className="search-suggested-grid">
-                  {suggestedPosts
-                    .slice(0, 6)
-                    .map((post) => {
-                      const category =
-                        getCategory(post);
+                  {suggestedPosts.map((post) => {
+                    const category = getCategory(post);
 
-                      if (
-                        !category?.slug ||
-                        !post.slug
-                      ) {
-                        return null;
-                      }
+                    if (!category?.slug || !post.slug) {
+                      return null;
+                    }
 
-                      return (
-                        <Link
-                          key={post.id}
-                          href={`/${category.slug}/${post.slug}`}
-                          className="search-suggested-card"
-                        >
+                    const imageUrl = getImageUrl(
+                      post.featuredImage,
+                    );
+
+                    return (
+                      <Link
+                        key={post.id}
+                        href={`/${category.slug}/${post.slug}`}
+                        className="search-suggested-card"
+                      >
+                        {imageUrl ? (
+                          <div className="search-suggested-image">
+                            <img
+                              src={imageUrl}
+                              alt={
+                                post.featuredImage &&
+                                typeof post.featuredImage === "object" &&
+                                post.featuredImage.alt
+                                  ? post.featuredImage.alt
+                                  : post.title || "AlloyPress article"
+                              }
+                              loading="lazy"
+                            />
+                          </div>
+                        ) : null}
+
+                        <div className="search-suggested-content">
                           <div className="search-suggested-meta">
                             <span>
-                              {category.name ||
-                                category.slug}
+                              {category.name || category.slug}
                             </span>
 
                             {post.publishedAt && (
                               <span>
-                                {formatDate(
-                                  post.publishedAt,
-                                )}
+                                {formatDate(post.publishedAt)}
                               </span>
                             )}
                           </div>
@@ -342,26 +380,16 @@ export default async function SearchPage({
 
                           {post.excerpt && (
                             <p>
-                              {cleanText(
-                                post.excerpt,
-                              ).slice(0, 120)}
-                              {cleanText(
-                                post.excerpt,
-                              ).length > 120
+                              {cleanText(post.excerpt).slice(0, 120)}
+                              {cleanText(post.excerpt).length > 120
                                 ? "..."
                                 : ""}
                             </p>
                           )}
-
-                          <span className="search-read-link">
-                            Read article
-                            <span aria-hidden="true">
-                              →
-                            </span>
-                          </span>
-                        </Link>
-                      );
-                    })}
+                        </div>
+                      </Link>
+                    );
+                  })}
                 </div>
               </div>
             )}
@@ -400,38 +428,50 @@ export default async function SearchPage({
                       href={`/${category.slug}/${post.slug}`}
                       className="search-result-card"
                     >
-                      <div className="search-result-meta">
-                        <span>
-                          {category.name ||
-                            category.slug}
-                        </span>
+                      {getImageUrl(post.featuredImage) ? (
+                        <div className="search-result-image">
+                          <img
+                            src={getImageUrl(post.featuredImage)!}
+                            alt={
+                              post.featuredImage &&
+                              typeof post.featuredImage === "object" &&
+                              post.featuredImage.alt
+                                ? post.featuredImage.alt
+                                : post.title || "AlloyPress article"
+                            }
+                            loading="lazy"
+                          />
+                        </div>
+                      ) : null}
 
-                        {post.publishedAt && (
+                      <span className="search-result-number" aria-hidden="true">
+                        {String(results.indexOf(post) + 1).padStart(2, "0")}
+                      </span>
+
+                      <div className="search-result-content">
+                        <div className="search-result-meta">
                           <span>
-                            ·{" "}
-                            {formatDate(
-                              post.publishedAt,
-                            )}
+                            {category.name || category.slug}
                           </span>
+
+                          {post.publishedAt && (
+                            <span>
+                              {formatDate(post.publishedAt)}
+                            </span>
+                          )}
+                        </div>
+
+                        <h2>{post.title}</h2>
+
+                        {post.excerpt && (
+                          <p>
+                            {cleanText(post.excerpt).slice(0, 180)}
+                            {cleanText(post.excerpt).length > 180
+                              ? "..."
+                              : ""}
+                          </p>
                         )}
                       </div>
-
-                      <h2>{post.title}</h2>
-
-                      {post.excerpt && (
-                        <p>
-                          {cleanText(
-                            post.excerpt,
-                          )}
-                        </p>
-                      )}
-
-                      <span className="search-result-link">
-                        Read article
-                        <span aria-hidden="true">
-                          →
-                        </span>
-                      </span>
                     </Link>
                   );
                 })}
