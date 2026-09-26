@@ -1430,3 +1430,73 @@ html[data-theme='dark'] ::-webkit-scrollbar-thumb:hover {
 .alloypress-code-editor-wrap {
   width: 100%;
 }
+
+
+
+/* =========================================================
+   LEXICAL TABLE — CELL CONTENT OVERFLOW FIX
+   Images and blocks (CTA Button, etc.) inserted inside a
+   table cell were rendering at their natural size and
+   spilling outside the cell/table boundary in the admin
+   editor. This constrains all cell content to the cell width.
+========================================================= */
+
+.lexical-table-container {
+  max-width: 100%;
+  overflow-x: auto;
+}
+
+.lexical-table {
+  table-layout: fixed;
+  width: 100%;
+}
+
+.lexical-table td,
+.lexical-table th {
+  overflow: hidden;
+  vertical-align: top;
+  word-wrap: break-word;
+  box-sizing: border-box;
+}
+
+/* Constrain uploaded images inside a table cell */
+.lexical-table td img,
+.lexical-table th img {
+  max-width: 100% !important;
+  height: auto !important;
+  display: block;
+}
+
+/* Constrain any block (CTA Button, HTML Content, etc.)
+   rendered inside a table cell */
+.lexical-table td > div,
+.lexical-table th > div {
+  max-width: 100%;
+  overflow-x: hidden;
+  box-sizing: border-box;
+}
+
+
+/* =========================================================
+   LEXICAL UPLOAD NODE — LANDSCAPE IMAGE OVERFLOW FIX
+   Payload's default theme forces a fixed 450px width on
+   landscape images inside the Lexical editor via min-width
+   AND max-width, which overflows narrow containers like
+   table cells. Override both to make the image responsive.
+========================================================= */
+
+.LexicalEditorTheme__upload__contents--landscape img,
+.LexicalEditorTheme__upload__contents--landscape svg {
+  min-width: 0 !important;
+  max-width: 100% !important;
+  width: 100% !important;
+  height: auto !important;
+}
+
+.LexicalEditorTheme__upload_card,
+.LexicalEditorTheme__upload_media,
+.LexicalEditorTheme__upload_media .thumbnail {
+  max-width: 100% !important;
+  overflow: hidden !important;
+  box-sizing: border-box !important;
+}
