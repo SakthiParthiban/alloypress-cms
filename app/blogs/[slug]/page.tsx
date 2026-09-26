@@ -399,6 +399,11 @@ async function getRelatedPosts(
   );
 
   params.set(
+    "where[id][not_equals]",
+    String(currentPostId),
+  );
+
+  params.set(
     "sort",
     "-publishedAt",
   );
@@ -446,7 +451,7 @@ async function getRelatedPosts(
   return (data?.docs ?? [])
     .filter(
       (item) =>
-        item.id !== currentPostId,
+        String(item.id) !== String(currentPostId),
     )
     .filter(
       (item) =>
@@ -521,8 +526,7 @@ export default async function BlogPostPage({
   params,
 }: {
   params: Params;
-}) 
-{
+}) {
   const { slug } = await params;
 
   const { isEnabled: isDraft } =
