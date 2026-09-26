@@ -541,7 +541,7 @@ export const Posts: CollectionConfig = {
             ? String(data.id)
             : "";
 
-        return `http://localhost:3000/preview/blogs/${slug}${id ? `?id=${encodeURIComponent(id)}` : ""
+        return `https://alloypress-web.vercel.app/preview/blogs/${slug}${id ? `?id=${encodeURIComponent(id)}` : ""
           }`;
       },
     },
